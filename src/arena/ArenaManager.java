@@ -5,20 +5,18 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder.ListMultimapBuilder;
-
-import bedwars.BedWarsPlugin;
 
 /**
  * @apiNote PLAYING and INPROCESS are used by Arena but the others are for
@@ -36,6 +34,8 @@ class Arena {
 
 	private STATES status;
 
+	private String name;
+
 	private int minPlayer;
 
 	private int maxPlayer;
@@ -46,22 +46,39 @@ class Arena {
 
 	private List<String> playersNames = new ArrayList<>();
 
-	private List<Location> npcLocations = new ArrayList<>();
+	private List<Location> npcsLocations = new ArrayList<>();
 
-	private List<Location> bedsSpawns = new ArrayList<>();
+	private Map<String, Location> bedsSpawns = new HashMap<>();
 
-	private List<Location> teamsSpawns = new ArrayList<>();
+	private Map<String, Location> teamsSpawns = new HashMap<>();
 
-	private List<Location> arenaGenerators = new ArrayList<>();
+	private Map<String, Location> arenaGenerators = new HashMap<>();
 
 	private List<TEAMS> teams;
 
-	public Arena(int minPlayer, int maxPlayer, int arenaTime, Location waitingSpawn, List<TEAMS> teams) {
+	public Arena(int minPlayer, int maxPlayer, int arenaTime, Location waitingSpawn, STATES status, String name) {
+		this.minPlayer = minPlayer;
+		this.maxPlayer = maxPlayer;
+		this.arenaTime = arenaTime;
+		this.waitingSpawn = waitingSpawn;
+		this.name = name;
+		this.status = status;
+	}
+
+	public Arena(int minPlayer, int maxPlayer, int arenaTime, Location waitingSpawn, List<TEAMS> teams,
+			Map<String, Location> arenaGenerators, Map<String, Location> teamsSpawns, Map<String, Location> bedsSpawns,
+			List<Location> npcsLocations, STATES status, String name) {
 		this.minPlayer = minPlayer;
 		this.maxPlayer = maxPlayer;
 		this.arenaTime = arenaTime;
 		this.waitingSpawn = waitingSpawn;
 		this.teams = teams;
+		this.arenaGenerators = arenaGenerators;
+		this.teamsSpawns = teamsSpawns;
+		this.bedsSpawns = bedsSpawns;
+		this.npcsLocations = npcsLocations;
+		this.status = status;
+		this.name = name;
 	}
 
 	public void setStatus(STATES status) {
@@ -112,24 +129,32 @@ class Arena {
 		this.arenaTime = arenaTime;
 	}
 
-	public List<Location> getBedsSpawns() {
+	public Map<String, Location> getBedsSpawns() {
 		return bedsSpawns;
 	}
 
-	public List<Location> getTeamsSpawns() {
+	public Map<String, Location> getTeamsSpawns() {
 		return teamsSpawns;
 	}
 
-	public List<Location> getArenaGenerators() {
+	public Map<String, Location> getArenaGenerators() {
 		return arenaGenerators;
 	}
 
 	public List<Location> getNpcLocations() {
-		return npcLocations;
+		return npcsLocations;
 	}
 
 	public List<String> getPlayersNames() {
 		return playersNames;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }
@@ -151,89 +176,144 @@ public class ArenaManager {
 	public static void createArena(Plugin instance, String arenaName, Integer minPlayer, Integer maxPlayer,
 			Integer arenaTime, Location waitingSpawn, String world, List<TEAMS> teams) {
 		Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-			if (arenaList != null) {
-				String arenaDir = directory + arenaName;
-				String arenaFile = directory + arenaName + "/" + arenaName + ".dcnf";
-				if (!Files.notExists(Paths.get(arenaDir))) {
-					try {
-						Files.createDirectory(Paths.get(arenaDir));
-						Files.createFile(Paths.get(arenaFile));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
+			String arenaDir = directory + arenaName;
+			String arenaFile = directory + arenaName + "/" + arenaName + ".dcnf";
+			if (!Files.notExists(Paths.get(arenaDir))) {
+				try {
+					Files.createDirectory(Paths.get(arenaDir));
+					Files.createFile(Paths.get(arenaFile));
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
-				if (!Files.notExists(Paths.get(arenaFile))) {
-					try {
-						Files.createFile(Paths.get(arenaFile));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-
-					LivingEntity lv;
-				}
-				final int min = minPlayer != null ? minPlayer
-						: Integer.parseInt(PropertiesAPI.getProperty_NS(false, "minPlayers", "2", arenaFile));
-				final int max = maxPlayer != null ? maxPlayer
-						: Integer.parseInt(PropertiesAPI.getProperty_NS(false, "maxPlayers", "8", arenaFile));
-				final int time = arenaTime != null ? arenaTime
-						: Integer.parseInt(PropertiesAPI.getProperty_NS(false, "arenaTime", "1800", arenaFile));
-
-				final List<String> locationCoordinates = PropertiesAPI.getProperties_NS("waitingSpawn", arenaFile,
-						"0.0", "0.0", "0.0");
-
-				final Location location = waitingSpawn != null ? waitingSpawn
-						: new Location(Bukkit.getWorld(world), Double.parseDouble(locationCoordinates.get(0)),
-								Double.parseDouble(locationCoordinates.get(1)),
-								Double.parseDouble(locationCoordinates.get(2)));
-
-				final List<TEAMS> team = teams != null ? teams
-						: PropertiesAPI.getProperties_NS("teams", arenaFile, "RED", "BLUE", "GREEN", "YELLOW").stream()
-								.filter((x) -> TEAMS.valueOf(x.toUpperCase()) != null).map((x) -> TEAMS.valueOf(x))
-								.collect(Collectors.toList());
-
-				Arena arena = new Arena(min, max, time, location, team);
-				arenaList.add(arena);
 			}
+			if (!Files.notExists(Paths.get(arenaFile))) {
+				try {
+					Files.createFile(Paths.get(arenaFile));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+
+			final int min = minPlayer != null ? minPlayer
+					: Integer.parseInt(PropertiesAPI.getProperty_NS(false, "minPlayers", "2", arenaFile));
+			final int max = maxPlayer != null ? maxPlayer
+					: Integer.parseInt(PropertiesAPI.getProperty_NS(false, "maxPlayers", "8", arenaFile));
+			final int time = arenaTime != null ? arenaTime
+					: Integer.parseInt(PropertiesAPI.getProperty_NS(false, "arenaTime", "1800", arenaFile));
+
+			final List<String> locationCoordinates = PropertiesAPI.getProperties_NNS("waitingSpawn", arenaFile, "0.0",
+					"0.0", "0.0");
+
+			final Location location = waitingSpawn != null ? waitingSpawn
+					: new Location(Bukkit.getWorld(world), Double.parseDouble(locationCoordinates.get(0)),
+							Double.parseDouble(locationCoordinates.get(1)),
+							Double.parseDouble(locationCoordinates.get(2)));
+
+			Arena arena = new Arena(min, max, time, location, STATES.INPROCESS, arenaFile);
+			arenaList.add(arena);
+
 		});
+
 	}
 
 	/**
 	 * @apiNote this have to be used in server starting
 	 */
 	public static void loadArenas_NS() {
-		List<Path> directories = null;
+		List<Path> dirs = null;
+		List<Path> files = null;
 		try {
-			directories = Files.walk(Paths.get(directory)).filter(Files::isDirectory).collect(Collectors.toList());
+			dirs = Files.walk(Paths.get(directory)).filter(Files::isDirectory).collect(Collectors.toList());
+			files = Files.walk(Paths.get(directory)).filter(Files::isRegularFile).collect(Collectors.toList());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		directories.remove(0);
-		for (Path dirs : directories) {
-			String arenaFile = dirs.toString();
-			final int min = Integer.parseInt(PropertiesAPI.getProperty_NS(false, "minPlayers", "2", arenaFile));
-			final int max = Integer.parseInt(PropertiesAPI.getProperty_NS(false, "maxPlayers", "8", arenaFile));
-			final int time = Integer.parseInt(PropertiesAPI.getProperty_NS(false, "arenaTime", "1800", arenaFile));
+		dirs.remove(0);
+		for (Path dir : dirs) {
+			for (Path file : files) {
+				String arenaName = null;
+				Optional<String> k = dirs.stream().filter((x) -> x.equals(dir))
+						.filter((x) -> x.toString().split("//")[1].contains(".dcnf"))
+						.map((x) -> x.toString().split("//")[1]).findFirst();
+				if (k.isPresent()) {
+					arenaName = k.get();
+				}
+				String arenaFile = file.toString();
 
-			final List<String> locationCoordinates = PropertiesAPI.getProperties_NS("waitingSpawn", arenaFile, "0.0",
-					"0.0", "0.0");
+				int min = Integer.parseInt(PropertiesAPI.getProperty_NS(false, "minPlayers", "2", arenaFile));
+				int max = Integer.parseInt(PropertiesAPI.getProperty_NS(false, "maxPlayers", "8", arenaFile));
+				int time = Integer.parseInt(PropertiesAPI.getProperty_NS(false, "arenaTime", "1800", arenaFile));
 
-			final Location location = new Location(
-					Bukkit.getWorld(PropertiesAPI.getProperty_NS(true, "world", arenaFile, null)),
-					Double.parseDouble(locationCoordinates.get(0)), Double.parseDouble(locationCoordinates.get(1)),
-					Double.parseDouble(locationCoordinates.get(2)));
+				List<String> locationCoordinates = PropertiesAPI.getProperties_NNS("waitingSpawn", arenaFile, "0.0",
+						"0.0", "0.0");
 
-			final List<TEAMS> team = PropertiesAPI
-					.getProperties_NS("teams", arenaFile, "RED", "BLUE", "GREEN", "YELLOW").stream()
-					.filter((x) -> TEAMS.valueOf(x.toUpperCase()) != null).map((x) -> TEAMS.valueOf(x))
-					.collect(Collectors.toList());
+				Location location = new Location(
+						Bukkit.getWorld(PropertiesAPI.getProperty_NS(true, "world", arenaFile, null)),
+						Double.parseDouble(locationCoordinates.get(0)), Double.parseDouble(locationCoordinates.get(1)),
+						Double.parseDouble(locationCoordinates.get(2)));
 
-			Arena arena = new Arena(min, max, time, location, team);
-			arenaList.add(arena);
+				List<TEAMS> team = PropertiesAPI.getProperties_NNS("teams", arenaFile, "RED", "BLUE", "GREEN", "YELLOW")
+						.stream().filter((x) -> TEAMS.valueOf(x.toUpperCase()) != null).map((x) -> TEAMS.valueOf(x))
+						.collect(Collectors.toList());
+
+				List<String> npcs = PropertiesAPI.getProperties_NS("npcs", arenaFile, null);
+				List<Location> realNpcs = new ArrayList<>();
+				for (String notNpc : npcs) {
+
+					String kir[] = notNpc.split("-\\s*", 2);
+					String values[] = kir[1].split(",");
+
+					Location loc = new Location(
+							Bukkit.getWorld(PropertiesAPI.getProperty_NS(false, "npcs", null, arenaFile)),
+							Double.parseDouble(values[0]), Double.parseDouble(values[1]),
+							Double.parseDouble(values[2]));
+					realNpcs.add(loc);
+				}
+
+				List<String> beds = PropertiesAPI.getProperties_NS("teamBeds", arenaFile, null);
+				Map<String, Location> realBeds = new HashMap<>();
+				for (String notBed : beds) {
+					String kir[] = notBed.split("-\\s*", 2);
+					String values[] = kir[1].split(",");
+
+					Location loc = new Location(
+							Bukkit.getWorld(PropertiesAPI.getProperty_NS(false, "beds", null, arenaFile)),
+							Double.parseDouble(values[0]), Double.parseDouble(values[1]),
+							Double.parseDouble(values[2]));
+					realBeds.put(arenaName, loc);
+				}
+
+				List<String> spawns = PropertiesAPI.getProperties_NS("teamsSpawns", arenaFile, null);
+				Map<String, Location> teamsSpawns = new HashMap<>();
+				for (String notSpawn : spawns) {
+					String kir[] = notSpawn.split("-\\s*", 2);
+					String values[] = kir[1].split(",");
+
+					Location loc = new Location(
+							Bukkit.getWorld(PropertiesAPI.getProperty_NS(false, "teamsSpawns", null, arenaFile)),
+							Double.parseDouble(values[0]), Double.parseDouble(values[1]),
+							Double.parseDouble(values[2]));
+					teamsSpawns.put(arenaName, loc);
+				}
+
+				List<String> generators = PropertiesAPI.getProperties_NS("arenaGenerators", arenaFile, null);
+				Map<String, Location> arenaGenerators = new HashMap<>();
+				for (String notGenerator : generators) {
+					String kir[] = notGenerator.split("-\\s*", 2);
+					String values[] = kir[1].split(",");
+
+					Location loc = new Location(
+							Bukkit.getWorld(PropertiesAPI.getProperty_NS(false, "teamsSpawns", null, arenaFile)),
+							Double.parseDouble(values[0]), Double.parseDouble(values[1]),
+							Double.parseDouble(values[2]));
+					arenaGenerators.put(arenaName, loc);
+				}
+
+				Arena arena = new Arena(min, max, time, location, team, arenaGenerators, teamsSpawns, realBeds,
+						realNpcs, STATES.WAITING, arenaName);
+				arenaList.add(arena);
+			}
 		}
-	}
-
-	public STATES getArenaStatus(Arena arena) {
-		return STATES.valueOf(arenaValues.get(arena).get(0));
 	}
 
 	public void setArenaStatus(Arena arena, String state) {
@@ -262,8 +342,10 @@ public class ArenaManager {
 
 	public void addPlayer(String playerName, Arena arena, String status, String team, Location locationToSpawn) {
 		Player player = Bukkit.getPlayer(playerName);
-		if (player != null && arenaList.contains(arena))
+		if (player != null && arenaList.contains(arena)) {
 			arenaValues.get(arena).add(playerName);
+			playerValues.put(playerName, arena.getName());
+		}
 		if (STATES.valueOf(status) != null)
 			playerValues.put(playerName, status);
 		if (TEAMS.valueOf(team) != null)
@@ -277,8 +359,16 @@ public class ArenaManager {
 		playerValues.removeAll(playerName);
 	}
 
-	public STATES getPlayerStatus(String playerName, Arena arena) {
+	public STATES getArenaStatus(Arena arena) {
 		return STATES.valueOf(arenaValues.get(arena).get(0));
+	}
+
+	public STATES getPlayerStatus(String playerName) {
+		return STATES.valueOf(playerValues.get(playerName).get(1));
+	}
+
+	public TEAMS getPlayerTeam(String playerName) {
+		return TEAMS.valueOf(playerValues.get(playerName).get(2));
 	}
 
 	public Integer getPlayerIndexInArena_NS(String playerName, Arena arena) {
@@ -294,37 +384,35 @@ public class ArenaManager {
 	}
 
 	public static Location getPos1_NS(String arenaName) {
-		List<String> ls = PropertiesAPI.getProperties_NS(arenaName + ".pos1", "plugins/bedwars/" + arenaName + ".dcnf",
+		List<String> ls = PropertiesAPI.getProperties_NNS(arenaName + ".pos1", "plugins/bedwars/" + arenaName + ".dcnf",
 				"");
 		return new Location(Bukkit.getWorld(arenaName), Integer.parseInt(ls.get(0)), Integer.parseInt(ls.get(1)),
 				Integer.parseInt(ls.get(2)));
 	}
 
 	public static Location getPos2_NS(String arenaName) {
-		List<String> ls = PropertiesAPI.getProperties_NS(arenaName + ".pos2", "plugins/bedwars/" + arenaName + ".dcnf",
+		List<String> ls = PropertiesAPI.getProperties_NNS(arenaName + ".pos2", "plugins/bedwars/" + arenaName + ".dcnf",
 				"");
 		return new Location(Bukkit.getWorld(arenaName), Integer.parseInt(ls.get(0)), Integer.parseInt(ls.get(1)),
 				Integer.parseInt(ls.get(2)));
 	}
 
-	public void setGenerator(Player player, String arenaName, String generatorName, String itemName, String secounds,
-			String amount) {
-		PropertiesAPI.setProperties_NS(generatorName + "." + itemName, true, "plugins/bedwars/" + arenaName + ".dcnf",
+	public static void setGenerator_NS(Player player, String arenaName, String generatorName, String itemName,
+			String secounds, String amount) {
+		PropertiesAPI.setProperties_NS(true, generatorName + "." + itemName, "plugins/bedwars/" + arenaName + ".dcnf",
 				String.valueOf(player.getLocation().getBlockX()), String.valueOf(player.getLocation().getBlockY()),
 				String.valueOf(player.getLocation().getBlockZ()), secounds, amount);
 	}
 
-	public Location getGeneratorLocation(String arenaName, String generatorName, String itemName) {
-		List<String> ls = BedWarsPlugin.getPapijoy().getListProperties(arenaName + "." + generatorName + "." + itemName,
+	public static Location getGeneratorLocation_NS(String arenaName, String generatorName, String itemName) {
+		List<String> ls = PropertiesAPI.getProperties_NS(generatorName + "." + itemName,
 				"plugins/bedwars/" + arenaName + ".dcnf", null);
 		return new Location(Bukkit.getWorld(itemName), Integer.parseInt(ls.get(0)), Integer.parseInt(ls.get(1)),
 				Integer.parseInt(ls.get(2)));
 	}
 
-	public int getGeneratorAmount(String arenaName, String generatorName, String itemName) {
-		return Integer
-				.parseInt(BedWarsPlugin.getPapijoy().getListProperties(arenaName + "." + generatorName + "." + itemName,
-						"plugins/bedwars/" + arenaName + ".dcnf", null).get(5));
+	public static void setTeamSpawn(Arena arena, Location location) {
+
 	}
 
 }

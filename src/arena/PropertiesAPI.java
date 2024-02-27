@@ -9,6 +9,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+
+import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -100,6 +103,33 @@ public class PropertiesAPI {
 			writer.write("\n" + "* " + key + "\n");
 			while (i < args.size()) {
 				writer.write(i + LIST_SPLITOR + args.get(i) + "\n");
+				writer.flush();
+				i++;
+			}
+			writer.write("* endif " + key);
+			writer.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void setProperties_NS(boolean check, String key, String fileName, String... args) {
+		if (check) {
+			if (Files.notExists(Paths.get(fileName))) {
+				try {
+					Files.createFile(Paths.get(fileName));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		int i = 0;
+
+		try (FileWriter writer = new FileWriter(fileName, true)) {
+			writer.write("\n" + "* " + key + "\n");
+			while (i < args.length) {
+				writer.write(i + LIST_SPLITOR + args[i] + "\n");
 				writer.flush();
 				i++;
 			}
@@ -249,14 +279,14 @@ public class PropertiesAPI {
 		return result;
 	}
 
-	public static List<String> getProperties_NS(String key, String fileName, List<String> defaultValues) {
+	public static List<String> getProperties_NS(String key, String fileName, @Nullable List<String> defaultValues) {
 		if (getSecretList().size() == 0 && defaultValues != null) {
 			return defaultValues;
 		}
 		return getListPropertiesProcess(key, fileName);
 	}
 
-	public static List<String> getProperties_NS(String key, String fileName, String... defaultValues) {
+	public static List<String> getProperties_NNS(String key, String fileName, String... defaultValues) {
 		if (getSecretList().size() == 0 && defaultValues != null) {
 			return Arrays.asList(defaultValues);
 		}
