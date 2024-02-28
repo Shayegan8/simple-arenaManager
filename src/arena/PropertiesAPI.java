@@ -23,19 +23,10 @@ import org.bukkit.plugin.Plugin;
  */
 public class PropertiesAPI {
 
-	private static List<String> secretList;
 	private static String alphabets[] = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "k", "j", "l", "m", "n", "o",
 			"p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" };
 	private static final String SPLITOR = "@";
 	private static final String LIST_SPLITOR = " - ";
-
-	public static List<String> getSecretList() {
-		return secretList;
-	}
-
-	public static void setSecretList(List<String> ls) {
-		secretList = ls;
-	}
 
 	public static int getByID_NS(String str, String fileName) {
 		int n = 0;
@@ -87,6 +78,7 @@ public class PropertiesAPI {
 	}
 
 	public static void setProperties_NS(String key, boolean check, String fileName, List<String> args) {
+		List<String> allLines = null;
 		if (check) {
 			if (Files.notExists(Paths.get(fileName))) {
 				try {
@@ -96,24 +88,38 @@ public class PropertiesAPI {
 				}
 			}
 		}
-
-		int i = 0;
-
-		try (FileWriter writer = new FileWriter(fileName, true)) {
-			writer.write("\n" + "* " + key + "\n");
-			while (i < args.size()) {
-				writer.write(i + LIST_SPLITOR + args.get(i) + "\n");
-				writer.flush();
-				i++;
-			}
-			writer.write("* endif " + key);
-			writer.flush();
+		try {
+			allLines = Files.readAllLines(Paths.get(fileName));
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+
+		if (allLines.contains("* " + key)) {
+			int ini = getByID_NS("* " + key, fileName) + 1;
+			int ini2 = getByID_NS("* endif " + key, fileName) - 1;
+			while (ini <= ini2) {
+				allLines.remove(ini);
+				ini++;
+			}
+		} else {
+			int i = 0;
+			try (FileWriter writer = new FileWriter(fileName, true)) {
+				writer.write("\n" + "* " + key + "\n");
+				while (i < args.size()) {
+					writer.write(i + LIST_SPLITOR + args.get(i) + "\n");
+					writer.flush();
+					i++;
+				}
+				writer.write("* endif " + key);
+				writer.flush();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
 	public static void setProperties_NS(boolean check, String key, String fileName, String... args) {
+		List<String> allLines = null;
 		if (check) {
 			if (Files.notExists(Paths.get(fileName))) {
 				try {
@@ -123,9 +129,27 @@ public class PropertiesAPI {
 				}
 			}
 		}
+		try {
+			allLines = Files.readAllLines(Paths.get(fileName));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
+		if (allLines.contains("* " + key)) {
+			int ini = getByID_NS("* " + key, fileName) + 1;
+			int ini2 = getByID_NS("* endif " + key, fileName) - 1;
+			while (ini <= ini2) {
+				removeProperty_NS(allLines.get(ini), fileName);
+				ini++;
+			}
+			setPropertiesProcess(key, args, fileName);
+		} else {
+			setPropertiesProcess(key, args, fileName);
+		}
+	}
+
+	private static void setPropertiesProcess(String key, String args[], String fileName) {
 		int i = 0;
-
 		try (FileWriter writer = new FileWriter(fileName, true)) {
 			writer.write("\n" + "* " + key + "\n");
 			while (i < args.length) {
@@ -140,8 +164,26 @@ public class PropertiesAPI {
 		}
 	}
 
+	private static void setPropertiesProcessList(String key, List<String> args, String fileName) {
+		int i = 0;
+		try (FileWriter writer = new FileWriter(fileName, true)) {
+			writer.write("\n" + "* " + key + "\n");
+			while (i < args.size()) {
+				writer.write(i + LIST_SPLITOR + args.get(i) + "\n");
+				writer.flush();
+				i++;
+			}
+			writer.write("* endif " + key);
+			writer.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public static void setProperties(Plugin instance, boolean check, String key, String fileName, List<String> args) {
+
 		Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+			List<String> allLines = null;
 			if (check) {
 				if (Files.notExists(Paths.get(fileName))) {
 					try {
@@ -151,27 +193,46 @@ public class PropertiesAPI {
 					}
 				}
 			}
-
-			int i = 0;
-
-			try (FileWriter writer = new FileWriter(fileName, true)) {
-				writer.write("\n" + "* " + key + "\n");
-				while (i < args.size()) {
-					writer.write(i + LIST_SPLITOR + args.get(i) + "\n");
-					writer.flush();
-					i++;
-				}
-				writer.write("* endif " + key);
-				writer.flush();
+			try {
+				allLines = Files.readAllLines(Paths.get(fileName));
 			} catch (IOException e) {
 				e.printStackTrace();
+			}
+
+			if (allLines.contains("* " + key)) {
+				int ini = getByID_NS("* " + key, fileName) + 1;
+				int ini2 = getByID_NS("* endif " + key, fileName) - 1;
+				while (ini <= ini2) {
+					removeProperty_NS(allLines.get(ini), fileName);
+					ini++;
+				}
+				setPropertiesProcessList(key, args, fileName);
+			} else {
+				setPropertiesProcessList(key, args, fileName);
 			}
 
 		});
 	}
 
 	public static void setProperty_NS(String key, String value, String fileName) {
+		List<String> allLines = null;
+		try {
+			allLines = Files.readAllLines(Paths.get(fileName));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if (allLines.contains(key + SPLITOR + value)) {
+			int ini = getByID_NS(key + SPLITOR + value, fileName);
+			removeProperty_NS(allLines.get(ini), fileName);
+			setPropertyProcess(key, value, fileName);
+		} else {
+			setPropertyProcess(key, value, fileName);
+		}
+	}
+
+	private static void setPropertyProcess(String key, String value, String fileName) {
 		try (FileWriter writer = new FileWriter(fileName, true)) {
+
 			writer.write("\n" + key + SPLITOR + value + "\n");
 			writer.flush();
 		} catch (IOException e) {
@@ -179,24 +240,64 @@ public class PropertiesAPI {
 		}
 	}
 
-	public static void setProperty(Plugin instance, boolean check, String key, String value, String fileName) {
+	public static void setProperty(Plugin instance, String key, String value, String fileName) {
+
 		Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-			if (check) {
-				if (Files.notExists(Paths.get(fileName))) {
-					try {
-						Files.createFile(Paths.get(fileName));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-			try (FileWriter writer = new FileWriter(fileName, true)) {
-				writer.write("\n" + key + SPLITOR + value + "\n");
-				writer.flush();
+			List<String> allLines = null;
+			try {
+				allLines = Files.readAllLines(Paths.get(fileName));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			if (allLines.contains(key + SPLITOR + value)) {
+				int ini = getByID_NS(key + SPLITOR + value, fileName);
+				removeProperty(instance, allLines.get(ini), fileName);
+				setPropertyProcess(key, value, fileName);
+			} else {
+				setPropertyProcess(key, value, fileName);
+			}
 		});
+	}
+
+	public static void removeProperty_NS(String key, String fileName) {
+		removePropertyProcess(key, fileName);
+	}
+
+	public static void removeProperty(Plugin instance, String key, String fileName) {
+		Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+			removePropertyProcess(key, fileName);
+		});
+	}
+
+	private static void removePropertyProcess(String key, String fileName) {
+		List<String> allLines = null;
+		if (Files.exists(Paths.get(fileName))) {
+			try {
+				allLines = Files.readAllLines(Paths.get(fileName));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			int i = 0;
+			while (i < allLines.size()) {
+				if (allLines.get(i).contains(key)) {
+					allLines.remove(i);
+					break;
+				}
+				i++;
+			}
+		}
+		try {
+			Files.delete(Paths.get(fileName));
+			Files.createFile(Paths.get(fileName));
+			try (FileWriter writer = new FileWriter(fileName)) {
+				for (String line : allLines) {
+					writer.write(line);
+					writer.flush();
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void showProperty(Player player, Plugin instance, String key, String defaultValue, String fileName) {
@@ -220,9 +321,16 @@ public class PropertiesAPI {
 
 	public static void showProperties(Player player, Plugin instance, String key, String fileName,
 			String... defaultValues) {
+
 		CompletableFuture<ValueGetter> result = CompletableFuture.supplyAsync(() -> {
+			List<String> allLines = null;
+			try {
+				allLines = Files.readAllLines(Paths.get(fileName));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			ValueGetter getter = new ValueGetter();
-			if (getSecretList().size() == 0 && defaultValues != null) {
+			if (allLines.size() == 0 && defaultValues != null) {
 				getter.setLValue(Arrays.asList(defaultValues));
 			} else {
 				List<String> prc = getListPropertiesProcess(key, fileName);
@@ -246,7 +354,13 @@ public class PropertiesAPI {
 
 	public static CompletableFuture<List<String>> getProperties(String key, String fileName, String... defaultValues) {
 		CompletableFuture<List<String>> result = CompletableFuture.supplyAsync(() -> {
-			if (getSecretList().size() == 0 && defaultValues != null) {
+			List<String> allLines = null;
+			try {
+				allLines = Files.readAllLines(Paths.get(fileName));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			if (allLines.size() == 0 && defaultValues != null) {
 				return Arrays.asList(defaultValues);
 			}
 
@@ -264,7 +378,13 @@ public class PropertiesAPI {
 	public static CompletableFuture<List<String>> getProperties(String key, String fileName,
 			List<String> defaultValues) {
 		CompletableFuture<List<String>> result = CompletableFuture.supplyAsync(() -> {
-			if (getSecretList().size() == 0 && defaultValues != null) {
+			List<String> allLines = null;
+			try {
+				allLines = Files.readAllLines(Paths.get(fileName));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			if (allLines.size() == 0 && defaultValues != null) {
 				return defaultValues;
 			}
 
@@ -280,52 +400,62 @@ public class PropertiesAPI {
 	}
 
 	public static List<String> getProperties_NS(String key, String fileName, @Nullable List<String> defaultValues) {
-		if (getSecretList().size() == 0 && defaultValues != null) {
+		List<String> allLines = null;
+		try {
+			allLines = Files.readAllLines(Paths.get(fileName));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if (allLines.size() == 0 && defaultValues != null) {
 			return defaultValues;
 		}
 		return getListPropertiesProcess(key, fileName);
 	}
 
 	public static List<String> getProperties_NNS(String key, String fileName, String... defaultValues) {
-		if (getSecretList().size() == 0 && defaultValues != null) {
+		List<String> allLines = null;
+		try {
+			allLines = Files.readAllLines(Paths.get(fileName));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if (allLines.size() == 0 && defaultValues != null) {
 			return Arrays.asList(defaultValues);
 		}
 		return getListPropertiesProcess(key, fileName);
 	}
 
 	private static List<String> getListPropertiesProcess(String key, String fileName) {
-		List<String> ls = new ArrayList<String>();
+		List<String> allLines = null;
 		try {
-			if (getSecretList() == null || getSecretList() != Files.readAllLines(Paths.get(fileName)))
-				setSecretList(Files.readAllLines(Paths.get(fileName)));
+			allLines = Files.readAllLines(Paths.get(fileName));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		List<String> ls = new ArrayList<String>();
 		int ini = getByID_NS("* " + key, fileName) + 1;
 		int ini2 = getByID_NS("* endif " + key, fileName) - 1;
 		while (ini <= ini2) {
-			ls.add(getSecretList().get(ini).split(LIST_SPLITOR)[1]);
+			ls.add(allLines.get(ini).split(LIST_SPLITOR)[1]);
 			ini++;
 		}
 		return ls;
 	}
 
-	public static CompletableFuture<String> getProperty(boolean check, String key, String defaultValue,
-			String fileName) {
+	public static CompletableFuture<String> getProperty(String key, String defaultValue, String fileName) {
 		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
-			if (check) {
-				try {
-					if (getSecretList() == null || getSecretList() != Files.readAllLines(Paths.get(fileName)))
-						setSecretList(Files.readAllLines(Paths.get(fileName)));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+			List<String> lines = null;
+			try {
+				lines = Files.readAllLines(Paths.get(fileName));
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-			if ((getSecretList().size() == 0)) {
+
+			if ((lines.size() == 0)) {
 				return defaultValue;
 			}
 
-			Optional<String> retrn = getSecretList().stream()
+			Optional<String> retrn = lines.stream()
 					.filter(x -> x.contains(key + SPLITOR) && x.split(SPLITOR).length == 2).findAny();
 			if (retrn.isPresent()) {
 				return retrn.get().split(SPLITOR)[1];
@@ -340,21 +470,19 @@ public class PropertiesAPI {
 		return future;
 	}
 
-	public static String getProperty_NS(boolean check, String key, String defaultValue, String fileName) {
-		if (check) {
-			try {
-				if (getSecretList() == null || getSecretList() != Files.readAllLines(Paths.get(fileName)))
-					setSecretList(Files.readAllLines(Paths.get(fileName)));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+	public static String getProperty_NS(String key, String defaultValue, String fileName) {
+		List<String> lines = null;
+		try {
+			lines = Files.readAllLines(Paths.get(fileName));
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		if ((getSecretList().size() == 0)) {
+		if ((lines.size() == 0)) {
 			return defaultValue;
 		}
 
-		Optional<String> retrn = getSecretList().stream()
-				.filter(x -> x.contains(key + SPLITOR) && x.split(SPLITOR).length == 2).findAny();
+		Optional<String> retrn = lines.stream().filter(x -> x.contains(key + SPLITOR) && x.split(SPLITOR).length == 2)
+				.findAny();
 		if (retrn.isPresent()) {
 			return retrn.get().split(SPLITOR)[1];
 		} else {
@@ -363,17 +491,16 @@ public class PropertiesAPI {
 	}
 
 	private static String getPropertiesProcess(String key, String defaultValue, String fileName) {
+		List<String> lines = null;
 		try {
-			if (getSecretList() == null || getSecretList() != Files.readAllLines(Paths.get(fileName)))
-				setSecretList(Files.readAllLines(Paths.get(fileName)));
+			lines = Files.readAllLines(Paths.get(fileName));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		if ((getSecretList().size() == 0)) {
+		if ((lines.size() == 0)) {
 			return defaultValue;
 		}
-		for (String i : getSecretList()) {
+		for (String i : lines) {
 			if (i.contains(key + SPLITOR)) {
 				String gotten[] = i.split(SPLITOR);
 				if (gotten.length == 2 && gotten[1] != null) {
@@ -385,10 +512,6 @@ public class PropertiesAPI {
 			}
 		}
 		return defaultValue;
-	}
-
-	public static void fakeFreeSecretList() {
-		secretList = null;
 	}
 
 }
