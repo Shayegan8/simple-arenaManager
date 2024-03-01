@@ -315,8 +315,9 @@ public class ArenaManager {
 
 	public static NPC addNPC(String arenaName, EntityType type, Material hand, String uuid, String data, String name,
 			String skinName, Location location) {
-		PropertiesAPI.setProperty_NS(arenaName + "-" + name,
-				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), DIR + "npc.dcnf");
+		PropertiesAPI.setProperties_NS(true, arenaName + "-" + name, DIR + "npc.dcnf",
+				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), type.name(),
+				hand.name(), uuid, data, name, skinName);
 		NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, name, location);
 		npc.data().set(NPC.Metadata.REMOVE_FROM_PLAYERLIST, name);
 		npc.getOrAddTrait(LookClose.class).lookClose(true);
