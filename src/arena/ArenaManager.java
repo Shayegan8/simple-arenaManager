@@ -47,7 +47,7 @@ class ArenaTeam {
 
 	private Location teamSpawn;
 
-	private Location bedSpawn;
+	private Location block;
 
 	private Arena arena;
 
@@ -55,12 +55,12 @@ class ArenaTeam {
 
 	private TEAMS team;
 
-	public ArenaTeam(Arena arena, int minNumber, int maxNumber, TEAMS team, Location bedSpawn, Location teamSpawn) {
+	public ArenaTeam(Arena arena, int minNumber, int maxNumber, TEAMS team, Location block, Location teamSpawn) {
 		this.arena = arena;
 		this.minNumber = minNumber;
 		this.maxNumber = maxNumber;
 		this.team = team;
-		this.bedSpawn = bedSpawn;
+		this.block = block;
 		this.teamSpawn = teamSpawn;
 	}
 
@@ -96,12 +96,12 @@ class ArenaTeam {
 		this.teamSpawn = teamSpawn;
 	}
 
-	public Location getBedSpawn() {
-		return bedSpawn;
+	public Location getBlockSpawn() {
+		return block;
 	}
 
-	public void setBedSpawn(Location bedSpawn) {
-		this.bedSpawn = bedSpawn;
+	public void setBlockSpawn(Location block) {
+		this.block = block;
 	}
 
 	public STATES getTeamStatus() {
@@ -116,9 +116,12 @@ class ArenaTeam {
 		return arena;
 	}
 
+	/**
+	 * @apiNote thats useless
+	 */
 	@Override
 	public int hashCode() {
-		return Objects.hash(arena, bedSpawn, maxNumber, minNumber, team, teamSpawn, teamStatus);
+		return Objects.hash(arena, block, maxNumber, minNumber, team, teamSpawn, teamStatus);
 	}
 
 	@Override
@@ -130,7 +133,7 @@ class ArenaTeam {
 			return false;
 		}
 		ArenaTeam other = (ArenaTeam) obj;
-		return Objects.equals(arena, other.arena) && Objects.equals(bedSpawn, other.bedSpawn)
+		return Objects.equals(arena, other.arena) && Objects.equals(block, other.block)
 				&& Objects.equals(maxNumber, other.maxNumber) && Objects.equals(minNumber, other.minNumber)
 				&& team == other.team && Objects.equals(teamSpawn, other.teamSpawn) && teamStatus == other.teamStatus;
 	}
@@ -161,6 +164,15 @@ class Arena {
 
 	private List<TEAMS> teams = new ArrayList<>();
 
+	/**
+	 * @param minPlayer
+	 * @param maxPlayer
+	 * @param arenaTime
+	 * @param waitingSpawn
+	 * @param status
+	 * @param name
+	 * @param world
+	 */
 	public Arena(int minPlayer, int maxPlayer, int arenaTime, Location waitingSpawn, STATES status, String name,
 			String world) {
 		this.minPlayer = minPlayer;
@@ -256,6 +268,9 @@ class Arena {
 		this.world = world;
 	}
 
+	/**
+	 * @apiNote thats useless
+	 */
 	@Override
 	public int hashCode() {
 		return Objects.hash(arenaTime, maxPlayer, minPlayer, name, playersNames, pos1, pos2, status, teams,
@@ -285,19 +300,44 @@ class Arena {
  */
 public class ArenaManager {
 
+	/**
+	 * @apiNote this stores arenas players and status, the status is on first index
+	 */
 	public final static ListMultimap<Arena, String> ARENAS = ListMultimapBuilder.hashKeys().arrayListValues().build();
 
+	/**
+	 * @apiNote this stores players values, first is arena name, second is their
+	 *          status and last one is their team
+	 */
 	public final static ListMultimap<String, Object> PLAYERS = ListMultimapBuilder.hashKeys().arrayListValues().build();
 
-	// We don't need concurrentMap but well,...
+	/**
+	 * @apiNote this stores npcs by their arenaName
+	 */
 	public final static ConcurrentMap<String, NPC> NPCS = new MapMaker().weakKeys().weakValues().makeMap();
 
+	/**
+	 * @apiNote this stores generators by their arenaName
+	 */
 	public final static ConcurrentMap<String, Location> GENERATORS = new MapMaker().weakKeys().weakValues().makeMap();
 
+	/**
+	 * @apiNote this saves arenas
+	 */
 	public final static CopyOnWriteArrayList<Arena> ARENALIST = new CopyOnWriteArrayList<>();
 
+	/**
+	 * @apiNote this is the arenas directory location
+	 */
 	public final static String DIR = "plugins/";
 
+	/**
+	 * <p>
+	 * this kinda useless if you don't work with npc's
+	 * </p>
+	 * 
+	 * @return the entityPlayer if there is no entityPlayer there
+	 */
 	public static EntityPlayer getEntityPlayer(Location location, Entity entity, String arenaName) {
 		for (Entity e : Bukkit
 				.getWorld(PropertiesAPI.getProperty_NS("world", null, DIR + arenaName + "/" + arenaName + ".dcnf"))
@@ -313,6 +353,9 @@ public class ArenaManager {
 		return null;
 	}
 
+	/**
+	 * @return a npc with parameters you given
+	 */
 	public static NPC addNPC(String arenaName, EntityType type, Material hand, String uuid, String data, String name,
 			String skinName, Location location) {
 		PropertiesAPI.setProperties_NS(true, arenaName + "-" + name, DIR + "npc.dcnf",
@@ -332,6 +375,12 @@ public class ArenaManager {
 		return npc;
 	}
 
+	/**
+	 * @apiNote this is asynchronously function
+	 *          <p>
+	 *          it creates a arena with given parameters
+	 *          </p>
+	 */
 	public static void createArena(Plugin instance, String arenaName, Integer minPlayer, Integer maxPlayer,
 			Integer arenaTime, Location waitingSpawn, String world) {
 		Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
@@ -373,11 +422,20 @@ public class ArenaManager {
 		});
 	}
 
+	/**
+	 * <p>
+	 * its almost same as setPlayerTeam but it checks if the player is valid in your
+	 * arena
+	 * </p>
+	 */
 	public static void selectTeam(Arena arena, String playerName, TEAMS team) {
 		if (ARENAS.get(arena).contains(playerName))
 			setPlayerTeam(playerName, null);
 	}
 
+	/**
+	 * @return a arenaTeam by given parameters
+	 */
 	public static ArenaTeam createTeam(Arena arena, String world, TEAMS teamm, String arenaFile) {
 
 		int min = Integer.parseInt(PropertiesAPI.getProperty_NS(teamm.name() + ".min", "1", arenaFile));
@@ -393,6 +451,11 @@ public class ArenaManager {
 		return (new ArenaTeam(arena, min, max, teamm, bed, spawn));
 	}
 
+	/**
+	 * <p>
+	 * this loads all arenas by their directories
+	 * </p>
+	 */
 	public static void loadArenas() {
 		List<Path> dirs = null;
 		List<Path> files = null;
@@ -448,11 +511,17 @@ public class ArenaManager {
 		}
 	}
 
+	/**
+	 * @return list of arena players
+	 */
 	public static List<Player> getArenasPlayers(Arena arena) {
 		return ARENAS.get(arena).stream().map((x) -> Bukkit.getPlayer(x)).collect(Collectors.toList());
 	}
 
-	public static Arena getPlayersArena_NS(String name) {
+	/**
+	 * @return a arena by playerName
+	 */
+	public static Arena getPlayersArena(String name) {
 		for (Arena arena : ARENALIST) {
 			List<String> ls = ARENAS.get(arena);
 			ls.remove(0);
@@ -525,6 +594,9 @@ public class ArenaManager {
 		return null;
 	}
 
+	/**
+	 * @return the index of arena in ARENAS
+	 */
 	public static Integer getPlayerIndexInArena(String playerName, Arena arena) {
 		int i = 1;
 
@@ -554,6 +626,11 @@ public class ArenaManager {
 		PLAYERS.get(playerName).set(2, team);
 	}
 
+	/**
+	 * <p>
+	 * It sets the first position in arena
+	 * </p>
+	 */
 	public static void setPos1(Arena arena, Location location) {
 		arena.setPos1(location);
 		PropertiesAPI.setProperty_NS("pos1",
@@ -561,13 +638,25 @@ public class ArenaManager {
 				DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
 
+	/**
+	 * <p>
+	 * It sets the second position in arena
+	 * </p>
+	 */
 	public static void setPos2(Arena arena, Location location) {
-		arena.setPos1(location);
+		arena.setPos2(location);
 		PropertiesAPI.setProperty_NS("pos2",
 				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
 				DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
 
+	/**
+	 * <p>
+	 * Its just a location point that used in isEntityOnRegion function
+	 * </p>
+	 * 
+	 * @return the first position of the arena
+	 */
 	public static Location getPos1(Arena arena) {
 		if (arena.getPos1() != null) {
 			return arena.getPos1();
@@ -579,6 +668,13 @@ public class ArenaManager {
 		}
 	}
 
+	/**
+	 * <p>
+	 * Its just a location point that used in isEntityOnRegion function
+	 * </p>
+	 * 
+	 * @return the second position of the arena
+	 */
 	public static Location getPos2(Arena arena) {
 		if (arena.getPos1() != null) {
 			return arena.getPos1();
@@ -636,16 +732,24 @@ public class ArenaManager {
 				Double.parseDouble(values[2]));
 	}
 
-	public static void setBedSpawn(ArenaTeam team, Location location) {
-		team.setBedSpawn(location);
+	/**
+	 * <p>
+	 * it sets a block for you in your arena
+	 * </p>
+	 */
+	public static void setBlockSpawn(ArenaTeam team, Location location) {
+		team.setBlockSpawn(location);
 		PropertiesAPI.setProperty_NS(team.getTeam().name() + ".bedspawn",
 				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
 				DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf");
 	}
 
-	public static Location getBedSpawn(ArenaTeam team) {
-		if (team.getBedSpawn() != null) {
-			return team.getBedSpawn();
+	/**
+	 * @return the location of block of the arenaTeam
+	 */
+	public static Location getBlockSpawn(ArenaTeam team) {
+		if (team.getBlockSpawn() != null) {
+			return team.getBlockSpawn();
 		} else {
 			String ls[] = new String[3];
 			PropertiesAPI
@@ -718,7 +822,11 @@ public class ArenaManager {
 				&& entityLocation.getZ() <= Math.max(pos1.getZ(), pos2.getZ())) ? true : false;
 	}
 
-	public static boolean isBedExists(ArenaTeam team) {
-		return (!(getBedSpawn(team).getBlock().getType() == Material.BED)) ? true : false;
+	/**
+	 * @apiNote this can be unused if your arena dosen't need something like bed
+	 * @return true when that item exists
+	 */
+	public static boolean isItemExists(ArenaTeam team, Material material) {
+		return (!(getBlockSpawn(team).getBlock().getType() == material)) ? true : false;
 	}
 }
