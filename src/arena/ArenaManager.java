@@ -375,7 +375,7 @@ public class ArenaManager {
 		PropertiesAPI.setProperties_NS(true, arenaName + "-" + name, DIR + "npc.dcnf",
 				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), type.name(),
 				hand.name(), uuid, data, name, skinName);
-		NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, name, location);
+		NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, name);
 		npc.data().set(NPC.Metadata.REMOVE_FROM_PLAYERLIST, name);
 		npc.getOrAddTrait(LookClose.class).lookClose(true);
 		if (hand != null)
@@ -387,6 +387,58 @@ public class ArenaManager {
 		npc.setProtected(true);
 		NPCS.put(arenaName, npc);
 		return npc;
+	}
+
+	/**
+	 * <p>
+	 * this is a safe function
+	 * </p>
+	 */
+	public void spawnNPCS(Plugin plugin, Arena game) {
+		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+			for (Arena arena : ArenaManager.ARENALIST) {
+				NPC npc = ArenaManager.NPCS.get(arena.getName());
+				if (game.getWorld().equals(npc.getStoredLocation().getWorld().getName())) {
+					List<String> npcProperties = PropertiesAPI.getProperties_NS(game.getName() + "-" + game.getName(),
+							ArenaManager.DIR + "npc.dcnf", null);
+					String locates[] = npcProperties.get(0).split(",");
+					Location location = new Location(Bukkit.getWorld(game.getWorld()), Double.parseDouble(locates[0]),
+							Double.parseDouble(locates[1]), Double.parseDouble(locates[2]));
+					npc.spawn(location);
+				}
+			}
+		});
+	}
+
+	public static void loadNPCS(String arenaName) {
+		try {
+			for (String line : Files.readAllLines(Paths.get(DIR + "npc.dcnf"))) {
+				if (line.contains(arenaName + "-")) {
+					String npcName = line.split("-")[1];
+					List<String> npcProperties = PropertiesAPI.getProperties_NS(arenaName + "-" + npcName,
+							DIR + "npc.dcnf", null);
+					EntityType type = EntityType.valueOf(npcProperties.get(1));
+					Material hand = Material.valueOf(npcProperties.get(2));
+					String uuid = npcProperties.get(3);
+					String data = npcProperties.get(4);
+					String name = npcProperties.get(5);
+					String skinName = npcProperties.get(6);
+					NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, name);
+					npc.data().set(NPC.Metadata.REMOVE_FROM_PLAYERLIST, name);
+					npc.getOrAddTrait(LookClose.class).lookClose(true);
+					if (hand != null)
+						npc.setItemProvider(() -> {
+							return new ItemStack(hand, 1);
+						});
+					npc.getOrAddTrait(SkinTrait.class).setSkinPersistent(skinName, uuid, data);
+					npc.setSneaking(false);
+					npc.setProtected(true);
+					NPCS.put(arenaName, npc);
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
