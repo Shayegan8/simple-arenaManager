@@ -59,6 +59,18 @@ class PlayerData {
 		this.status = status;
 	}
 
+	public PlayerData(ArenaTeam team, String playerName, STATES status, ItemStack helmet, ItemStack chestplate,
+			ItemStack leggings, ItemStack boots, ItemStack inventory[]) {
+		this.player = Bukkit.getPlayer(playerName);
+		this.team = team;
+		this.status = status;
+		this.helmet = helmet;
+		this.chestplate = chestplate;
+		this.leggings = leggings;
+		this.boots = boots;
+		this.inventory = inventory;
+	}
+
 	public ItemStack getHelmet() {
 		return helmet;
 	}
