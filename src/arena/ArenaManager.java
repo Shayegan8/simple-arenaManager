@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
@@ -38,6 +39,98 @@ enum STATES {
 
 enum TEAMS {
 	RED, BLUE, GREEN, YELLOW, ORANGE, BLACK, PINK, PURPLE, BROWN, WHITE
+}
+
+class PlayerData {
+
+	private ItemStack helmet;
+	private ItemStack chestplate;
+	private ItemStack leggings;
+	private ItemStack boots;
+	private Location location;
+	private ItemStack inventory[];
+	private ArenaTeam team;
+	private Player player;
+	private STATES status;
+
+	public PlayerData(ArenaTeam team, String playerName, STATES status) {
+		this.player = Bukkit.getPlayer(playerName);
+		this.team = team;
+		this.status = status;
+	}
+
+	public ItemStack getHelmet() {
+		return helmet;
+	}
+
+	public void setHelmet(ItemStack helmet) {
+		this.helmet = helmet;
+	}
+
+	public ItemStack getChestplate() {
+		return chestplate;
+	}
+
+	public void setChestplate(ItemStack chestplate) {
+		this.chestplate = chestplate;
+	}
+
+	public ItemStack getLeggings() {
+		return leggings;
+	}
+
+	public void setLeggings(ItemStack leggings) {
+		this.leggings = leggings;
+	}
+
+	public ItemStack getBoots() {
+		return boots;
+	}
+
+	public void setBoots(ItemStack boots) {
+		this.boots = boots;
+	}
+
+	public Location getLocation() {
+		return location;
+	}
+
+	public void setLocation(Location location) {
+		this.location = location;
+	}
+
+	public STATES getStatus() {
+		return status;
+	}
+
+	public void setStatus(STATES status) {
+		this.status = status;
+	}
+
+	public ItemStack[] getInventory() {
+		return inventory;
+	}
+
+	public void setInventory(ItemStack[] inventory) {
+		this.inventory = inventory;
+	}
+
+	public Player getPlayer() {
+		return player;
+	}
+
+	public void setPlayer(Player player) {
+		this.player = player;
+	}
+
+	public ArenaTeam getTeam() {
+		return team;
+	}
+
+	public void setTeam(ArenaTeam team) {
+		this.team = team;
+	}
+
 }
 
 class ArenaTeam {
@@ -323,7 +416,7 @@ public class ArenaManager {
 	 * @apiNote this stores players values, first is arena name, second is their
 	 *          status and last one is their team
 	 */
-	public final static ListMultimap<String, Object> PLAYERS = ListMultimapBuilder.hashKeys().arrayListValues().build();
+	public final static Map<String, PlayerData> PLAYERS = new MapMaker().weakKeys().weakValues().makeMap();
 
 	/**
 	 * @apiNote this stores npcs by their arenaName
@@ -664,14 +757,22 @@ public class ArenaManager {
 		return null;
 	}
 
+	public static ArenaTeam getPlayersTeam(String playerName) {
+		Object playerData = PLAYERS.get(playerName);
+		if (playerData instanceof PlayerData && playerData != null) {
+			PlayerData data = (PlayerData) playerData;
+			return data.getTeam();
+		}
+		return null;
+	}
+
 	public static void addPlayer(String playerName, Arena arena, STATES status, ArenaTeam team,
 			Location locationToSpawn) {
 		Player player = Bukkit.getPlayer(playerName);
 		if (player != null && ARENALIST.contains(arena)) {
 			ARENAS.get(arena).add(playerName);
-			PLAYERS.put(playerName, arena.getName());
-			PLAYERS.put(playerName, status);
-			PLAYERS.put(playerName, team);
+			PlayerData data = new PlayerData(team, playerName, status);
+			PLAYERS.put(playerName, data);
 		}
 		if (locationToSpawn != null && player != null)
 			player.teleport(locationToSpawn);
@@ -679,7 +780,7 @@ public class ArenaManager {
 
 	public static void removePlayer(String playerName, Arena arena) {
 		ARENAS.remove(arena, playerName);
-		PLAYERS.removeAll(playerName);
+		PLAYERS.remove(playerName);
 	}
 
 	public static STATES getArenaStatus(Arena arena) {
@@ -690,16 +791,13 @@ public class ArenaManager {
 		ARENAS.get(arena).set(0, status.name());
 	}
 
-	public static Arena getPlayerArena(String playerName) {
-		return (Arena) PLAYERS.get(playerName).get(0);
-	}
-
 	public static STATES getPlayerStatus(String playerName) {
-		return STATES.valueOf(PLAYERS.get(playerName).get(1).toString());
-	}
-
-	public static ArenaTeam getPlayerTeam(String playerName) {
-		return (ArenaTeam) PLAYERS.get(playerName).get(2);
+		Object data = PLAYERS.get(playerName);
+		if (data instanceof PlayerData) {
+			PlayerData playerData = (PlayerData) data;
+			return playerData.getStatus();
+		}
+		return null;
 	}
 
 	public static Arena getArenaByName(String arenaName) {
@@ -712,7 +810,7 @@ public class ArenaManager {
 	public static List<String> getTeamsPlayers(Arena arena, TEAMS team) {
 		List<String> newLS = new ArrayList<String>();
 		for (String playerName : arena.getPlayersNames()) {
-			if (getPlayerTeam(playerName).getTeam() == team) {
+			if (getPlayersTeam(playerName).getTeam() == team) {
 				newLS.add(playerName);
 			}
 		}
@@ -721,8 +819,8 @@ public class ArenaManager {
 
 	public static Arena getArenaByPlayerAndTeam(String playerName, ArenaTeam team) {
 		for (Arena arena : ARENALIST)
-			if (arena.equals(team.getArena()) && arena.equals(getPlayerArena(playerName)))
-				if (getPlayerTeam(playerName).equals(team))
+			if (arena.equals(team.getArena()) && arena.equals(getPlayersArena(playerName)))
+				if (getPlayersTeam(playerName).equals(team))
 					return arena;
 
 		return null;
@@ -757,7 +855,8 @@ public class ArenaManager {
 	}
 
 	public static void setPlayerTeam(String playerName, ArenaTeam team) {
-		PLAYERS.get(playerName).set(2, team);
+		PlayerData data = new PlayerData(team, playerName, getPlayerStatus(playerName));
+		PLAYERS.put(playerName, data);
 	}
 
 	/**
@@ -870,9 +969,9 @@ public class ArenaManager {
 
 	public static ArenaTeam getTeamByArenaAndPlayer(String playerName, Arena arena) {
 		for (Arena a : ARENALIST)
-			if (a.equals(arena) && arena.equals(getPlayerArena(playerName)))
-				if (getPlayerArena(playerName).equals(arena))
-					return getPlayerTeam(playerName);
+			if (a.equals(arena) && arena.equals(getPlayersArena(playerName)))
+				if (getPlayersArena(playerName).equals(arena))
+					return getPlayersTeam(playerName);
 
 		return null;
 	}
