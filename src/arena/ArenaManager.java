@@ -142,6 +142,30 @@ class PlayerData {
 	public void setTeam(ArenaTeam team) {
 		this.team = team;
 	}
+	
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(inventory);
+		result = prime * result + Objects.hash(boots, chestplate, helmet, leggings, location, player, status, team);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		PlayerData other = (PlayerData) obj;
+		return Objects.equals(boots, other.boots) && Objects.equals(chestplate, other.chestplate)
+				&& Objects.equals(helmet, other.helmet) && Arrays.equals(inventory, other.inventory)
+				&& Objects.equals(leggings, other.leggings) && Objects.equals(location, other.location)
+				&& Objects.equals(player, other.player) && status == other.status && Objects.equals(team, other.team);
+	}
 
 }
 
