@@ -10,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -142,7 +142,7 @@ class PlayerData {
 	public void setTeam(ArenaTeam team) {
 		this.team = team;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -400,6 +400,7 @@ class Arena {
 	}
 
 	public void setPos2(Location pos2) {
+		ShitClass.getPlugin(ShitClass.class);
 		this.pos2 = pos2;
 	}
 
@@ -467,7 +468,7 @@ public class ArenaManager {
 	/**
 	 * @apiNote this saves arenas
 	 */
-	public final static CopyOnWriteArrayList<Arena> ARENALIST = new CopyOnWriteArrayList<>();
+	public final static List<Arena> ARENALIST = new ArrayList<>();
 
 	/**
 	 * @apiNote this is the arenas directory location
@@ -570,50 +571,167 @@ public class ArenaManager {
 		}
 	}
 
+	public static void createArena(Plugin instance, String arenaName, Integer minPlayer, Integer maxPlayer,
+			Integer arenaTime, Location waitingSpawn, String world) {
+		String arenaDir = DIR + arenaName;
+		String arenaFile = DIR + arenaName + "/" + arenaName + ".dcnf";
+		Bukkit.getScheduler().runTask(instance, () -> {
+			try {
+				if (Files.notExists(Paths.get(arenaDir)) || Files.notExists(Paths.get(arenaFile))) {
+					Files.createDirectory(Paths.get(arenaDir));
+					Files.createFile(Paths.get(arenaFile));
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
+
+		int min;
+
+		if (minPlayer != null) {
+			min = minPlayer;
+			PropertiesAPI.setProperty_NS("minPlayers", String.valueOf(min), arenaFile);
+		} else {
+			min = Integer.parseInt(PropertiesAPI.getProperty_NS("minPlayers", "2", arenaFile));
+		}
+
+		int max;
+
+		if (maxPlayer != null) {
+			max = maxPlayer;
+			PropertiesAPI.setProperty_NS("maxPlayers", String.valueOf(max), arenaFile);
+		} else {
+			max = Integer.parseInt(PropertiesAPI.getProperty_NS("maxPlayers", "8", arenaFile));
+		}
+
+		int time;
+
+		if (arenaTime != null) {
+			time = arenaTime;
+			PropertiesAPI.setProperty_NS("arenaTime", String.valueOf(min), arenaFile);
+		} else {
+			time = Integer.parseInt(PropertiesAPI.getProperty_NS("arenaTime", "1800", arenaFile));
+		}
+
+		Location waiting;
+		if (waitingSpawn != null) {
+			waiting = waitingSpawn;
+			PropertiesAPI.setProperties_NS(true, "waitingSpawn", arenaFile, String.valueOf(waiting.getBlockX()),
+					String.valueOf(waiting.getBlockY()), String.valueOf(waiting.getBlockZ()));
+		} else {
+
+			List<String> locationCoordinates = PropertiesAPI.getProperties_NNS("waitingSpawn", arenaFile, "0", "0",
+					"0");
+			waiting = new Location(Bukkit.getWorld(world), Integer.parseInt(locationCoordinates.get(0)),
+					Integer.parseInt(locationCoordinates.get(1)), Integer.parseInt(locationCoordinates.get(2)));
+		}
+
+		Arena arena = new Arena(min, max, time, waiting, STATES.INPROCESS, arenaFile, world);
+		addArenaIn(arena);
+	}
+
+	public static void addArenaIn(Arena arena) {
+		ARENALIST.add(arena);
+	}
+
 	/**
 	 * @apiNote this is asynchronously function
 	 *          <p>
 	 *          it creates a arena with given parameters
 	 *          </p>
 	 */
-	public static void createArena(Plugin instance, String arenaName, Integer minPlayer, Integer maxPlayer,
-			Integer arenaTime, Location waitingSpawn, String world) {
-		Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-			String arenaDir = DIR + arenaName;
-			String arenaFile = DIR + arenaName + "/" + arenaName + ".dcnf";
-			if (!Files.notExists(Paths.get(arenaDir))) {
-				try {
+	public static CompletableFuture<Void> createArena_S(Plugin instance, String arenaName, Integer minPlayer,
+			Integer maxPlayer, Integer arenaTime, Location waitingSpawn, String world) {
+		final String arenaDir = DIR + arenaName;
+		final String arenaFile = DIR + arenaName + "/" + arenaName + ".dcnf";
+		Bukkit.getScheduler().runTask(instance, () -> {
+			try {
+				if (Files.notExists(Paths.get(arenaDir)) || Files.notExists(Paths.get(arenaFile))) {
 					Files.createDirectory(Paths.get(arenaDir));
 					Files.createFile(Paths.get(arenaFile));
-				} catch (IOException e) {
-					e.printStackTrace();
 				}
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-			if (!Files.notExists(Paths.get(arenaFile))) {
-				try {
-					Files.createFile(Paths.get(arenaFile));
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+		});
+		final List<Object> values = new ArrayList<Object>();
+		CompletableFuture<String> minC = PropertiesAPI.getProperty("minPlayers", "2", arenaFile);
+		if (minPlayer != null) {
+			values.add(minPlayer);
+			PropertiesAPI.setProperty(instance, "minPlayers", String.valueOf(minPlayer), arenaFile);
+		} else {
+			minC.thenAccept((x) -> {
+				Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+					values.add(x);
+				});
+			});
+		}
+
+		CompletableFuture<String> maxC = PropertiesAPI.getProperty("maxPlayers", "8", arenaFile);
+		if (maxPlayer != null) {
+			values.add(maxPlayer);
+			PropertiesAPI.setProperty(instance, "maxPlayers", String.valueOf(maxPlayer), arenaFile);
+		} else {
+			maxC.thenAccept((x) -> {
+				Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+					values.add(x);
+				});
+			});
+		}
+
+		CompletableFuture<String> timeC = PropertiesAPI.getProperty("arenaTime", "1800", arenaFile);
+		if (arenaTime != null) {
+			values.add(arenaTime);
+			PropertiesAPI.setProperty(instance, "arenaTime", String.valueOf(arenaTime), arenaFile);
+		} else {
+			timeC.thenAccept((x) -> {
+				Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+					values.add(x);
+				});
+			});
+		}
+
+		CompletableFuture<List<String>> waitingC = PropertiesAPI.getProperties("waitingSpawn", arenaFile, "0", "0",
+				"0");
+		if (waitingSpawn != null) {
+			values.add(waitingSpawn);
+			PropertiesAPI.setProperties(instance, true, "waitingSpawn", String.valueOf(waitingSpawn.getBlockX()),
+					String.valueOf(waitingSpawn.getBlockY()), String.valueOf(waitingSpawn.getBlockZ()));
+		} else {
+			waitingC.thenAccept((x) -> {
+				Location location = new Location(Bukkit.getWorld(world), Double.parseDouble(x.get(0)),
+						Double.parseDouble(x.get(1)), Double.parseDouble(x.get(2)));
+				Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+					values.add(location);
+				});
+			});
+		}
+
+		CompletableFuture<Void> all = CompletableFuture.allOf(minC, maxC, timeC, waitingC);
+		return all.thenAccept((x) -> {
+			Integer min = null;
+			if (values.get(0) instanceof Integer) {
+				min = (Integer) values.get(0);
 			}
 
-			int min = minPlayer != null ? minPlayer
-					: Integer.parseInt(PropertiesAPI.getProperty_NS("minPlayers", "2", arenaFile));
-			int max = maxPlayer != null ? maxPlayer
-					: Integer.parseInt(PropertiesAPI.getProperty_NS("maxPlayers", "8", arenaFile));
-			int time = arenaTime != null ? arenaTime
-					: Integer.parseInt(PropertiesAPI.getProperty_NS("arenaTime", "1800", arenaFile));
+			Integer max = null;
+			if (values.get(1) instanceof Integer) {
+				max = (Integer) values.get(1);
+			}
 
-			List<String> locationCoordinates = PropertiesAPI.getProperties_NNS("waitingSpawn", arenaFile, "0.0", "0.0",
-					"0.0");
+			Integer time = null;
+			if (values.get(2) instanceof Integer) {
+				time = (Integer) values.get(2);
+			}
 
-			Location location = waitingSpawn != null ? waitingSpawn
-					: new Location(Bukkit.getWorld(world), Double.parseDouble(locationCoordinates.get(0)),
-							Double.parseDouble(locationCoordinates.get(1)),
-							Double.parseDouble(locationCoordinates.get(2)));
-
-			ARENALIST.add(new Arena(min, max, time, location, STATES.INPROCESS, arenaFile, world));
-
+			Location waiting = null;
+			if (values.get(3) instanceof Location) {
+				waiting = (Location) values.get(3);
+			}
+			Arena arena = new Arena(min, max, time, waiting, STATES.INPROCESS, arenaName, world);
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				ARENALIST.add(arena);
+			});
 		});
 	}
 
