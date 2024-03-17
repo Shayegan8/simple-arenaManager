@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -22,9 +22,11 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MapMaker;
+import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.MultimapBuilder.ListMultimapBuilder;
 
 import net.citizensnpcs.api.CitizensAPI;
@@ -449,26 +451,206 @@ public class ArenaManager {
 	 */
 	public final static ListMultimap<Arena, String> ARENAS = ListMultimapBuilder.hashKeys().arrayListValues().build();
 
+	public static void putInARENAS(Arena arena, String value) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				ARENAS.put(arena, value);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
+
+	public static void setInARENAS(int index, Arena arena, String value) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				ARENAS.get(arena).set(index, value);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
+
+	public static void removeFromARENAS(Arena arena, String value) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				ARENAS.remove(arena, value);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
+
+	public static void ARENASRemoveAll(Arena arena) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				ARENAS.removeAll(arena);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
+
 	/**
 	 * @apiNote this stores players values, first is arena name, second is their
 	 *          status and last one is their team
 	 */
 	public final static Map<String, PlayerData> PLAYERS = new MapMaker().weakKeys().weakValues().makeMap();
 
+	public static void putInPLAYERS(String string, PlayerData data) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				PLAYERS.put(string, data);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
+
+	public static void removeFromPLAYERS(String string, PlayerData data) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				PLAYERS.remove(string, data);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
+
+	public static void PLAYERSRemoveAll(String string) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				PLAYERS.remove(string);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
+
 	/**
 	 * @apiNote this stores npcs by their arenaName
 	 */
-	public final static ConcurrentMap<String, NPC> NPCS = new MapMaker().weakKeys().weakValues().makeMap();
+	public final static ListMultimap<String, NPC> NPCS = MultimapBuilder.hashKeys().arrayListValues().build();
+
+	public static void putInNPCS(String string, NPC npc) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				NPCS.put(string, npc);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
+
+	public static void setInNPCS(int index, String string, NPC npc) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				NPCS.get(string).set(index, npc);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
+
+	public static void removeFromNPCS(String string, NPC npc) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				NPCS.remove(string, npc);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
+
+	public static void NPCSRemoveAll(String string) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				NPCS.removeAll(string);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
 
 	/**
 	 * @apiNote this stores generators by their arenaName
 	 */
-	public final static ConcurrentMap<String, Location> GENERATORS = new MapMaker().weakKeys().weakValues().makeMap();
+	public final static ListMultimap<String, Location> GENERATORS = ListMultimapBuilder.hashKeys().arrayListValues()
+			.build();
+
+	public static void putInGENS(String string, Location location) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				GENERATORS.put(string, location);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
+
+	public static void setInGENS(int index, String string, Location location) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				GENERATORS.get(string).set(index, location);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
+
+	public static void removeFromGENS(String string, Location location) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				NPCS.remove(string, location);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
+
+	public static void GENSRemoveAll(String string) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+			@Override
+			public void run() {
+				GENERATORS.removeAll(string);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
 
 	/**
 	 * @apiNote this saves arenas
 	 */
 	public final static List<Arena> ARENALIST = new ArrayList<>();
+
+	public static void addInARENALIST(Arena arena) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				ARENALIST.add(arena);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
+
+	public static void setInARENALIST(int index, Arena arena) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				ARENALIST.set(index, arena);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
+
+	public static void removeFromARENALIST(Arena arena) {
+		CompletableFuture.runAsync(new BukkitRunnable() {
+
+			@Override
+			public void run() {
+				ARENALIST.remove(arena);
+			}
+		}, Executors.newSingleThreadExecutor());
+	}
 
 	/**
 	 * @apiNote this is the arenas directory location
@@ -515,7 +697,7 @@ public class ArenaManager {
 		npc.getOrAddTrait(SkinTrait.class).setSkinPersistent(skinName, uuid, data);
 		npc.setSneaking(false);
 		npc.setProtected(true);
-		NPCS.put(arenaName, npc);
+		putInNPCS(arenaName, npc);
 		return npc;
 	}
 
@@ -527,14 +709,17 @@ public class ArenaManager {
 	public void spawnNPCS(Plugin plugin, Arena game) {
 		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
 			for (Arena arena : ArenaManager.ARENALIST) {
-				NPC npc = ArenaManager.NPCS.get(arena.getName());
-				if (game.getWorld().equals(npc.getStoredLocation().getWorld().getName())) {
-					List<String> npcProperties = PropertiesAPI.getProperties_NS(game.getName() + "-" + game.getName(),
-							ArenaManager.DIR + "npc.dcnf", null);
-					String locates[] = npcProperties.get(0).split(",");
-					Location location = new Location(Bukkit.getWorld(game.getWorld()), Double.parseDouble(locates[0]),
-							Double.parseDouble(locates[1]), Double.parseDouble(locates[2]));
-					npc.spawn(location);
+				for (int i = 0; i < ArenaManager.NPCS.get(arena.getName()).size(); i++) {
+					NPC npc = ArenaManager.NPCS.get(arena.getName()).get(i);
+					if (game.getWorld().equals(npc.getStoredLocation().getWorld().getName())) {
+						List<String> npcProperties = PropertiesAPI.getProperties_NS(
+								game.getName() + "-" + game.getName(), ArenaManager.DIR + "npc.dcnf", null);
+						String locates[] = npcProperties.get(0).split(",");
+						Location location = new Location(Bukkit.getWorld(game.getWorld()),
+								Double.parseDouble(locates[0]), Double.parseDouble(locates[1]),
+								Double.parseDouble(locates[2]));
+						npc.spawn(location);
+					}
 				}
 			}
 		});
@@ -563,7 +748,7 @@ public class ArenaManager {
 					npc.getOrAddTrait(SkinTrait.class).setSkinPersistent(skinName, uuid, data);
 					npc.setSneaking(false);
 					npc.setProtected(true);
-					NPCS.put(arenaName, npc);
+					putInNPCS(arenaName, npc);
 				}
 			}
 		} catch (IOException e) {
@@ -627,11 +812,7 @@ public class ArenaManager {
 		}
 
 		Arena arena = new Arena(min, max, time, waiting, STATES.INPROCESS, arenaFile, world);
-		addArenaIn(arena);
-	}
-
-	public static void addArenaIn(Arena arena) {
-		ARENALIST.add(arena);
+		addInARENALIST(arena);
 	}
 
 	/**
@@ -730,7 +911,7 @@ public class ArenaManager {
 			}
 			Arena arena = new Arena(min, max, time, waiting, STATES.INPROCESS, arenaName, world);
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				ARENALIST.add(arena);
+				addInARENALIST(arena);
 			});
 		});
 	}
@@ -761,7 +942,7 @@ public class ArenaManager {
 		Location spawn = new Location(Bukkit.getWorld(world), Double.parseDouble(ncoordinates[0]),
 				Double.parseDouble(ncoordinates[1]), Double.parseDouble(ncoordinates[2]));
 
-		return (new ArenaTeam(arena, min, max, teamm, bed, spawn));
+		return new ArenaTeam(arena, min, max, teamm, bed, spawn);
 	}
 
 	public static Arena loadArena(String arenaName, String arenaFile) {
@@ -789,7 +970,7 @@ public class ArenaManager {
 
 		Arena arena = new Arena(min, max, time, location, STATES.WAITING, arenaName,
 				PropertiesAPI.getProperty_NS("world", null, arenaFile), pos1, pos2);
-		ARENALIST.add(arena);
+		addInARENALIST(arena);
 		return arena;
 	}
 
@@ -825,7 +1006,7 @@ public class ArenaManager {
 			Arena arena = new Arena(min, max, time, location, STATES.WAITING, arenaName,
 					PropertiesAPI.getProperty_NS("world", null, arenaFile), pos1, pos2);
 
-			arenas.add(arena);
+			addInARENALIST(arena);
 		}
 		return arenas;
 	}
@@ -883,7 +1064,7 @@ public class ArenaManager {
 				Arena arena = new Arena(min, max, time, location, STATES.WAITING, arenaName,
 						PropertiesAPI.getProperty_NS("world", null, arenaFile), pos1, pos2);
 
-				ARENALIST.add(arena);
+				addInARENALIST(arena);
 			}
 		}
 	}
@@ -924,17 +1105,17 @@ public class ArenaManager {
 			Location locationToSpawn) {
 		Player player = Bukkit.getPlayer(playerName);
 		if (player != null && ARENALIST.contains(arena)) {
-			ARENAS.get(arena).add(playerName);
+			putInARENAS(arena, playerName);
 			PlayerData data = new PlayerData(team, playerName, status);
-			PLAYERS.put(playerName, data);
+			putInPLAYERS(playerName, data);
 		}
 		if (locationToSpawn != null && player != null)
 			player.teleport(locationToSpawn);
 	}
 
 	public static void removePlayer(String playerName, Arena arena) {
-		ARENAS.remove(arena, playerName);
-		PLAYERS.remove(playerName);
+		removeFromARENAS(arena, playerName);
+		PLAYERSRemoveAll(playerName);
 	}
 
 	public static STATES getArenaStatus(Arena arena) {
@@ -942,7 +1123,7 @@ public class ArenaManager {
 	}
 
 	public static void setArenaStatus(Arena arena, STATES status) {
-		ARENAS.get(arena).set(0, status.name());
+		setInARENAS(0, arena, status.name());
 	}
 
 	public static STATES getPlayerStatus(String playerName) {
@@ -1010,7 +1191,7 @@ public class ArenaManager {
 
 	public static void setPlayerTeam(String playerName, ArenaTeam team) {
 		PlayerData data = new PlayerData(team, playerName, getPlayerStatus(playerName));
-		PLAYERS.put(playerName, data);
+		putInPLAYERS(playerName, data);
 	}
 
 	/**
