@@ -30,11 +30,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-<<<<<<< HEAD
-import org.bukkit.plugin.java.JavaPlugin;
-=======
 import org.bukkit.plugin.Plugin;
->>>>>>> 85c84e7 (Nothing)
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
@@ -48,7 +44,6 @@ import net.citizensnpcs.trait.LookClose;
 import net.citizensnpcs.trait.SkinTrait;
 import net.minecraft.server.v1_8_R3.EntityPlayer;
 
-<<<<<<< HEAD
 enum STATES {
 	STARTED, ENDED, WAITING, INPROCESS, RUNNING
 }
@@ -57,8 +52,6 @@ enum TEAMS {
 	RED, BLUE, GREEN, YELLOW, ORANGE, BLACK, PINK, PURPLE, BROWN, WHITE
 }
 
-=======
->>>>>>> 85c84e7 (Nothing)
 /**
  * @author shayegan8
  */
@@ -88,11 +81,7 @@ public class ArenaManager {
 	 */
 	public final static ListMultimap<Arena, String> ARENAS = ListMultimapBuilder.hashKeys().arrayListValues().build();
 
-<<<<<<< HEAD
-	public static void putInARENAS(@Nullable CommandSender sender, JavaPlugin instance, Arena key, String value) {
-=======
 	public static void putInARENAS(@Nullable CommandSender sender, Plugin instance, Arena key, String value) {
->>>>>>> 85c84e7 (Nothing)
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				ARENAS.put(key, value);
@@ -106,11 +95,7 @@ public class ArenaManager {
 		ARENAS.put(key, value);
 	}
 
-<<<<<<< HEAD
-	public static void setInARENAS(int index, @Nullable CommandSender sender, JavaPlugin instance, Arena key,
-=======
 	public static void setInARENAS(int index, @Nullable CommandSender sender, Plugin instance, Arena key,
->>>>>>> 85c84e7 (Nothing)
 			String value) {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
@@ -125,11 +110,8 @@ public class ArenaManager {
 		ARENAS.get(key).set(index, value);
 	}
 
-<<<<<<< HEAD
 	public static void removeFromARENAS(@Nullable CommandSender sender, JavaPlugin instance, Arena key, String value) {
-=======
 	public static void removeFromARENAS(@Nullable CommandSender sender, Plugin instance, Arena key, String value) {
->>>>>>> 85c84e7 (Nothing)
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				ARENAS.remove(key, value);
@@ -142,11 +124,7 @@ public class ArenaManager {
 		ARENAS.remove(key, value);
 	}
 
-<<<<<<< HEAD
-	public static void ARENASRemoveAll(@Nullable CommandSender sender, JavaPlugin instance, Arena key) {
-=======
 	public static void ARENASRemoveAll(@Nullable CommandSender sender, Plugin instance, Arena key) {
->>>>>>> 85c84e7 (Nothing)
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				ARENAS.removeAll(key);
@@ -185,11 +163,7 @@ public class ArenaManager {
 		});
 	}
 
-<<<<<<< HEAD
-	public static void putInPLAYERS(@Nullable CommandSender sender, JavaPlugin instance, String key, PlayerData value) {
-=======
 	public static void putInPLAYERS(@Nullable CommandSender sender, Plugin instance, String key, PlayerData value) {
->>>>>>> 85c84e7 (Nothing)
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				PLAYERS.put(key, value);
@@ -204,11 +178,7 @@ public class ArenaManager {
 		PLAYERS.put(key, value);
 	}
 
-<<<<<<< HEAD
-	public static void removeFromPLAYERS(@Nullable CommandSender sender, JavaPlugin instance, String key,
-=======
 	public static void removeFromPLAYERS(@Nullable CommandSender sender, Plugin instance, String key,
->>>>>>> 85c84e7 (Nothing)
 			PlayerData value) {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
@@ -222,11 +192,7 @@ public class ArenaManager {
 		PLAYERS.remove(key, value);
 	}
 
-<<<<<<< HEAD
-	public static void PLAYERSRemoveAll(@Nullable CommandSender sender, JavaPlugin instance, String key) {
-=======
 	public static void PLAYERSRemoveAll(@Nullable CommandSender sender, Plugin instance, String key) {
->>>>>>> 85c84e7 (Nothing)
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				PLAYERS.remove(key);
@@ -264,11 +230,7 @@ public class ArenaManager {
 		});
 	}
 
-<<<<<<< HEAD
-	public static void putInNPCS(@Nullable CommandSender sender, JavaPlugin instance, String key, NPC value) {
-=======
 	public static void putInNPCS(@Nullable CommandSender sender, Plugin instance, String key, NPC value) {
->>>>>>> 85c84e7 (Nothing)
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				NPCS.put(key, value);
@@ -282,12 +244,7 @@ public class ArenaManager {
 		NPCS.put(key, value);
 	}
 
-<<<<<<< HEAD
-	public static void setInNPCS(int index, @Nullable CommandSender sender, JavaPlugin instance, String key,
-			NPC value) {
-=======
 	public static void setInNPCS(int index, @Nullable CommandSender sender, Plugin instance, String key, NPC value) {
->>>>>>> 85c84e7 (Nothing)
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				NPCS.get(key).set(index, value);
@@ -302,11 +259,7 @@ public class ArenaManager {
 		NPCS.get(key).set(index, value);
 	}
 
-<<<<<<< HEAD
-	public static void removeFromNPCS(@Nullable CommandSender sender, JavaPlugin instance, String key, NPC value) {
-=======
 	public static void removeFromNPCS(@Nullable CommandSender sender, Plugin instance, String key, NPC value) {
->>>>>>> 85c84e7 (Nothing)
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				NPCS.remove(key, value);
@@ -320,11 +273,7 @@ public class ArenaManager {
 		NPCS.remove(key, value);
 	}
 
-<<<<<<< HEAD
-	public static void NPCSRemoveAll(@Nullable CommandSender sender, JavaPlugin instance, String key) {
-=======
 	public static void NPCSRemoveAll(@Nullable CommandSender sender, Plugin instance, String key) {
->>>>>>> 85c84e7 (Nothing)
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				NPCS.removeAll(key);
@@ -363,11 +312,7 @@ public class ArenaManager {
 		});
 	}
 
-<<<<<<< HEAD
-	public static void putInGENS(@Nullable CommandSender sender, JavaPlugin instance, String key, Location value) {
-=======
 	public static void putInGENS(@Nullable CommandSender sender, Plugin instance, String key, Location value) {
->>>>>>> 85c84e7 (Nothing)
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				GENERATORS.put(key, value);
@@ -381,11 +326,7 @@ public class ArenaManager {
 		GENERATORS.put(key, value);
 	}
 
-<<<<<<< HEAD
-	public static void setInGENS(int index, @Nullable CommandSender sender, JavaPlugin instance, String key,
-=======
 	public static void setInGENS(int index, @Nullable CommandSender sender, Plugin instance, String key,
->>>>>>> 85c84e7 (Nothing)
 			Location value) {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
@@ -400,11 +341,7 @@ public class ArenaManager {
 		GENERATORS.get(key).set(index, value);
 	}
 
-<<<<<<< HEAD
-	public static void removeFromGENS(@Nullable CommandSender sender, JavaPlugin instance, String key, Location value) {
-=======
 	public static void removeFromGENS(@Nullable CommandSender sender, Plugin instance, String key, Location value) {
->>>>>>> 85c84e7 (Nothing)
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				NPCS.remove(key, value);
@@ -418,11 +355,7 @@ public class ArenaManager {
 		NPCS.remove(key, value);
 	}
 
-<<<<<<< HEAD
-	public static void GENSRemoveAll(@Nullable CommandSender sender, JavaPlugin instance, String key) {
-=======
 	public static void GENSRemoveAll(@Nullable CommandSender sender, Plugin instance, String key) {
->>>>>>> 85c84e7 (Nothing)
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				GENERATORS.removeAll(key);
@@ -452,11 +385,7 @@ public class ArenaManager {
 		});
 	}
 
-<<<<<<< HEAD
-	public static void addInARENALIST(@Nullable CommandSender sender, JavaPlugin instance, Arena key) {
-=======
 	public static void addInARENALIST(@Nullable CommandSender sender, Plugin instance, Arena key) {
->>>>>>> 85c84e7 (Nothing)
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				ARENALIST.add(key);
@@ -470,11 +399,7 @@ public class ArenaManager {
 		ARENALIST.add(key);
 	}
 
-<<<<<<< HEAD
-	public static void setInARENALIST(int index, @Nullable CommandSender sender, JavaPlugin instance, Arena key) {
-=======
 	public static void setInARENALIST(int index, @Nullable CommandSender sender, Plugin instance, Arena key) {
->>>>>>> 85c84e7 (Nothing)
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			ARENALIST.set(index, key);
 		}, Executors.newSingleThreadExecutor());
@@ -486,11 +411,7 @@ public class ArenaManager {
 		ARENALIST.set(index, key);
 	}
 
-<<<<<<< HEAD
-	public static void removeFromARENALIST(@Nullable CommandSender sender, JavaPlugin instance, Arena key) {
-=======
 	public static void removeFromARENALIST(@Nullable CommandSender sender, Plugin instance, Arena key) {
->>>>>>> 85c84e7 (Nothing)
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				ARENALIST.remove(key);
@@ -567,11 +488,7 @@ public class ArenaManager {
 		return npc;
 	}
 
-<<<<<<< HEAD
-	public static NPC addNPC(@Nullable CommandSender sender, JavaPlugin instance, String arenaName, EntityType type,
-=======
 	public static NPC addNPC(@Nullable CommandSender sender, Plugin instance, String arenaName, EntityType type,
->>>>>>> 85c84e7 (Nothing)
 			Material hand, String uuid, String data, String name, String skinName, Location location) {
 		PropertiesAPI.setProperties(instance, true, arenaName + "-" + name, DIR + "npc.dcnf",
 				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), type.name(),
@@ -590,11 +507,7 @@ public class ArenaManager {
 		return npc;
 	}
 
-<<<<<<< HEAD
-	public void spawnNPCS(JavaPlugin instance, Arena game) {
-=======
 	public void spawnNPCS(Plugin instance, Arena game) {
->>>>>>> 85c84e7 (Nothing)
 		Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 			for (Arena arena : ArenaManager.ARENALIST) {
 				for (int i = 0; i < ArenaManager.NPCS.get(arena.getName()).size(); i++) {
@@ -663,11 +576,7 @@ public class ArenaManager {
 		}
 	}
 
-<<<<<<< HEAD
-	public static void loadNPCS(JavaPlugin instance, String arenaName) {
-=======
 	public static void loadNPCS(Plugin instance, String arenaName) {
->>>>>>> 85c84e7 (Nothing)
 		Bukkit.getScheduler().runTask(instance, () -> {
 			try {
 				for (String line : Files.readAllLines(Paths.get(DIR + "npc.dcnf"))) {
@@ -767,11 +676,7 @@ public class ArenaManager {
 	 *          it creates a arena with given parameters
 	 *          </p>
 	 */
-<<<<<<< HEAD
-	public static void createArena(@Nullable CommandSender sender, JavaPlugin instance, String arenaName,
-=======
 	public static void createArena(@Nullable CommandSender sender, Plugin instance, String arenaName,
->>>>>>> 85c84e7 (Nothing)
 			Integer minPlayer, Integer maxPlayer, Integer arenaTime, Location waitingSpawn, String world) {
 		final String arenaDir = DIR + arenaName;
 		final String arenaFile = DIR + arenaName + "/" + arenaName + ".dcnf";
@@ -844,11 +749,7 @@ public class ArenaManager {
 	 * arena
 	 * </p>
 	 */
-<<<<<<< HEAD
-	public static void selectTeam(@Nullable CommandSender sender, JavaPlugin instance, String playerName, TEAMS team) {
-=======
 	public static void selectTeam(@Nullable CommandSender sender, Plugin instance, String playerName, TEAMS team) {
->>>>>>> 85c84e7 (Nothing)
 		Arena arena = getPlayersArena(sender, instance, playerName);
 		ArenaTeam teamm = createTeam(arena, arena.getWorld(), team);
 		ARENAS.entries().stream().filter((x) -> x.getKey().equals(arena) && ARENAS.get(arena).contains(playerName))
@@ -1050,11 +951,7 @@ public class ArenaManager {
 		return lnk.getFirst();
 	}
 
-<<<<<<< HEAD
-	public static Arena getPlayersArena(@Nullable CommandSender sender, JavaPlugin instance, String playerName) {
-=======
 	public static Arena getPlayersArena(@Nullable CommandSender sender, Plugin instance, String playerName) {
->>>>>>> 85c84e7 (Nothing)
 		ConcurrentLinkedQueue<Arena> lnk = new ConcurrentLinkedQueue<>();
 		Optional<Arena> arena = ARENALIST.stream().filter((x) -> ARENAS.get(x).contains(playerName)).findFirst();
 		if (arena.isPresent()) {
@@ -1067,11 +964,7 @@ public class ArenaManager {
 		return lnk.peek();
 	}
 
-<<<<<<< HEAD
-	public static ArenaTeam getPlayersTeam(@Nullable CommandSender sender, JavaPlugin instance, String playerName) {
-=======
 	public static ArenaTeam getPlayersTeam(@Nullable CommandSender sender, Plugin instance, String playerName) {
->>>>>>> 85c84e7 (Nothing)
 		ConcurrentLinkedQueue<ArenaTeam> lnk = new ConcurrentLinkedQueue<>();
 		Optional<String> player = PLAYERS.keySet().stream().filter((x) -> x.equals(playerName)).findFirst();
 		if (player.isPresent()) {
@@ -1123,11 +1016,7 @@ public class ArenaManager {
 		}
 	}
 
-<<<<<<< HEAD
-	public static void addPlayer(@Nullable CommandSender sender, JavaPlugin instance, String playerName, Arena arena,
-=======
 	public static void addPlayer(@Nullable CommandSender sender, Plugin instance, String playerName, Arena arena,
->>>>>>> 85c84e7 (Nothing)
 			STATES status, ArenaTeam team, Location locationToSpawn, boolean check) {
 		Player player = Bukkit.getPlayer(playerName);
 		if (player != null) {
@@ -1177,11 +1066,7 @@ public class ArenaManager {
 		}
 	}
 
-<<<<<<< HEAD
-	public static void randomAddPlayer(@Nullable CommandSender sender, JavaPlugin instance, String playerName,
-=======
 	public static void randomAddPlayer(@Nullable CommandSender sender, Plugin instance, String playerName,
->>>>>>> 85c84e7 (Nothing)
 			Arena arena, STATES status, Location locationToSpawn, boolean check) {
 		Random rand = new Random();
 		int random = rand.nextInt(TEAMS.values().length);
@@ -1222,11 +1107,7 @@ public class ArenaManager {
 		}
 	}
 
-<<<<<<< HEAD
-	public static void removePlayer(@Nullable CommandSender sender, JavaPlugin instance, String playerName,
-=======
 	public static void removePlayer(@Nullable CommandSender sender, Plugin instance, String playerName,
->>>>>>> 85c84e7 (Nothing)
 			Arena arena) {
 		removeFromARENAS(sender, instance, arena, playerName);
 		PLAYERSRemoveAll(sender, instance, playerName);
@@ -1250,11 +1131,7 @@ public class ArenaManager {
 		setInARENAS(0, arena, status.name());
 	}
 
-<<<<<<< HEAD
-	public static void setArenaStatus(@Nullable CommandSender sender, JavaPlugin instance, Arena arena, STATES status) {
-=======
 	public static void setArenaStatus(@Nullable CommandSender sender, Plugin instance, Arena arena, STATES status) {
->>>>>>> 85c84e7 (Nothing)
 		setInARENAS(0, sender, instance, arena, status.name());
 	}
 
@@ -1276,11 +1153,7 @@ public class ArenaManager {
 		return null;
 	}
 
-<<<<<<< HEAD
-	public static ConcurrentSkipListSet<String> getTeamsPlayers(@Nullable CommandSender sender, JavaPlugin instance,
-=======
 	public static ConcurrentSkipListSet<String> getTeamsPlayers(@Nullable CommandSender sender, Plugin instance,
->>>>>>> 85c84e7 (Nothing)
 			Arena arena, TEAMS team) {
 		ConcurrentSkipListSet<String> fls = new ConcurrentSkipListSet<>();
 		arena.getPlayersNames().stream().filter((x) -> getPlayersTeam(sender, instance, x).getTeam() == team)
@@ -1290,11 +1163,7 @@ public class ArenaManager {
 		return fls;
 	}
 
-<<<<<<< HEAD
-	public static Arena getArenaByPlayerAndTeam(@Nullable CommandSender sender, JavaPlugin instance, String playerName,
-=======
 	public static Arena getArenaByPlayerAndTeam(@Nullable CommandSender sender, Plugin instance, String playerName,
->>>>>>> 85c84e7 (Nothing)
 			ArenaTeam team) {
 		Optional<Arena> value = ARENALIST.stream()
 				.filter((x) -> x.equals(team.getArena()) && x.equals(getPlayersArena(sender, instance, playerName)))
@@ -1326,11 +1195,7 @@ public class ArenaManager {
 		PropertiesAPI.setProperty_NS("world", world, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
 
-<<<<<<< HEAD
-	public static void setArenaWorld(JavaPlugin instance, Arena arena, String world) {
-=======
 	public static void setArenaWorld(Plugin instance, Arena arena, String world) {
->>>>>>> 85c84e7 (Nothing)
 		arena.setWorld(world);
 		PropertiesAPI.setProperty(instance, "world", world, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
@@ -1340,11 +1205,7 @@ public class ArenaManager {
 		putInPLAYERS(playerName, data);
 	}
 
-<<<<<<< HEAD
-	public static void setPlayerTeam(@Nullable CommandSender sender, JavaPlugin instance, String playerName,
-=======
 	public static void setPlayerTeam(@Nullable CommandSender sender, Plugin instance, String playerName,
->>>>>>> 85c84e7 (Nothing)
 			ArenaTeam team) {
 		PlayerData data = new PlayerData(team, playerName, getPlayerStatus(playerName));
 		putInPLAYERS(sender, instance, playerName, data);
@@ -1362,11 +1223,7 @@ public class ArenaManager {
 				DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
 
-<<<<<<< HEAD
-	public static void setPos1(JavaPlugin instance, Arena arena, Location location) {
-=======
 	public static void setPos1(Plugin instance, Arena arena, Location location) {
->>>>>>> 85c84e7 (Nothing)
 		arena.setPos1(location);
 		PropertiesAPI.setProperty(instance, "pos1",
 				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
@@ -1385,11 +1242,7 @@ public class ArenaManager {
 				DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
 
-<<<<<<< HEAD
-	public static void setPos2(JavaPlugin instance, Arena arena, Location location) {
-=======
 	public static void setPos2(Plugin instance, Arena arena, Location location) {
->>>>>>> 85c84e7 (Nothing)
 		arena.setPos2(location);
 		PropertiesAPI.setProperty(instance, "pos2",
 				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
@@ -1467,11 +1320,7 @@ public class ArenaManager {
 				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), secounds, amount);
 	}
 
-<<<<<<< HEAD
-	public static Location getGeneratorLocation(JavaPlugin instance, String arenaName, String generatorName,
-=======
 	public static Location getGeneratorLocation(Plugin instance, String arenaName, String generatorName,
->>>>>>> 85c84e7 (Nothing)
 			String itemName) {
 		String values[] = new String[3];
 		PropertiesAPI
@@ -1494,11 +1343,7 @@ public class ArenaManager {
 		return null;
 	}
 
-<<<<<<< HEAD
-	public static ArenaTeam getTeamByArenaAndPlayer(@Nullable CommandSender sender, JavaPlugin instance,
-=======
 	public static ArenaTeam getTeamByArenaAndPlayer(@Nullable CommandSender sender, Plugin instance,
->>>>>>> 85c84e7 (Nothing)
 			String playerName, Arena arena) {
 		Optional<Arena> aren = ARENALIST.stream().filter((x) -> x.equals(arena) && x.equals(arena)).findFirst();
 		if (aren.isPresent()) {
@@ -1514,11 +1359,7 @@ public class ArenaManager {
 				DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf");
 	}
 
-<<<<<<< HEAD
-	public static void setTeamSpawn(JavaPlugin instance, ArenaTeam team, Location location) {
-=======
 	public static void setTeamSpawn(Plugin instance, ArenaTeam team, Location location) {
->>>>>>> 85c84e7 (Nothing)
 		team.setTeamSpawn(location);
 		PropertiesAPI.setProperty(instance, team.getTeam().name() + ".teamspawn",
 				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
@@ -1547,11 +1388,7 @@ public class ArenaManager {
 				DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf");
 	}
 
-<<<<<<< HEAD
-	public static void setBlockSpawn(JavaPlugin instance, ArenaTeam team, Location location) {
-=======
 	public static void setBlockSpawn(Plugin instance, ArenaTeam team, Location location) {
->>>>>>> 85c84e7 (Nothing)
 		team.setBlockSpawn(location);
 		PropertiesAPI.setProperty(instance, team.getTeam().name() + ".block",
 				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
@@ -1561,11 +1398,8 @@ public class ArenaManager {
 	/**
 	 * @return the location of block of the arenaTeam
 	 */
-<<<<<<< HEAD
-	public static Location getBlockSpawn(JavaPlugin instance, ArenaTeam team) {
-=======
+
 	public static Location getBlockSpawn(Plugin instance, ArenaTeam team) {
->>>>>>> 85c84e7 (Nothing)
 		if (team.getBlockSpawn() != null) {
 			return team.getBlockSpawn();
 		} else {
@@ -1617,11 +1451,7 @@ public class ArenaManager {
 		}
 	}
 
-<<<<<<< HEAD
-	public static Location getWaitingSpawn(JavaPlugin instance, String arenaName, String worldName) {
-=======
 	public static Location getWaitingSpawn(Plugin instance, String arenaName, String worldName) {
->>>>>>> 85c84e7 (Nothing)
 
 		String ls[] = new String[3];
 		PropertiesAPI.getProperties_C(instance, "waiting", DIR + arenaName + "/" + arenaName + ".dcnf", "NULL").stream()
@@ -1639,11 +1469,7 @@ public class ArenaManager {
 		PropertiesAPI.setProperty_NS("max", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
 
-<<<<<<< HEAD
-	public static void setMaxArena(JavaPlugin instance, Arena arena, String number) {
-=======
 	public static void setMaxArena(Plugin instance, Arena arena, String number) {
->>>>>>> 85c84e7 (Nothing)
 		arena.setMaxPlayers(Integer.parseInt(number));
 		PropertiesAPI.setProperty(instance, "max", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
@@ -1659,11 +1485,7 @@ public class ArenaManager {
 		PropertiesAPI.setProperty_NS("min", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
 
-<<<<<<< HEAD
-	public static void setMinArena(JavaPlugin instance, Arena arena, String number) {
-=======
 	public static void setMinArena(Plugin instance, Arena arena, String number) {
->>>>>>> 85c84e7 (Nothing)
 		arena.setMinPlayers(Integer.parseInt(number));
 		PropertiesAPI.setProperty(instance, "min", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
@@ -1680,11 +1502,8 @@ public class ArenaManager {
 				DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
 	}
 
-<<<<<<< HEAD
-	public static void setTeamMax(JavaPlugin instance, ArenaTeam team, String number) {
-=======
+
 	public static void setTeamMax(Plugin instance, ArenaTeam team, String number) {
->>>>>>> 85c84e7 (Nothing)
 		team.setMaxNumber(Integer.parseInt(number));
 		PropertiesAPI.setProperty(instance, team.getTeam().name() + ".min", number,
 				DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
@@ -1702,11 +1521,7 @@ public class ArenaManager {
 				DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
 	}
 
-<<<<<<< HEAD
-	public static void setTeamMin(JavaPlugin instance, ArenaTeam team, String number) {
-=======
 	public static void setTeamMin(Plugin instance, ArenaTeam team, String number) {
->>>>>>> 85c84e7 (Nothing)
 		team.setMinNumber(Integer.parseInt(number));
 		PropertiesAPI.setProperty(instance, team.getTeam().name() + ".max", number,
 				DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
@@ -1737,12 +1552,10 @@ public class ArenaManager {
 		return (!(getBlockSpawn(team).getBlock().getType() == material)) ? true : false;
 	}
 
-<<<<<<< HEAD
 	public static boolean isItemExist(JavaPlugin instance, ArenaTeam team, Material material) {
 		return (!(getBlockSpawn(instance, team).getBlock().getType() == material)) ? true : false;
 	}
 
-=======
 	public static boolean isItemExist(Plugin instance, ArenaTeam team, Material material) {
 		return (!(getBlockSpawn(instance, team).getBlock().getType() == material)) ? true : false;
 	}
@@ -1761,5 +1574,4 @@ public class ArenaManager {
 			return false;
 	}
 
->>>>>>> 85c84e7 (Nothing)
 }

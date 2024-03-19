@@ -18,10 +18,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-<<<<<<< HEAD
-import org.bukkit.plugin.java.JavaPlugin;
-=======
->>>>>>> 85c84e7 (Nothing)
 
 import com.google.common.collect.ImmutableList;
 
@@ -400,11 +396,7 @@ public class PropertiesAPI {
 		return result;
 	}
 
-<<<<<<< HEAD
-	public static ConcurrentSkipListSet<String> getProperties_C(JavaPlugin instance, String key, String fileName,
-=======
 	public static ConcurrentSkipListSet<String> getProperties_C(Plugin instance, String key, String fileName,
->>>>>>> 85c84e7 (Nothing)
 			String... defaultValues) {
 		ConcurrentSkipListSet<String> lsls = new ConcurrentSkipListSet<>();
 		try {
@@ -527,11 +519,7 @@ public class PropertiesAPI {
 		return -1;
 	}
 
-<<<<<<< HEAD
-	public static ConcurrentSkipListSet<String> getListPropertiesProcess(JavaPlugin instance, String key,
-=======
 	public static ConcurrentSkipListSet<String> getListPropertiesProcess(Plugin instance, String key,
->>>>>>> 85c84e7 (Nothing)
 			String fileName, ConcurrentSkipListSet<String> allLines, String... defaultValues) throws IOException {
 
 		ConcurrentSkipListSet<String> ls = new ConcurrentSkipListSet<>();
