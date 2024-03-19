@@ -752,9 +752,10 @@ public class ArenaManager {
 	public static void selectTeam(@Nullable CommandSender sender, JavaPlugin instance, String playerName, TEAMS team) {
 		Arena arena = getPlayersArena(sender, instance, playerName);
 		ArenaTeam teamm = createTeam(arena, arena.getWorld(), team);
-
-		if (ARENAS.get(arena).contains(playerName))
-			setPlayerTeam(sender, instance, playerName, teamm);
+		ARENAS.entries().stream().filter((x) -> x.getKey().equals(arena) && ARENAS.get(arena).contains(playerName))
+				.forEach((unused) -> {
+					setPlayerTeam(sender, instance, playerName, teamm);
+				});
 	}
 
 	public static void selectTeam(@Nullable CommandSender sender, String playerName, TEAMS team) {
