@@ -6,24 +6,32 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.plugin.java.JavaPlugin;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MapMaker;
 import com.google.common.collect.MultimapBuilder;
@@ -43,452 +51,89 @@ enum TEAMS {
 	RED, BLUE, GREEN, YELLOW, ORANGE, BLACK, PINK, PURPLE, BROWN, WHITE
 }
 
-class PlayerData {
-
-	private ItemStack helmet;
-	private ItemStack chestplate;
-	private ItemStack leggings;
-	private ItemStack boots;
-	private Location location;
-	private ItemStack inventory[];
-	private ArenaTeam team;
-	private Player player;
-	private STATES status;
-
-	public PlayerData(ArenaTeam team, String playerName, STATES status) {
-		this.player = Bukkit.getPlayer(playerName);
-		this.team = team;
-		this.status = status;
-	}
-
-	public PlayerData(ArenaTeam team, String playerName, STATES status, ItemStack helmet, ItemStack chestplate,
-			ItemStack leggings, ItemStack boots, ItemStack inventory[]) {
-		this.player = Bukkit.getPlayer(playerName);
-		this.team = team;
-		this.status = status;
-		this.helmet = helmet;
-		this.chestplate = chestplate;
-		this.leggings = leggings;
-		this.boots = boots;
-		this.inventory = inventory;
-	}
-
-	public ItemStack getHelmet() {
-		return helmet;
-	}
-
-	public void setHelmet(ItemStack helmet) {
-		this.helmet = helmet;
-	}
-
-	public ItemStack getChestplate() {
-		return chestplate;
-	}
-
-	public void setChestplate(ItemStack chestplate) {
-		this.chestplate = chestplate;
-	}
-
-	public ItemStack getLeggings() {
-		return leggings;
-	}
-
-	public void setLeggings(ItemStack leggings) {
-		this.leggings = leggings;
-	}
-
-	public ItemStack getBoots() {
-		return boots;
-	}
-
-	public void setBoots(ItemStack boots) {
-		this.boots = boots;
-	}
-
-	public Location getLocation() {
-		return location;
-	}
-
-	public void setLocation(Location location) {
-		this.location = location;
-	}
-
-	public STATES getStatus() {
-		return status;
-	}
-
-	public void setStatus(STATES status) {
-		this.status = status;
-	}
-
-	public ItemStack[] getInventory() {
-		return inventory;
-	}
-
-	public void setInventory(ItemStack[] inventory) {
-		this.inventory = inventory;
-	}
-
-	public Player getPlayer() {
-		return player;
-	}
-
-	public void setPlayer(Player player) {
-		this.player = player;
-	}
-
-	public ArenaTeam getTeam() {
-		return team;
-	}
-
-	public void setTeam(ArenaTeam team) {
-		this.team = team;
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + Arrays.hashCode(inventory);
-		result = prime * result + Objects.hash(boots, chestplate, helmet, leggings, location, player, status, team);
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		PlayerData other = (PlayerData) obj;
-		return Objects.equals(boots, other.boots) && Objects.equals(chestplate, other.chestplate)
-				&& Objects.equals(helmet, other.helmet) && Arrays.equals(inventory, other.inventory)
-				&& Objects.equals(leggings, other.leggings) && Objects.equals(location, other.location)
-				&& Objects.equals(player, other.player) && status == other.status && Objects.equals(team, other.team);
-	}
-
-}
-
-class ArenaTeam {
-
-	private Integer minNumber;
-
-	private Integer maxNumber;
-
-	private Location teamSpawn;
-
-	private Location block;
-
-	private Arena arena;
-
-	private STATES teamStatus;
-
-	private TEAMS team;
-
-	public ArenaTeam(Arena arena, int minNumber, int maxNumber, TEAMS team, Location block, Location teamSpawn) {
-		this.arena = arena;
-		this.minNumber = minNumber;
-		this.maxNumber = maxNumber;
-		this.team = team;
-		this.block = block;
-		this.teamSpawn = teamSpawn;
-	}
-
-	public Integer getMaxNumber() {
-		return maxNumber;
-	}
-
-	public void setMaxNumber(int maxNumber) {
-		this.maxNumber = maxNumber;
-	}
-
-	public Integer getMinNumber() {
-		return minNumber;
-	}
-
-	public void setMinNumber(int minNumber) {
-		this.minNumber = minNumber;
-	}
-
-	public TEAMS getTeam() {
-		return team;
-	}
-
-	public void setTeam(TEAMS team) {
-		this.team = team;
-	}
-
-	public Location getTeamSpawn() {
-		return teamSpawn;
-	}
-
-	public void setTeamSpawn(Location teamSpawn) {
-		this.teamSpawn = teamSpawn;
-	}
-
-	public Location getBlockSpawn() {
-		return block;
-	}
-
-	public void setBlockSpawn(Location block) {
-		this.block = block;
-	}
-
-	public STATES getTeamStatus() {
-		return teamStatus;
-	}
-
-	public void setTeamStatus(STATES teamStatus) {
-		this.teamStatus = teamStatus;
-	}
-
-	public Arena getArena() {
-		return arena;
-	}
-
-	/**
-	 * @apiNote thats useless
-	 */
-	@Override
-	public int hashCode() {
-		return Objects.hash(arena, block, maxNumber, minNumber, team, teamSpawn, teamStatus);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (!(obj instanceof ArenaTeam)) {
-			return false;
-		}
-		ArenaTeam other = (ArenaTeam) obj;
-		return Objects.equals(arena, other.arena) && Objects.equals(block, other.block)
-				&& Objects.equals(maxNumber, other.maxNumber) && Objects.equals(minNumber, other.minNumber)
-				&& team == other.team && Objects.equals(teamSpawn, other.teamSpawn) && teamStatus == other.teamStatus;
-	}
-
-}
-
-class Arena {
-
-	private STATES status;
-
-	private String world;
-
-	private String name;
-
-	private Integer minPlayer;
-
-	private Integer maxPlayer;
-
-	private Integer arenaTime;
-
-	private Location waitingSpawn;
-
-	private Location pos1;
-
-	private Location pos2;
-
-	private List<String> playersNames = new ArrayList<>();
-
-	private List<TEAMS> teams = new ArrayList<>();
-
-	/**
-	 * @param minPlayer
-	 * @param maxPlayer
-	 * @param arenaTime
-	 * @param waitingSpawn
-	 * @param status
-	 * @param name
-	 * @param world
-	 */
-	public Arena(int minPlayer, int maxPlayer, int arenaTime, Location waitingSpawn, STATES status, String name,
-			String world) {
-		this.minPlayer = minPlayer;
-		this.maxPlayer = maxPlayer;
-		this.arenaTime = arenaTime;
-		this.waitingSpawn = waitingSpawn;
-		this.name = name;
-		this.world = world;
-		this.status = status;
-	}
-
-	public Arena(int minPlayer, int maxPlayer, int arenaTime, Location waitingSpawn, STATES status, String name,
-			String world, Location pos1, Location pos2) {
-		this.minPlayer = minPlayer;
-		this.maxPlayer = maxPlayer;
-		this.arenaTime = arenaTime;
-		this.waitingSpawn = waitingSpawn;
-		this.name = name;
-		this.world = world;
-		this.status = status;
-		this.pos1 = pos1;
-		this.pos2 = pos2;
-	}
-
-	public void setStatus(STATES status) {
-		this.status = status;
-	}
-
-	public List<TEAMS> getTeams() {
-		return teams;
-	}
-
-	public STATES getStatus() {
-		return status;
-	}
-
-	public Integer getMinPlayer() {
-		return minPlayer;
-	}
-
-	public void setMinPlayers(int minPlayer) {
-		this.minPlayer = minPlayer;
-	}
-
-	public Integer getMaxPlayer() {
-		return maxPlayer;
-	}
-
-	public void setMaxPlayers(int maxPlayer) {
-		this.maxPlayer = maxPlayer;
-	}
-
-	public Location getWaitingSpawn() {
-		return waitingSpawn;
-	}
-
-	public void setWaitingSpawn(Location waitingSpawn) {
-		this.waitingSpawn = waitingSpawn;
-	}
-
-	public void setTeams(List<TEAMS> teams) {
-		this.teams = teams;
-	}
-
-	public Integer getArenaTime() {
-		return arenaTime;
-	}
-
-	public void setArenaTime(int arenaTime) {
-		this.arenaTime = arenaTime;
-	}
-
-	public List<String> getPlayersNames() {
-		return playersNames;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public Location getPos1() {
-		return pos1;
-	}
-
-	public void setPos1(Location pos1) {
-		this.pos1 = pos1;
-	}
-
-	public Location getPos2() {
-		return pos2;
-	}
-
-	public void setPos2(Location pos2) {
-		ShitClass.getPlugin(ShitClass.class);
-		this.pos2 = pos2;
-	}
-
-	public String getWorld() {
-		return world;
-	}
-
-	public void setWorld(String world) {
-		this.world = world;
-	}
-
-	/**
-	 * @apiNote thats useless
-	 */
-	@Override
-	public int hashCode() {
-		return Objects.hash(arenaTime, maxPlayer, minPlayer, name, playersNames, pos1, pos2, status, teams,
-				waitingSpawn, world);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (!(obj instanceof Arena)) {
-			return false;
-		}
-		Arena other = (Arena) obj;
-		return Objects.equals(arenaTime, other.arenaTime) && Objects.equals(maxPlayer, other.maxPlayer)
-				&& Objects.equals(minPlayer, other.minPlayer) && Objects.equals(name, other.name)
-				&& Objects.equals(playersNames, other.playersNames) && Objects.equals(pos1, other.pos1)
-				&& Objects.equals(pos2, other.pos2) && status == other.status && Objects.equals(teams, other.teams)
-				&& Objects.equals(waitingSpawn, other.waitingSpawn) && Objects.equals(world, other.world);
-	}
-
-}
-
 /**
  * @author shayegan8
  */
 public class ArenaManager {
+
+	private static void ARENASException(CompletableFuture<Void> future, @Nullable CommandSender sender, Arena key,
+			String value, boolean checkKey, boolean checkValue) {
+		future.handle((reuslt, exp) -> {
+			if (checkKey == true)
+				if (key == null)
+					if (sender != null)
+						sender.sendMessage("Key can't be NULL");
+					else
+						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
+			if (checkValue == true)
+				if (value == null)
+					if (sender != null)
+						sender.sendMessage("Value can't be NULL");
+					else
+						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
+			throw new IllegalStateException(Arrays.toString(exp.getStackTrace()));
+		});
+	}
 
 	/**
 	 * @apiNote this stores arenas players and status, the status is on first index
 	 */
 	public final static ListMultimap<Arena, String> ARENAS = ListMultimapBuilder.hashKeys().arrayListValues().build();
 
-	public static void putInARENAS(Arena arena, String value) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				ARENAS.put(arena, value);
-			}
+	public static void putInARENAS(@Nullable CommandSender sender, JavaPlugin instance, Arena key, String value) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				ARENAS.put(key, value);
+			});
 		}, Executors.newSingleThreadExecutor());
+
+		ARENASException(future, sender, key, value, true, true);
 	}
 
-	public static void setInARENAS(int index, Arena arena, String value) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				ARENAS.get(arena).set(index, value);
-			}
-		}, Executors.newSingleThreadExecutor());
+	public static void putInARENAS(Arena key, String value) {
+		ARENAS.put(key, value);
 	}
 
-	public static void removeFromARENAS(Arena arena, String value) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				ARENAS.remove(arena, value);
-			}
+	public static void setInARENAS(int index, @Nullable CommandSender sender, JavaPlugin instance, Arena key,
+			String value) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				ARENAS.get(key).set(index, value);
+			});
 		}, Executors.newSingleThreadExecutor());
+
+		ARENASException(future, sender, key, value, true, true);
 	}
 
-	public static void ARENASRemoveAll(Arena arena) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
+	public static void setInARENAS(int index, Arena key, String value) {
+		ARENAS.get(key).set(index, value);
+	}
 
-			@Override
-			public void run() {
-				ARENAS.removeAll(arena);
-			}
+	public static void removeFromARENAS(@Nullable CommandSender sender, JavaPlugin instance, Arena key, String value) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				ARENAS.remove(key, value);
+			});
+		});
+		ARENASException(future, sender, key, value, true, true);
+	}
+
+	public static void removeFromARENAS(Arena key, String value) {
+		ARENAS.remove(key, value);
+	}
+
+	public static void ARENASRemoveAll(@Nullable CommandSender sender, JavaPlugin instance, Arena key) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				ARENAS.removeAll(key);
+			});
 		}, Executors.newSingleThreadExecutor());
+
+		ARENASException(future, sender, key, null, true, false);
+	}
+
+	public static void ARENASRemoveAll(Arena key) {
+		ARENAS.removeAll(key);
 	}
 
 	/**
@@ -497,34 +142,66 @@ public class ArenaManager {
 	 */
 	public final static Map<String, PlayerData> PLAYERS = new MapMaker().weakKeys().weakValues().makeMap();
 
-	public static void putInPLAYERS(String string, PlayerData data) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				PLAYERS.put(string, data);
-			}
-		}, Executors.newSingleThreadExecutor());
+	private static void PLAYERSException(CompletableFuture<Void> future, @Nullable CommandSender sender, String key,
+			PlayerData value, boolean checkKey, boolean checkValue) {
+		future.handle((reuslt, exp) -> {
+			if (checkKey == true)
+				if (key == null)
+					if (sender != null)
+						sender.sendMessage("Key can't be NULL");
+					else
+						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
+			if (checkValue == true)
+				if (value == null)
+					if (sender != null)
+						sender.sendMessage("Value can't be NULL");
+					else
+						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
+			throw new IllegalStateException(Arrays.toString(exp.getStackTrace()));
+		});
 	}
 
-	public static void removeFromPLAYERS(String string, PlayerData data) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
+	public static void putInPLAYERS(@Nullable CommandSender sender, JavaPlugin instance, String key, PlayerData value) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				PLAYERS.put(key, value);
+			});
 
-			@Override
-			public void run() {
-				PLAYERS.remove(string, data);
-			}
 		}, Executors.newSingleThreadExecutor());
+
+		PLAYERSException(future, sender, key, value, true, true);
 	}
 
-	public static void PLAYERSRemoveAll(String string) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
+	public static void putInPLAYERS(String key, PlayerData value) {
+		PLAYERS.put(key, value);
+	}
 
-			@Override
-			public void run() {
-				PLAYERS.remove(string);
-			}
+	public static void removeFromPLAYERS(@Nullable CommandSender sender, JavaPlugin instance, String key,
+			PlayerData value) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				PLAYERS.remove(key, value);
+			});
 		}, Executors.newSingleThreadExecutor());
+		PLAYERSException(future, sender, key, value, true, true);
+	}
+
+	public static void removeFromPLAYERS(String key, PlayerData value) {
+		PLAYERS.remove(key, value);
+	}
+
+	public static void PLAYERSRemoveAll(@Nullable CommandSender sender, JavaPlugin instance, String key) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				PLAYERS.remove(key);
+			});
+		}, Executors.newSingleThreadExecutor());
+
+		PLAYERSException(future, sender, key, null, true, false);
+	}
+
+	public static void PLAYERSRemoveAll(String key) {
+		PLAYERS.remove(key);
 	}
 
 	/**
@@ -532,44 +209,81 @@ public class ArenaManager {
 	 */
 	public final static ListMultimap<String, NPC> NPCS = MultimapBuilder.hashKeys().arrayListValues().build();
 
-	public static void putInNPCS(String string, NPC npc) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				NPCS.put(string, npc);
-			}
-		}, Executors.newSingleThreadExecutor());
+	private static void NPCSException(CompletableFuture<Void> future, @Nullable CommandSender sender, String key,
+			NPC value, boolean checkKey, boolean checkValue) {
+		future.handle((reuslt, exp) -> {
+			if (checkKey == true)
+				if (key == null)
+					if (sender != null)
+						sender.sendMessage("Key can't be NULL");
+					else
+						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
+			if (checkValue == true)
+				if (value == null)
+					if (sender != null)
+						sender.sendMessage("Value can't be NULL");
+					else
+						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
+			throw new IllegalStateException(Arrays.toString(exp.getStackTrace()));
+		});
 	}
 
-	public static void setInNPCS(int index, String string, NPC npc) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				NPCS.get(string).set(index, npc);
-			}
+	public static void putInNPCS(@Nullable CommandSender sender, JavaPlugin instance, String key, NPC value) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				NPCS.put(key, value);
+			});
 		}, Executors.newSingleThreadExecutor());
+
+		NPCSException(future, sender, key, value, true, true);
 	}
 
-	public static void removeFromNPCS(String string, NPC npc) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				NPCS.remove(string, npc);
-			}
-		}, Executors.newSingleThreadExecutor());
+	public static void putInNPCS(String key, NPC value) {
+		NPCS.put(key, value);
 	}
 
-	public static void NPCSRemoveAll(String string) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
+	public static void setInNPCS(int index, @Nullable CommandSender sender, JavaPlugin instance, String key,
+			NPC value) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				NPCS.get(key).set(index, value);
+			});
 
-			@Override
-			public void run() {
-				NPCS.removeAll(string);
-			}
 		}, Executors.newSingleThreadExecutor());
+
+		NPCSException(future, sender, key, value, true, true);
+	}
+
+	public static void setInNPCS(int index, String key, NPC value) {
+		NPCS.get(key).set(index, value);
+	}
+
+	public static void removeFromNPCS(@Nullable CommandSender sender, JavaPlugin instance, String key, NPC value) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				NPCS.remove(key, value);
+			});
+		}, Executors.newSingleThreadExecutor());
+
+		NPCSException(future, sender, key, value, true, true);
+	}
+
+	public static void removeFromNPCS(String key, NPC value) {
+		NPCS.remove(key, value);
+	}
+
+	public static void NPCSRemoveAll(@Nullable CommandSender sender, JavaPlugin instance, String key) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				NPCS.removeAll(key);
+			});
+		}, Executors.newSingleThreadExecutor());
+
+		NPCSException(future, sender, key, null, true, false);
+	}
+
+	public static void NPCSRemoveAll(String key) {
+		NPCS.removeAll(key);
 	}
 
 	/**
@@ -578,43 +292,80 @@ public class ArenaManager {
 	public final static ListMultimap<String, Location> GENERATORS = ListMultimapBuilder.hashKeys().arrayListValues()
 			.build();
 
-	public static void putInGENS(String string, Location location) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				GENERATORS.put(string, location);
-			}
-		}, Executors.newSingleThreadExecutor());
+	private static void GENSException(CompletableFuture<Void> future, @Nullable CommandSender sender, String key,
+			Location value, boolean checkKey, boolean checkValue) {
+		future.handle((reuslt, exp) -> {
+			if (checkKey == true)
+				if (key == null)
+					if (sender != null)
+						sender.sendMessage("Key can't be NULL");
+					else
+						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
+			if (checkValue == true)
+				if (value == null)
+					if (sender != null)
+						sender.sendMessage("Value can't be NULL");
+					else
+						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
+			throw new IllegalStateException(Arrays.toString(exp.getStackTrace()));
+		});
 	}
 
-	public static void setInGENS(int index, String string, Location location) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				GENERATORS.get(string).set(index, location);
-			}
+	public static void putInGENS(@Nullable CommandSender sender, JavaPlugin instance, String key, Location value) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				GENERATORS.put(key, value);
+			});
 		}, Executors.newSingleThreadExecutor());
+
+		GENSException(future, sender, key, value, true, true);
 	}
 
-	public static void removeFromGENS(String string, Location location) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				NPCS.remove(string, location);
-			}
-		}, Executors.newSingleThreadExecutor());
+	public static void putInGENS(String key, Location value) {
+		GENERATORS.put(key, value);
 	}
 
-	public static void GENSRemoveAll(String string) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
-			@Override
-			public void run() {
-				GENERATORS.removeAll(string);
-			}
+	public static void setInGENS(int index, @Nullable CommandSender sender, JavaPlugin instance, String key,
+			Location value) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				GENERATORS.get(key).set(index, value);
+			});
 		}, Executors.newSingleThreadExecutor());
+
+		GENSException(future, sender, key, value, true, true);
+	}
+
+	public static void setInGENS(int index, String key, Location value) {
+		GENERATORS.get(key).set(index, value);
+	}
+
+	public static void removeFromGENS(@Nullable CommandSender sender, JavaPlugin instance, String key, Location value) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				NPCS.remove(key, value);
+			});
+		}, Executors.newSingleThreadExecutor());
+
+		GENSException(future, sender, key, value, true, true);
+	}
+
+	public static void removeFromGENS(String key, Location value) {
+		NPCS.remove(key, value);
+	}
+
+	public static void GENSRemoveAll(@Nullable CommandSender sender, JavaPlugin instance, String key) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				GENERATORS.removeAll(key);
+			});
+		}, Executors.newSingleThreadExecutor());
+
+		GENSException(future, sender, key, null, true, false);
+	}
+
+	public static void GENSRemoveAll(String key) {
+		GENERATORS.removeAll(key);
 	}
 
 	/**
@@ -622,40 +373,75 @@ public class ArenaManager {
 	 */
 	public final static List<Arena> ARENALIST = new ArrayList<>();
 
-	public static void addInARENALIST(Arena arena) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				ARENALIST.add(arena);
-			}
-		}, Executors.newSingleThreadExecutor());
+	private static void ARENALISTException(CompletableFuture<Void> future, @Nullable CommandSender sender, Arena key) {
+		future.handle((reuslt, exp) -> {
+			if (key == null)
+				if (sender != null)
+					sender.sendMessage("Key can't be NULL");
+				else
+					throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
+			throw new IllegalStateException(Arrays.toString(exp.getStackTrace()));
+		});
 	}
 
-	public static void setInARENALIST(int index, Arena arena) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
-
-			@Override
-			public void run() {
-				ARENALIST.set(index, arena);
-			}
+	public static void addInARENALIST(@Nullable CommandSender sender, JavaPlugin instance, Arena key) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				ARENALIST.add(key);
+			});
 		}, Executors.newSingleThreadExecutor());
+
+		ARENALISTException(future, sender, key);
 	}
 
-	public static void removeFromARENALIST(Arena arena) {
-		CompletableFuture.runAsync(new BukkitRunnable() {
+	public static void addInARENALIST(Arena key) {
+		ARENALIST.add(key);
+	}
 
-			@Override
-			public void run() {
-				ARENALIST.remove(arena);
-			}
+	public static void setInARENALIST(int index, @Nullable CommandSender sender, JavaPlugin instance, Arena key) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			ARENALIST.set(index, key);
 		}, Executors.newSingleThreadExecutor());
+
+		ARENALISTException(future, sender, key);
+	}
+
+	public static void setInARENALIST(int index, Arena key) {
+		ARENALIST.set(index, key);
+	}
+
+	public static void removeFromARENALIST(@Nullable CommandSender sender, JavaPlugin instance, Arena key) {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				ARENALIST.remove(key);
+			});
+		}, Executors.newSingleThreadExecutor());
+
+		ARENALISTException(future, sender, key);
+	}
+
+	public static void removeFromARENALIST(Arena key) {
+		ARENALIST.remove(key);
 	}
 
 	/**
 	 * @apiNote this is the arenas directory location
 	 */
 	public final static String DIR = "plugins/";
+
+	public static Arena arena(int minPlayer, int maxPlayer, int time, Location waitingSpawn, STATES status,
+			String arenaName, String worldName) {
+		return new Arena(minPlayer, maxPlayer, time, waitingSpawn, status, arenaName, worldName);
+	}
+
+	public static PlayerData data(ArenaTeam team, String playerName, STATES status) {
+		return new PlayerData(team, playerName, status);
+	}
+
+	public static ArenaTeam team(Arena arena, int minNumber, int maxNumber, TEAMS team, Location blockLocation,
+			Location waitingSpawn) {
+		return new ArenaTeam(arena, minNumber, maxNumber, team, blockLocation, waitingSpawn);
+	}
 
 	/**
 	 * <p>
@@ -701,28 +487,61 @@ public class ArenaManager {
 		return npc;
 	}
 
-	/**
-	 * <p>
-	 * this is a safe function
-	 * </p>
-	 */
-	public void spawnNPCS(Plugin plugin, Arena game) {
-		Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+	public static NPC addNPC(@Nullable CommandSender sender, JavaPlugin instance, String arenaName, EntityType type,
+			Material hand, String uuid, String data, String name, String skinName, Location location) {
+		PropertiesAPI.setProperties(instance, true, arenaName + "-" + name, DIR + "npc.dcnf",
+				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), type.name(),
+				hand.name(), uuid, data, name, skinName);
+		NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, name);
+		npc.data().set(NPC.Metadata.REMOVE_FROM_PLAYERLIST, name);
+		npc.getOrAddTrait(LookClose.class).lookClose(true);
+		if (hand != null)
+			npc.setItemProvider(() -> {
+				return new ItemStack(hand, 1);
+			});
+		npc.getOrAddTrait(SkinTrait.class).setSkinPersistent(skinName, uuid, data);
+		npc.setSneaking(false);
+		npc.setProtected(true);
+		putInNPCS(sender, instance, arenaName, npc);
+		return npc;
+	}
+
+	public void spawnNPCS(JavaPlugin instance, Arena game) {
+		Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 			for (Arena arena : ArenaManager.ARENALIST) {
 				for (int i = 0; i < ArenaManager.NPCS.get(arena.getName()).size(); i++) {
 					NPC npc = ArenaManager.NPCS.get(arena.getName()).get(i);
 					if (game.getWorld().equals(npc.getStoredLocation().getWorld().getName())) {
-						List<String> npcProperties = PropertiesAPI.getProperties_NS(
-								game.getName() + "-" + game.getName(), ArenaManager.DIR + "npc.dcnf", null);
-						String locates[] = npcProperties.get(0).split(",");
-						Location location = new Location(Bukkit.getWorld(game.getWorld()),
-								Double.parseDouble(locates[0]), Double.parseDouble(locates[1]),
-								Double.parseDouble(locates[2]));
-						npc.spawn(location);
+						PropertiesAPI.getProperties(game.getName() + "-" + game.getName(),
+								ArenaManager.DIR + "npc.dcnf", "NULL").thenAccept((x) -> {
+									if (x.get(0) != "NULL") {
+										String locates[] = x.get(0).split(",");
+										Location location = new Location(Bukkit.getWorld(game.getWorld()),
+												Double.parseDouble(locates[0]), Double.parseDouble(locates[1]),
+												Double.parseDouble(locates[2]));
+										npc.spawn(location);
+									}
+								});
 					}
 				}
 			}
 		});
+	}
+
+	public void spawnNPCS(Arena game) {
+		for (Arena arena : ArenaManager.ARENALIST) {
+			for (int i = 0; i < ArenaManager.NPCS.get(arena.getName()).size(); i++) {
+				NPC npc = ArenaManager.NPCS.get(arena.getName()).get(i);
+				if (game.getWorld().equals(npc.getStoredLocation().getWorld().getName())) {
+					List<String> npcProperties = PropertiesAPI.getProperties_NS(game.getName() + "-" + game.getName(),
+							ArenaManager.DIR + "npc.dcnf", null);
+					String locates[] = npcProperties.get(0).split(",");
+					Location location = new Location(Bukkit.getWorld(game.getWorld()), Double.parseDouble(locates[0]),
+							Double.parseDouble(locates[1]), Double.parseDouble(locates[2]));
+					npc.spawn(location);
+				}
+			}
+		}
 	}
 
 	public static void loadNPCS(String arenaName) {
@@ -756,20 +575,54 @@ public class ArenaManager {
 		}
 	}
 
-	public static void createArena(Plugin instance, String arenaName, Integer minPlayer, Integer maxPlayer,
-			Integer arenaTime, Location waitingSpawn, String world) {
-		String arenaDir = DIR + arenaName;
-		String arenaFile = DIR + arenaName + "/" + arenaName + ".dcnf";
+	public static void loadNPCS(JavaPlugin instance, String arenaName) {
 		Bukkit.getScheduler().runTask(instance, () -> {
 			try {
-				if (Files.notExists(Paths.get(arenaDir)) || Files.notExists(Paths.get(arenaFile))) {
-					Files.createDirectory(Paths.get(arenaDir));
-					Files.createFile(Paths.get(arenaFile));
+				for (String line : Files.readAllLines(Paths.get(DIR + "npc.dcnf"))) {
+					if (line.contains(arenaName + "-")) {
+						String npcName = line.split("-")[1];
+						PropertiesAPI.getProperties(arenaName + "-" + npcName, DIR + "npc.dcnf", "NULL")
+								.thenAccept((x) -> {
+									if (x.get(0) != "NULL") {
+										EntityType type = EntityType.valueOf(x.get(1));
+										Material hand = Material.valueOf(x.get(2));
+										String uuid = x.get(3);
+										String data = x.get(4);
+										String name = x.get(5);
+										String skinName = x.get(6);
+										NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, name);
+										npc.data().set(NPC.Metadata.REMOVE_FROM_PLAYERLIST, name);
+										npc.getOrAddTrait(LookClose.class).lookClose(true);
+										if (hand != null)
+											npc.setItemProvider(() -> {
+												return new ItemStack(hand, 1);
+											});
+										npc.getOrAddTrait(SkinTrait.class).setSkinPersistent(skinName, uuid, data);
+										npc.setSneaking(false);
+										npc.setProtected(true);
+										putInNPCS(arenaName, npc);
+									}
+								});
+					}
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		});
+	}
+
+	public static void createArena(String arenaName, Integer minPlayer, Integer maxPlayer, Integer arenaTime,
+			Location waitingSpawn, String world) {
+		String arenaDir = DIR + arenaName;
+		String arenaFile = DIR + arenaName + "/" + arenaName + ".dcnf";
+		try {
+			if (Files.notExists(Paths.get(arenaDir)) || Files.notExists(Paths.get(arenaFile))) {
+				Files.createDirectory(Paths.get(arenaDir));
+				Files.createFile(Paths.get(arenaFile));
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
 		int min;
 
@@ -821,8 +674,9 @@ public class ArenaManager {
 	 *          it creates a arena with given parameters
 	 *          </p>
 	 */
-	public static CompletableFuture<Void> createArena_S(Plugin instance, String arenaName, Integer minPlayer,
-			Integer maxPlayer, Integer arenaTime, Location waitingSpawn, String world) {
+	public static CompletableFuture<Void> createArena(@Nullable CommandSender sender, JavaPlugin instance,
+			String arenaName, Integer minPlayer, Integer maxPlayer, Integer arenaTime, Location waitingSpawn,
+			String world) {
 		final String arenaDir = DIR + arenaName;
 		final String arenaFile = DIR + arenaName + "/" + arenaName + ".dcnf";
 		Bukkit.getScheduler().runTask(instance, () -> {
@@ -910,9 +764,7 @@ public class ArenaManager {
 				waiting = (Location) values.get(3);
 			}
 			Arena arena = new Arena(min, max, time, waiting, STATES.INPROCESS, arenaName, world);
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				addInARENALIST(arena);
-			});
+			addInARENALIST(sender, instance, arena);
 		});
 	}
 
@@ -922,23 +774,39 @@ public class ArenaManager {
 	 * arena
 	 * </p>
 	 */
-	public static void selectTeam(Arena arena, String playerName, TEAMS team) {
+	public static void selectTeam(@Nullable CommandSender sender, JavaPlugin instance, String playerName, TEAMS team) {
+		Arena arena = getPlayersArena(sender, instance, playerName);
+		ArenaTeam teamm = createTeam(arena, arena.getWorld(), team);
+
 		if (ARENAS.get(arena).contains(playerName))
-			setPlayerTeam(playerName, null);
+			setPlayerTeam(sender, instance, playerName, teamm);
+	}
+
+	public static void selectTeam(@Nullable CommandSender sender, String playerName, TEAMS team) {
+		Arena arena = getPlayersArena(sender, playerName);
+		ArenaTeam teamm = createTeam(arena, arena.getWorld(), team);
+
+		if (ARENAS.get(arena).contains(playerName))
+			setPlayerTeam(playerName, teamm);
 	}
 
 	/**
 	 * @return a arenaTeam by given parameters
 	 */
-	public static ArenaTeam createTeam(Arena arena, String world, TEAMS teamm, String arenaFile) {
+	public static ArenaTeam createTeam(Arena arena, String world, TEAMS teamm) {
 
-		int min = Integer.parseInt(PropertiesAPI.getProperty_NS(teamm.name() + ".min", "1", arenaFile));
-		int max = Integer.parseInt(PropertiesAPI.getProperty_NS(teamm.name() + "max", "2", arenaFile));
+		int min = Integer.parseInt(PropertiesAPI.getProperty_NS(teamm.name() + ".min", "1",
+				DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
+		int max = Integer.parseInt(PropertiesAPI.getProperty_NS(teamm.name() + "max", "2",
+				DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
 
-		String coordinates[] = PropertiesAPI.getProperty_NS(teamm.name() + ".bedspawn", null, arenaFile).split(",");
+		String coordinates[] = PropertiesAPI
+				.getProperty_NS(teamm.name() + ".block", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf")
+				.split(",");
 		Location bed = new Location(Bukkit.getWorld(world), Double.parseDouble(coordinates[0]),
 				Double.parseDouble(coordinates[1]), Double.parseDouble(coordinates[2]));
-		String ncoordinates[] = PropertiesAPI.getProperty_NS(teamm.name() + ".teamspawn", null, arenaFile).split(",");
+		String ncoordinates[] = PropertiesAPI.getProperty_NS(teamm.name() + ".teamspawn", null,
+				DIR + arena.getName() + "/" + arena.getName() + ".dcnf").split(",");
 		Location spawn = new Location(Bukkit.getWorld(world), Double.parseDouble(ncoordinates[0]),
 				Double.parseDouble(ncoordinates[1]), Double.parseDouble(ncoordinates[2]));
 
@@ -1013,10 +881,10 @@ public class ArenaManager {
 
 	/**
 	 * <p>
-	 * this loads all arenas by their directories
+	 * It blocks thread for a moment
 	 * </p>
 	 */
-	public static void loadArenas() {
+	public static void loadArenas() throws Exception {
 		List<Path> dirs = null;
 		List<Path> files = null;
 		try {
@@ -1026,6 +894,7 @@ public class ArenaManager {
 			e.printStackTrace();
 		}
 		dirs.remove(0);
+
 		for (Path dir : dirs) {
 			for (Path file : files) {
 				String arenaName = null;
@@ -1038,9 +907,9 @@ public class ArenaManager {
 
 				String arenaFile = file.toString();
 
-				int min = Integer.parseInt(PropertiesAPI.getProperty_NS("min", "2", arenaFile));
-				int max = Integer.parseInt(PropertiesAPI.getProperty_NS("max", "8", arenaFile));
-				int time = Integer.parseInt(PropertiesAPI.getProperty_NS("arenaTime", "1800", arenaFile));
+				String min = PropertiesAPI.getProperty_NS("min", "2", arenaFile);
+				String max = PropertiesAPI.getProperty_NS("max", "8", arenaFile);
+				String time = PropertiesAPI.getProperty_NS("arenaTime", "1800", arenaFile);
 
 				String locationCoordinates[] = PropertiesAPI.getProperty_NS("waitingSpawn", null, arenaFile).split(",");
 
@@ -1061,9 +930,12 @@ public class ArenaManager {
 						Double.parseDouble(nnlocationCoordinates[0]), Double.parseDouble(nnlocationCoordinates[1]),
 						Double.parseDouble(nnlocationCoordinates[2]));
 
-				Arena arena = new Arena(min, max, time, location, STATES.WAITING, arenaName,
-						PropertiesAPI.getProperty_NS("world", null, arenaFile), pos1, pos2);
+				String world = PropertiesAPI.getProperty_NS("world", null, arenaFile);
 
+				if (pos2 == null || pos1 == null || location == null || world == null)
+					throw new IllegalStateException("Some of values or null for " + arenaName);
+				Arena arena = new Arena(Integer.parseInt(min), Integer.parseInt(max), Integer.parseInt(time), location,
+						STATES.WAITING, arenaName, world, pos1, pos2);
 				addInARENALIST(arena);
 			}
 		}
@@ -1079,38 +951,190 @@ public class ArenaManager {
 	/**
 	 * @return a arena by playerName
 	 */
-	public static Arena getPlayersArena(String name) {
+	public static Arena getPlayersArena(@Nullable CommandSender sender, String name) {
+		LinkedList<Arena> lnk = new LinkedList<>();
 		for (Arena arena : ARENALIST) {
 			List<String> ls = ARENAS.get(arena);
 			ls.remove(0);
 			for (String playerName : ls) {
 				if (playerName.equals(name)) {
-					return arena;
+					lnk.add(arena);
+					break;
 				}
 			}
+			if (lnk.peek() != null) {
+				break;
+			}
 		}
-		return null;
+		if (lnk.getFirst() == null) {
+			if (sender != null)
+				sender.sendMessage("Arena not found");
+			throw new IllegalStateException("Arena not found");
+		}
+
+		return lnk.getFirst();
 	}
 
-	public static ArenaTeam getPlayersTeam(String playerName) {
-		Object playerData = PLAYERS.get(playerName);
-		if (playerData instanceof PlayerData && playerData != null) {
-			PlayerData data = (PlayerData) playerData;
-			return data.getTeam();
+	public static Arena getPlayersArena(@Nullable CommandSender sender, JavaPlugin instance, String playerName) {
+		ConcurrentLinkedQueue<Arena> lnk = new ConcurrentLinkedQueue<>();
+		Optional<Arena> arena = ARENALIST.stream().filter((x) -> ARENAS.get(x).contains(playerName)).findFirst();
+		if (arena.isPresent()) {
+			lnk.add(arena.get());
+		} else {
+			if (sender != null)
+				sender.sendMessage("Arena not found");
+			throw new IllegalStateException("Arena not found");
 		}
-		return null;
+		return lnk.peek();
+	}
+
+	public static ArenaTeam getPlayersTeam(@Nullable CommandSender sender, JavaPlugin instance, String playerName) {
+		ConcurrentLinkedQueue<ArenaTeam> lnk = new ConcurrentLinkedQueue<>();
+		Optional<String> player = PLAYERS.keySet().stream().filter((x) -> x.equals(playerName)).findFirst();
+		if (player.isPresent()) {
+			Optional<Entry<String, PlayerData>> pData = PLAYERS.entrySet().stream()
+					.filter((x) -> x.getKey().equals(player.get()) && x.getValue().equals(PLAYERS.get(player.get())))
+					.findFirst();
+			PlayerData playerData = pData.get().getValue();
+			Arena arena = getPlayersArena(sender, instance, playerName);
+			ArenaTeam arenaTeam = createTeam(arena, arena.getWorld(), playerData.getTeam().getTeam());
+			lnk.add(arenaTeam);
+		}
+		return lnk.peek();
+	}
+
+	public static ArenaTeam getPlayersTeam(@Nullable CommandSender sender, String playerName) {
+		ConcurrentLinkedQueue<ArenaTeam> lnk = new ConcurrentLinkedQueue<>();
+		Optional<String> player = PLAYERS.keySet().stream().filter((x) -> x.equals(playerName)).findFirst();
+		if (player.isPresent()) {
+			Optional<Entry<String, PlayerData>> pData = PLAYERS.entrySet().stream()
+					.filter((x) -> x.getKey().equals(player.get()) && x.getValue().equals(PLAYERS.get(player.get())))
+					.findFirst();
+			PlayerData playerData = pData.get().getValue();
+			Arena arena = getPlayersArena(sender, playerName);
+			ArenaTeam arenaTeam = createTeam(arena, arena.getWorld(), playerData.getTeam().getTeam());
+			lnk.add(arenaTeam);
+		}
+		return lnk.peek();
 	}
 
 	public static void addPlayer(String playerName, Arena arena, STATES status, ArenaTeam team,
-			Location locationToSpawn) {
+			Location locationToSpawn, boolean check) {
 		Player player = Bukkit.getPlayer(playerName);
 		if (player != null && ARENALIST.contains(arena)) {
-			putInARENAS(arena, playerName);
-			PlayerData data = new PlayerData(team, playerName, status);
-			putInPLAYERS(playerName, data);
+			if (!isPlayerSettedOnce(playerName)) {
+				PlayerData data = new PlayerData(team, playerName, status);
+				putInPLAYERS(playerName, data);
+				putInARENAS(arena, playerName);
+			} else {
+				setInARENAS(getArenaIndex(arena), arena, playerName);
+			}
 		}
 		if (locationToSpawn != null && player != null)
 			player.teleport(locationToSpawn);
+		if (check == true) {
+			String property = PropertiesAPI.getProperty_NS("selectTeamItem", "COMPASS",
+					DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+			ItemStack item = new ItemStack(Material.valueOf(property), 1);
+			player.getInventory().setItem(40, item);
+		}
+	}
+
+	public static void addPlayer(@Nullable CommandSender sender, JavaPlugin instance, String playerName, Arena arena,
+			STATES status, ArenaTeam team, Location locationToSpawn, boolean check) {
+		Player player = Bukkit.getPlayer(playerName);
+		if (player != null) {
+			if (!isPlayerSettedOnce(playerName)) {
+				PlayerData data = new PlayerData(team, playerName, status);
+				putInPLAYERS(sender, instance, playerName, data);
+				putInARENAS(sender, instance, arena, playerName);
+			} else {
+				setInARENAS(getArenaIndex(arena), arena, playerName);
+			}
+			if (locationToSpawn != null && player != null)
+				player.teleport(locationToSpawn);
+			if (check == true) {
+				String property = PropertiesAPI.getProperty_C("selectTeamItem", "COMPASS",
+						DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+				ItemStack item = new ItemStack(Material.valueOf(property), 1);
+				player.getInventory().setItem(40, item);
+			}
+		}
+
+	}
+
+	public static int getArenaIndex(Arena arena) {
+		ConcurrentLinkedQueue<Integer> lnk = new ConcurrentLinkedQueue<>();
+		Optional<Arena> cachedArena = ARENAS.keys().stream().filter((x -> x.equals(arena))).findFirst();
+		if (cachedArena.isPresent()) {
+			ImmutableList<Arena> keySet = ImmutableList.copyOf(ARENAS.keySet());
+			lnk.add(keySet.indexOf(cachedArena.get()));
+		} else {
+			lnk.add(-1);
+		}
+
+		return lnk.peek();
+	}
+
+	public static Boolean isPlayerSettedOnce(String playerName) {
+		Optional<Entry<String, PlayerData>> player = PLAYERS.entrySet().stream()
+				.filter((x) -> x.getKey().equals(playerName)).findFirst();
+		if (player.isPresent()) {
+			if (player.get().getValue() != null) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+
+	public static void randomAddPlayer(@Nullable CommandSender sender, JavaPlugin instance, String playerName,
+			Arena arena, STATES status, Location locationToSpawn, boolean check) {
+		Random rand = new Random();
+		int random = rand.nextInt(TEAMS.values().length);
+		TEAMS teamm = TEAMS.values()[random];
+
+		String coordinates[] = PropertiesAPI
+				.getProperty_NS(teamm.name() + ".block", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf")
+				.split(",");
+		Location bed = new Location(Bukkit.getWorld(arena.getWorld()), Double.parseDouble(coordinates[0]),
+				Double.parseDouble(coordinates[1]), Double.parseDouble(coordinates[2]));
+		String ncoordinates[] = PropertiesAPI.getProperty_NS(teamm.name() + ".teamspawn", null,
+				DIR + arena.getName() + "/" + arena.getName() + ".dcnf").split(",");
+		Location spawn = new Location(Bukkit.getWorld(arena.getWorld()), Double.parseDouble(ncoordinates[0]),
+				Double.parseDouble(ncoordinates[1]), Double.parseDouble(ncoordinates[2]));
+		ArenaTeam team = new ArenaTeam(arena,
+				Integer.parseInt(PropertiesAPI.getProperty_NS(teamm.name() + ".min", "1",
+						DIR + "/" + arena.getName() + ".dcnf")),
+				Integer.parseInt(PropertiesAPI.getProperty_NS(teamm.name() + ".max", "2",
+						DIR + "/" + arena.getName() + ".dcnf")),
+				teamm, bed, spawn);
+		Player player = Bukkit.getPlayer(playerName);
+		if (player != null && ARENALIST.contains(arena)) {
+			putInARENAS(sender, instance, arena, playerName);
+			PlayerData data = new PlayerData(team, playerName, status);
+			putInPLAYERS(sender, instance, playerName, data);
+		}
+		if (locationToSpawn != null && player != null)
+			player.teleport(locationToSpawn);
+		if (check == true) {
+			PropertiesAPI
+					.getProperty("selectTeamItem", "COMPASS", DIR + arena.getName() + "/" + arena.getName() + ".dcnf")
+					.thenAccept((x) -> {
+						Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+							ItemStack item = new ItemStack(Material.valueOf(x), 1);
+							player.getInventory().setItem(40, item);
+						});
+					});
+		}
+	}
+
+	public static void removePlayer(@Nullable CommandSender sender, JavaPlugin instance, String playerName,
+			Arena arena) {
+		removeFromARENAS(sender, instance, arena, playerName);
+		PLAYERSRemoveAll(sender, instance, playerName);
 	}
 
 	public static void removePlayer(String playerName, Arena arena) {
@@ -1119,59 +1143,65 @@ public class ArenaManager {
 	}
 
 	public static STATES getArenaStatus(Arena arena) {
-		return STATES.valueOf(ARENAS.get(arena).get(0));
+		Optional<Entry<Arena, String>> status = ARENAS.entries().stream()
+				.filter((x) -> x.getKey().equals(arena) && STATES.valueOf(x.getValue()) != null).findFirst();
+		if (status.isPresent()) {
+			return (STATES.valueOf(status.get().getValue()));
+		}
+		return null;
 	}
 
 	public static void setArenaStatus(Arena arena, STATES status) {
 		setInARENAS(0, arena, status.name());
 	}
 
+	public static void setArenaStatus(@Nullable CommandSender sender, JavaPlugin instance, Arena arena, STATES status) {
+		setInARENAS(0, sender, instance, arena, status.name());
+	}
+
 	public static STATES getPlayerStatus(String playerName) {
-		Object data = PLAYERS.get(playerName);
-		if (data instanceof PlayerData) {
-			PlayerData playerData = (PlayerData) data;
-			return playerData.getStatus();
+		Optional<Entry<String, PlayerData>> value = PLAYERS.entrySet().stream()
+				.filter((x) -> x.getKey().equals(playerName) && x.getValue() instanceof PlayerData).findFirst();
+		if (value.isPresent()) {
+			PlayerData data = value.get().getValue();
+			return data.getStatus();
 		}
 		return null;
 	}
 
 	public static Arena getArenaByName(String arenaName) {
-		for (Arena arena : ARENALIST)
-			if (arena.getName().equals(arenaName))
-				return arena;
-		return null;
-	}
-
-	public static List<String> getTeamsPlayers(Arena arena, TEAMS team) {
-		List<String> newLS = new ArrayList<String>();
-		for (String playerName : arena.getPlayersNames()) {
-			if (getPlayersTeam(playerName).getTeam() == team) {
-				newLS.add(playerName);
-			}
+		Optional<Arena> arena = ARENALIST.stream().filter((x) -> x.getName().equals(arenaName)).findFirst();
+		if (arena.isPresent()) {
+			return arena.get();
 		}
-		return newLS;
-	}
-
-	public static Arena getArenaByPlayerAndTeam(String playerName, ArenaTeam team) {
-		for (Arena arena : ARENALIST)
-			if (arena.equals(team.getArena()) && arena.equals(getPlayersArena(playerName)))
-				if (getPlayersTeam(playerName).equals(team))
-					return arena;
-
 		return null;
 	}
 
-	/**
-	 * @return the index of arena in ARENAS
-	 */
-	public static Integer getPlayerIndexInArena(String playerName, Arena arena) {
-		int i = 1;
+	public static ConcurrentSkipListSet<String> getTeamsPlayers(@Nullable CommandSender sender, JavaPlugin instance,
+			Arena arena, TEAMS team) {
+		ConcurrentSkipListSet<String> fls = new ConcurrentSkipListSet<>();
+		arena.getPlayersNames().stream().filter((x) -> getPlayersTeam(sender, instance, x).getTeam() == team)
+				.forEach((x) -> {
+					fls.add(x);
+				});
+		return fls;
+	}
 
-		while (i < ARENAS.get(arena).size()) {
-			i++;
-			if (ARENAS.get(arena).get(i).equals(playerName)) {
-				return i;
-			}
+	public static Arena getArenaByPlayerAndTeam(@Nullable CommandSender sender, JavaPlugin instance, String playerName,
+			ArenaTeam team) {
+		Optional<Arena> value = ARENALIST.stream()
+				.filter((x) -> x.equals(team.getArena()) && x.equals(getPlayersArena(sender, instance, playerName)))
+				.findFirst();
+		if (value.isPresent()) {
+			return value.get();
+		}
+		return null;
+	}
+
+	public static Integer getPlayerIndexInArena(String playerName, Arena arena) {
+		Optional<Arena> arenaa = ARENALIST.stream().filter((x) -> x.equals(arena)).findFirst();
+		if (arenaa.isPresent()) {
+			return ARENALIST.indexOf(arenaa.get());
 		}
 		return null;
 	}
@@ -1180,7 +1210,7 @@ public class ArenaManager {
 		if (arena.getWorld() != null) {
 			return arena.getWorld();
 		} else {
-			return PropertiesAPI.getProperty_NS("world", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+			return PropertiesAPI.getProperty_C("world", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 		}
 	}
 
@@ -1189,9 +1219,20 @@ public class ArenaManager {
 		PropertiesAPI.setProperty_NS("world", world, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
 
+	public static void setArenaWorld(JavaPlugin instance, Arena arena, String world) {
+		arena.setWorld(world);
+		PropertiesAPI.setProperty(instance, "world", world, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+	}
+
 	public static void setPlayerTeam(String playerName, ArenaTeam team) {
 		PlayerData data = new PlayerData(team, playerName, getPlayerStatus(playerName));
 		putInPLAYERS(playerName, data);
+	}
+
+	public static void setPlayerTeam(@Nullable CommandSender sender, JavaPlugin instance, String playerName,
+			ArenaTeam team) {
+		PlayerData data = new PlayerData(team, playerName, getPlayerStatus(playerName));
+		putInPLAYERS(sender, instance, playerName, data);
 	}
 
 	/**
@@ -1202,6 +1243,13 @@ public class ArenaManager {
 	public static void setPos1(Arena arena, Location location) {
 		arena.setPos1(location);
 		PropertiesAPI.setProperty_NS("pos1",
+				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
+				DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+	}
+
+	public static void setPos1(JavaPlugin instance, Arena arena, Location location) {
+		arena.setPos1(location);
+		PropertiesAPI.setProperty(instance, "pos1",
 				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
 				DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
@@ -1218,6 +1266,13 @@ public class ArenaManager {
 				DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
 
+	public static void setPos2(JavaPlugin instance, Arena arena, Location location) {
+		arena.setPos2(location);
+		PropertiesAPI.setProperty(instance, "pos2",
+				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
+				DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+	}
+
 	/**
 	 * <p>
 	 * Its just a location point that used in isEntityOnRegion function
@@ -1230,8 +1285,8 @@ public class ArenaManager {
 			return arena.getPos1();
 		} else {
 			String values[] = PropertiesAPI
-					.getProperty_NS("pos1", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf").split(",");
-			return new Location(Bukkit.getWorld(arena.getName()), Integer.parseInt(values[0]),
+					.getProperty_C("pos1", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf").split(",");
+			return new Location(Bukkit.getWorld(arena.getWorld()), Integer.parseInt(values[0]),
 					Integer.parseInt(values[1]), Integer.parseInt(values[2]));
 		}
 	}
@@ -1244,7 +1299,7 @@ public class ArenaManager {
 	 * @return the first position of the arena
 	 */
 	public static Location getPos1(String arenaName, String worldName) {
-		String values[] = PropertiesAPI.getProperty_NS("pos1", null, DIR + arenaName + "/" + arenaName + ".dcnf")
+		String values[] = PropertiesAPI.getProperty_C("pos1", null, DIR + arenaName + "/" + arenaName + ".dcnf")
 				.split(",");
 		return new Location(Bukkit.getWorld(worldName), Integer.parseInt(values[0]), Integer.parseInt(values[1]),
 				Integer.parseInt(values[2]));
@@ -1262,8 +1317,8 @@ public class ArenaManager {
 			return arena.getPos1();
 		} else {
 			String values[] = PropertiesAPI
-					.getProperty_NS("pos2", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf").split(",");
-			return new Location(Bukkit.getWorld(arena.getName()), Integer.parseInt(values[0]),
+					.getProperty_C("pos2", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf").split(",");
+			return new Location(Bukkit.getWorld(arena.getWorld()), Integer.parseInt(values[0]),
 					Integer.parseInt(values[1]), Integer.parseInt(values[2]));
 		}
 	}
@@ -1276,7 +1331,7 @@ public class ArenaManager {
 	 * @return the second position of the arena
 	 */
 	public static Location getPos2(String arenaName, String worldName) {
-		String values[] = PropertiesAPI.getProperty_NS("pos2", null, DIR + arenaName + "/" + arenaName + ".dcnf")
+		String values[] = PropertiesAPI.getProperty_C("pos2", null, DIR + arenaName + "/" + arenaName + ".dcnf")
 				.split(",");
 		return new Location(Bukkit.getWorld(worldName), Integer.parseInt(values[0]), Integer.parseInt(values[1]),
 				Integer.parseInt(values[2]));
@@ -1289,10 +1344,12 @@ public class ArenaManager {
 				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), secounds, amount);
 	}
 
-	public static Location getGeneratorLocation(String arenaName, String generatorName, String itemName) {
+	public static Location getGeneratorLocation(JavaPlugin instance, String arenaName, String generatorName,
+			String itemName) {
 		String values[] = new String[3];
 		PropertiesAPI
-				.getProperties_NS(generatorName + "." + itemName, DIR + arenaName + "/" + arenaName + ".dcnf", null)
+				.getProperties_C(instance, generatorName + "." + itemName, DIR + arenaName + "/" + arenaName + ".dcnf",
+						"NULL")
 				.stream().filter((x) -> x.contains(",")).map((x) -> x.split("-\\s*", 2)[1].split(",")).forEach((x) -> {
 					values[0] = x[0];
 					values[1] = x[1];
@@ -1302,12 +1359,20 @@ public class ArenaManager {
 				Integer.parseInt(values[2]));
 	}
 
-	public static ArenaTeam getTeamByArenaAndPlayer(String playerName, Arena arena) {
-		for (Arena a : ARENALIST)
-			if (a.equals(arena) && arena.equals(getPlayersArena(playerName)))
-				if (getPlayersArena(playerName).equals(arena))
-					return getPlayersTeam(playerName);
+	public static ArenaTeam getTeamByArenaAndPlayer(@Nullable CommandSender sender, String playerName, Arena arena) {
+		Optional<Arena> aren = ARENALIST.stream().filter((x) -> x.equals(arena) && x.equals(arena)).findFirst();
+		if (aren.isPresent()) {
+			return getPlayersTeam(sender, playerName);
+		}
+		return null;
+	}
 
+	public static ArenaTeam getTeamByArenaAndPlayer(@Nullable CommandSender sender, JavaPlugin instance,
+			String playerName, Arena arena) {
+		Optional<Arena> aren = ARENALIST.stream().filter((x) -> x.equals(arena) && x.equals(arena)).findFirst();
+		if (aren.isPresent()) {
+			return getPlayersTeam(sender, instance, playerName);
+		}
 		return null;
 	}
 
@@ -1318,11 +1383,18 @@ public class ArenaManager {
 				DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf");
 	}
 
+	public static void setTeamSpawn(JavaPlugin instance, ArenaTeam team, Location location) {
+		team.setTeamSpawn(location);
+		PropertiesAPI.setProperty(instance, team.getTeam().name() + ".teamspawn",
+				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
+				DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf");
+	}
+
 	public static Location getTeamSpawn(ArenaTeam team, String world) {
 		if (team.getTeamSpawn() != null) {
 			return team.getTeamSpawn();
 		}
-		String values[] = PropertiesAPI.getProperty_NS(team.getTeam().name() + ".spawn", null,
+		String values[] = PropertiesAPI.getProperty_C(team.getTeam().name() + ".spawn", null,
 				DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf").split(",");
 		return new Location(Bukkit.getWorld(world), Double.parseDouble(values[0]), Double.parseDouble(values[1]),
 				Double.parseDouble(values[2]));
@@ -1335,7 +1407,14 @@ public class ArenaManager {
 	 */
 	public static void setBlockSpawn(ArenaTeam team, Location location) {
 		team.setBlockSpawn(location);
-		PropertiesAPI.setProperty_NS(team.getTeam().name() + ".bedspawn",
+		PropertiesAPI.setProperty_NS(team.getTeam().name() + ".block",
+				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
+				DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf");
+	}
+
+	public static void setBlockSpawn(JavaPlugin instance, ArenaTeam team, Location location) {
+		team.setBlockSpawn(location);
+		PropertiesAPI.setProperty(instance, team.getTeam().name() + ".block",
 				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
 				DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf");
 	}
@@ -1343,13 +1422,31 @@ public class ArenaManager {
 	/**
 	 * @return the location of block of the arenaTeam
 	 */
+	public static Location getBlockSpawn(JavaPlugin instance, ArenaTeam team) {
+		if (team.getBlockSpawn() != null) {
+			return team.getBlockSpawn();
+		} else {
+			String ls[] = new String[3];
+			PropertiesAPI
+					.getProperties_C(instance, team.getTeam().name() + ".block",
+							DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf", "NULL")
+					.stream().map((x) -> x.split("-\\s*", 2)[1].split(",")).forEach((x) -> {
+						ls[0] = x[0];
+						ls[1] = x[1];
+						ls[2] = x[2];
+					});
+			return new Location(Bukkit.getWorld(team.getArena().getWorld()), Integer.parseInt(ls[0]),
+					Integer.parseInt(ls[1]), Integer.parseInt(ls[2]));
+		}
+	}
+
 	public static Location getBlockSpawn(ArenaTeam team) {
 		if (team.getBlockSpawn() != null) {
 			return team.getBlockSpawn();
 		} else {
 			String ls[] = new String[3];
 			PropertiesAPI
-					.getProperties_NS(team.getTeam().name() + ".bedspawn",
+					.getProperties_NS(team.getTeam().name() + ".block",
 							DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf", null)
 					.stream().map((x) -> x.split("-\\s*", 2)[1].split(",")).forEach((x) -> {
 						ls[0] = x[0];
@@ -1377,10 +1474,10 @@ public class ArenaManager {
 		}
 	}
 
-	public static Location getWaitingSpawn(String arenaName, String worldName) {
+	public static Location getWaitingSpawn(JavaPlugin instance, String arenaName, String worldName) {
 
 		String ls[] = new String[3];
-		PropertiesAPI.getProperties_NS("waiting", DIR + arenaName + "/" + arenaName + ".dcnf", null).stream()
+		PropertiesAPI.getProperties_C(instance, "waiting", DIR + arenaName + "/" + arenaName + ".dcnf", "NULL").stream()
 				.map((x) -> x.split("-\\s*", 2)[1].split(",")).forEach((x) -> {
 					ls[0] = x[0];
 					ls[1] = x[1];
@@ -1395,9 +1492,14 @@ public class ArenaManager {
 		PropertiesAPI.setProperty_NS("max", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
 
+	public static void setMaxArena(JavaPlugin instance, Arena arena, String number) {
+		arena.setMaxPlayers(Integer.parseInt(number));
+		PropertiesAPI.setProperty(instance, "max", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+	}
+
 	public static Integer getMaxArena(Arena arena) {
 		return arena.getMaxPlayer() != null ? arena.getMaxPlayer()
-				: Integer.parseInt(PropertiesAPI.getProperty_NS("max", null,
+				: Integer.parseInt(PropertiesAPI.getProperty_C("max", null,
 						DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
 	}
 
@@ -1406,9 +1508,14 @@ public class ArenaManager {
 		PropertiesAPI.setProperty_NS("min", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
 
+	public static void setMinArena(JavaPlugin instance, Arena arena, String number) {
+		arena.setMinPlayers(Integer.parseInt(number));
+		PropertiesAPI.setProperty(instance, "min", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+	}
+
 	public static Integer getMinArena(Arena arena) {
 		return arena.getMinPlayer() != null ? arena.getMinPlayer()
-				: Integer.parseInt(PropertiesAPI.getProperty_NS("min", null,
+				: Integer.parseInt(PropertiesAPI.getProperty_C("min", null,
 						DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
 	}
 
@@ -1418,9 +1525,15 @@ public class ArenaManager {
 				DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
 	}
 
+	public static void setTeamMax(JavaPlugin instance, ArenaTeam team, String number) {
+		team.setMaxNumber(Integer.parseInt(number));
+		PropertiesAPI.setProperty(instance, team.getTeam().name() + ".min", number,
+				DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
+	}
+
 	public static Integer getTeamMax(ArenaTeam team) {
 		return team.getMaxNumber() != null ? team.getMaxNumber()
-				: Integer.parseInt(PropertiesAPI.getProperty_NS(team.getTeam().name() + ".max", null,
+				: Integer.parseInt(PropertiesAPI.getProperty_C(team.getTeam().name() + ".max", null,
 						DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf"));
 	}
 
@@ -1430,9 +1543,15 @@ public class ArenaManager {
 				DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
 	}
 
+	public static void setTeamMin(JavaPlugin instance, ArenaTeam team, String number) {
+		team.setMinNumber(Integer.parseInt(number));
+		PropertiesAPI.setProperty(instance, team.getTeam().name() + ".max", number,
+				DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
+	}
+
 	public static Integer getTeamMin(ArenaTeam team) {
 		return team.getMinNumber() != null ? team.getMinNumber()
-				: Integer.parseInt(PropertiesAPI.getProperty_NS(team.getTeam().name() + ".min", null,
+				: Integer.parseInt(PropertiesAPI.getProperty_C(team.getTeam().name() + ".min", null,
 						DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf"));
 	}
 
@@ -1453,6 +1572,10 @@ public class ArenaManager {
 	 */
 	public static boolean isItemExist(ArenaTeam team, Material material) {
 		return (!(getBlockSpawn(team).getBlock().getType() == material)) ? true : false;
+	}
+
+	public static boolean isItemExist(JavaPlugin instance, ArenaTeam team, Material material) {
+		return (!(getBlockSpawn(instance, team).getBlock().getType() == material)) ? true : false;
 	}
 
 }
