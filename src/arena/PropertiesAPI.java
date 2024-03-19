@@ -20,6 +20,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import com.google.common.collect.ImmutableList;
+
 /* 
  * @author shayegan8
  * 
@@ -225,16 +227,15 @@ public class PropertiesAPI {
 		List<String> allLines = null;
 		try {
 			allLines = Files.readAllLines(Paths.get(fileName));
-			if (allLines == null || allLines.size() == 0) {
-				allLines = new ArrayList<>();
-			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			allLines = null;
 		}
-		if (allLines != null && allLines.contains(key + SPLITOR + value)) {
-			int ini = getByID_NS(key + SPLITOR + value, fileName);
-			removeProperty_NS(allLines.get(ini), fileName);
-			setPropertyProcess(key, value, fileName);
+		if (allLines != null) {
+			if (allLines.contains(key + SPLITOR + value)) {
+				int ini = getByID_NS(key + SPLITOR + value, fileName);
+				removeProperty_NS(allLines.get(ini), fileName);
+				setPropertyProcess(key, value, fileName);
+			}
 		} else {
 			setPropertyProcess(key, value, fileName);
 		}
@@ -246,23 +247,33 @@ public class PropertiesAPI {
 			writer.write("\n" + key + SPLITOR + value + "\n");
 			writer.flush();
 		} catch (IOException e) {
-			e.printStackTrace();
+			if (Files.notExists(Paths.get(fileName))) {
+				try {
+					Files.createFile(Paths.get(fileName));
+				} catch (IOException e1) {
+					e1.printStackTrace();
+				}
+				if (Files.exists(Paths.get(fileName))) {
+					setPropertyProcess(key, value, fileName);
+				}
+			}
 		}
 	}
 
 	public static void setProperty(Plugin instance, String key, String value, String fileName) {
-
 		Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 			List<String> allLines = null;
 			try {
 				allLines = Files.readAllLines(Paths.get(fileName));
 			} catch (IOException e) {
-				e.printStackTrace();
+				allLines = null;
 			}
-			if (allLines.contains(key + SPLITOR + value)) {
-				int ini = getByID_NS(key + SPLITOR + value, fileName);
-				removeProperty(instance, allLines.get(ini), fileName);
-				setPropertyProcess(key, value, fileName);
+			if (allLines != null) {
+				if (allLines.contains(key + SPLITOR + value)) {
+					int ini = getByID_NS(key + SPLITOR + value, fileName);
+					removeProperty(instance, allLines.get(ini), fileName);
+					setPropertyProcess(key, value, fileName);
+				}
 			} else {
 				setPropertyProcess(key, value, fileName);
 			}
@@ -285,7 +296,8 @@ public class PropertiesAPI {
 			try {
 				allLines = Files.readAllLines(Paths.get(fileName));
 			} catch (IOException e) {
-				e.printStackTrace();
+				throw new IllegalStateException(
+						"File is not exist or something else \n" + Arrays.toString(e.getStackTrace()));
 			}
 			int i = 0;
 			while (i < allLines.size()) {
@@ -398,7 +410,12 @@ public class PropertiesAPI {
 			return new ConcurrentSkipListSet<>(Arrays.asList(defaultValues));
 		}
 
-		return getListPropertiesProcess(instance, key, fileName, lsls, defaultValues);
+		try {
+			return getListPropertiesProcess(instance, key, fileName, lsls, defaultValues);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public static CompletableFuture<List<String>> getProperties(String key, String fileName,
@@ -504,28 +521,35 @@ public class PropertiesAPI {
 	}
 
 	public static ConcurrentSkipListSet<String> getListPropertiesProcess(JavaPlugin instance, String key,
-			String fileName, ConcurrentSkipListSet<String> allLines, String... defaultValues) {
+			String fileName, ConcurrentSkipListSet<String> allLines, String... defaultValues) throws IOException {
 
-		ConcurrentSkipListSet<String> ls = new ConcurrentSkipListSet<String>();
-		Iterator<String> iterate = allLines.iterator();
-		while (iterate.hasNext()) {
-			reader(fileName).thenAccept((x) -> {
-				Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-					String firstString;
-					firstString = iterate.next();
-					if (firstString.equals(x.get(getIntByString(allLines, "* " + key)))) {
-						String storedFirstString = firstString;
+		ConcurrentSkipListSet<String> ls = new ConcurrentSkipListSet<>();
+		ImmutableList<String> imm = ImmutableList.copyOf(allLines);
+		List<String> linesToProcess = new ArrayList<>(imm);
+
+		for (String line : linesToProcess) {
+			if (line.equals(imm.get(getIntByString(allLines, "* " + key)))) {
+				String storedFirstString = line;
+				Iterator<String> iterate = allLines.iterator();
+				while (iterate.hasNext()) {
+					String currentLine = iterate.next();
+					if (currentLine.equals(storedFirstString)) {
 						while (getIntByString(allLines, storedFirstString) < getIntByString(allLines,
 								"* endif " + key)) {
-							ls.add(iterate.next().split(LIST_SPLITOR)[1]);
+							Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+								ls.add(currentLine.split(LIST_SPLITOR)[1]);
+							});
+							if (!iterate.hasNext()) {
+								break;
+							}
+							storedFirstString = iterate.next();
 						}
 					}
-
-				});
-			});
+				}
+			}
 		}
 
-		if (ls.size() == 0 || ls == null) {
+		if (ls.isEmpty()) {
 			return new ConcurrentSkipListSet<>(Arrays.asList(defaultValues));
 		}
 
@@ -593,8 +617,8 @@ public class PropertiesAPI {
 			return defaultValue;
 		}
 
-		Optional<String> retrn = cLines.stream().filter(x -> x.contains(key + SPLITOR) && x.split(SPLITOR).length == 2)
-				.findAny();
+		Optional<String> retrn = cLines.parallelStream()
+				.filter(x -> x.contains(key + SPLITOR) && x.split(SPLITOR).length == 2).findFirst();
 		if (retrn.isPresent()) {
 			return retrn.get().split(SPLITOR)[1];
 		} else {

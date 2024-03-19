@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -616,10 +617,11 @@ public class ArenaManager {
 		String arenaDir = DIR + arenaName;
 		String arenaFile = DIR + arenaName + "/" + arenaName + ".dcnf";
 		try {
-			if (Files.notExists(Paths.get(arenaDir)) || Files.notExists(Paths.get(arenaFile))) {
+			if (Files.notExists(Paths.get(arenaDir)))
 				Files.createDirectory(Paths.get(arenaDir));
+			if (Files.notExists(Paths.get(arenaFile)))
 				Files.createFile(Paths.get(arenaFile));
-			}
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -674,98 +676,71 @@ public class ArenaManager {
 	 *          it creates a arena with given parameters
 	 *          </p>
 	 */
-	public static CompletableFuture<Void> createArena(@Nullable CommandSender sender, JavaPlugin instance,
-			String arenaName, Integer minPlayer, Integer maxPlayer, Integer arenaTime, Location waitingSpawn,
-			String world) {
+	public static void createArena(@Nullable CommandSender sender, JavaPlugin instance, String arenaName,
+			Integer minPlayer, Integer maxPlayer, Integer arenaTime, Location waitingSpawn, String world) {
 		final String arenaDir = DIR + arenaName;
 		final String arenaFile = DIR + arenaName + "/" + arenaName + ".dcnf";
+		String firstValue = null;
+		String secondValue = null;
+		String thirdValue = null;
+		Location locationC = null;
 		Bukkit.getScheduler().runTask(instance, () -> {
 			try {
-				if (Files.notExists(Paths.get(arenaDir)) || Files.notExists(Paths.get(arenaFile))) {
+				if (Files.notExists(Paths.get(arenaDir)))
 					Files.createDirectory(Paths.get(arenaDir));
+				if (Files.notExists(Paths.get(arenaFile)))
 					Files.createFile(Paths.get(arenaFile));
-				}
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		});
-		final List<Object> values = new ArrayList<Object>();
-		CompletableFuture<String> minC = PropertiesAPI.getProperty("minPlayers", "2", arenaFile);
 		if (minPlayer != null) {
-			values.add(minPlayer);
 			PropertiesAPI.setProperty(instance, "minPlayers", String.valueOf(minPlayer), arenaFile);
-		} else {
-			minC.thenAccept((x) -> {
-				Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-					values.add(x);
-				});
-			});
 		}
+		String minC = PropertiesAPI.getProperty_C("minPlayers", "2", arenaFile);
 
-		CompletableFuture<String> maxC = PropertiesAPI.getProperty("maxPlayers", "8", arenaFile);
 		if (maxPlayer != null) {
-			values.add(maxPlayer);
 			PropertiesAPI.setProperty(instance, "maxPlayers", String.valueOf(maxPlayer), arenaFile);
-		} else {
-			maxC.thenAccept((x) -> {
-				Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-					values.add(x);
-				});
-			});
 		}
+		String maxC = PropertiesAPI.getProperty_C("maxPlayers", "8", arenaFile);
 
-		CompletableFuture<String> timeC = PropertiesAPI.getProperty("arenaTime", "1800", arenaFile);
 		if (arenaTime != null) {
-			values.add(arenaTime);
 			PropertiesAPI.setProperty(instance, "arenaTime", String.valueOf(arenaTime), arenaFile);
-		} else {
-			timeC.thenAccept((x) -> {
-				Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-					values.add(x);
-				});
-			});
 		}
+		String timeC = PropertiesAPI.getProperty_C("arenaTime", "1800", arenaFile);
 
-		CompletableFuture<List<String>> waitingC = PropertiesAPI.getProperties("waitingSpawn", arenaFile, "0", "0",
-				"0");
+		ConcurrentSkipListSet<String> waitingC = PropertiesAPI.getProperties_C(instance, "waitingSpawn", arenaFile, "0",
+				"0", "0");
 		if (waitingSpawn != null) {
-			values.add(waitingSpawn);
 			PropertiesAPI.setProperties(instance, true, "waitingSpawn", String.valueOf(waitingSpawn.getBlockX()),
 					String.valueOf(waitingSpawn.getBlockY()), String.valueOf(waitingSpawn.getBlockZ()));
-		} else {
-			waitingC.thenAccept((x) -> {
-				Location location = new Location(Bukkit.getWorld(world), Double.parseDouble(x.get(0)),
-						Double.parseDouble(x.get(1)), Double.parseDouble(x.get(2)));
-				Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-					values.add(location);
-				});
-			});
 		}
-
-		CompletableFuture<Void> all = CompletableFuture.allOf(minC, maxC, timeC, waitingC);
-		return all.thenAccept((x) -> {
-			Integer min = null;
-			if (values.get(0) instanceof Integer) {
-				min = (Integer) values.get(0);
+		Iterator<String> iterator = waitingC.iterator();
+		while (iterator.hasNext()) {
+			if (firstValue == null) {
+				firstValue = iterator.next();
+			}
+			if (firstValue != null) {
+				String saved = iterator.next();
+				if (!firstValue.equals(saved)) {
+					secondValue = saved;
+				}
 			}
 
-			Integer max = null;
-			if (values.get(1) instanceof Integer) {
-				max = (Integer) values.get(1);
+			if (secondValue != null) {
+				String saved = iterator.next();
+				if (!secondValue.equals(saved)) {
+					secondValue = saved;
+				}
 			}
 
-			Integer time = null;
-			if (values.get(2) instanceof Integer) {
-				time = (Integer) values.get(2);
-			}
-
-			Location waiting = null;
-			if (values.get(3) instanceof Location) {
-				waiting = (Location) values.get(3);
-			}
-			Arena arena = new Arena(min, max, time, waiting, STATES.INPROCESS, arenaName, world);
-			addInARENALIST(sender, instance, arena);
-		});
+		}
+		locationC = new Location(Bukkit.getWorld(world), Integer.parseInt(firstValue), Integer.parseInt(secondValue),
+				Integer.parseInt(thirdValue));
+		Arena arena = new Arena(Integer.parseInt(minC), Integer.parseInt(maxC), Integer.parseInt(timeC), locationC,
+				STATES.INPROCESS, arenaName, world);
+		addInARENALIST(sender, instance, arena);
 	}
 
 	/**
