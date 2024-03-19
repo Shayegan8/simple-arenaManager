@@ -136,7 +136,10 @@ public class Arena {
 	}
 
 	public void setPos2(Location pos2) {
+<<<<<<< HEAD
 		ShitClass.getPlugin(ShitClass.class);
+=======
+>>>>>>> 85c84e7 (Nothing)
 		this.pos2 = pos2;
 	}
 
