@@ -1534,10 +1534,6 @@ public class ArenaManager {
 				&& entityLocation.getZ() <= Math.max(pos1.getZ(), pos2.getZ())) ? true : false;
 	}
 
-	/**
-	 * @apiNote this can be unused if your arena dosen't need something like bed
-	 * @return true when that item exists
-	 */
 	public static boolean isItemExist(ArenaTeam team, Material material) {
 		return (!(getBlockSpawn(team).getBlock().getType() == material)) ? true : false;
 	}
