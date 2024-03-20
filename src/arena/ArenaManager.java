@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -77,6 +78,26 @@ public class ArenaManager {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				ARENAS.put(key, value);
+				List<String> players = ARENAS.get(key);
+				players.remove(0);
+				for (Player player : players.stream().map((x) -> Bukkit.getPlayer(x)).collect(Collectors.toList())) {
+					if (sender.hasPermission("arena.putInARENAS")) {
+						if (STATES.valueOf(value) != null) {
+							String statusMSG = Chati
+									.translate(
+											PropertiesAPI.getProperty_C("arenaStatus", "&carena status is now " + value,
+													ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf"))
+									.replaceAll("{STATUS}", value);
+							player.sendMessage(statusMSG);
+						} else {
+							String MSG = Chati
+									.translate(PropertiesAPI.getProperty_C("arenaStatus", value + "&c ",
+											ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf"))
+									.replaceAll("{PLAYER}", value);
+							player.sendMessage(MSG);
+						}
+					}
+				}
 			});
 		}, Executors.newSingleThreadExecutor());
 
@@ -92,6 +113,14 @@ public class ArenaManager {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				ARENAS.get(key).set(index, value);
+				List<String> players = ARENAS.get(key);
+				players.remove(0);
+				for (Player player : players.stream().map((x) -> Bukkit.getPlayer(x)).collect(Collectors.toList())) {
+					if (sender.hasPermission("arena.putInARENAS"))
+						player.sendMessage(Chati
+								.translate(PropertiesAPI.getProperty_C("arenaStatus", "&carena status is now " + value,
+										ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf")));
+				}
 			});
 		}, Executors.newSingleThreadExecutor());
 
@@ -235,8 +264,7 @@ public class ArenaManager {
 		NPCS.put(key, value);
 	}
 
-	public static void setInNPCS(int index, @Nullable CommandSender sender, Plugin instance, String key,
-			NPC value) {
+	public static void setInNPCS(int index, @Nullable CommandSender sender, Plugin instance, String key, NPC value) {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				NPCS.get(key).set(index, value);
@@ -668,8 +696,8 @@ public class ArenaManager {
 	 *          it creates a arena with given parameters
 	 *          </p>
 	 */
-	public static void createArena(@Nullable CommandSender sender, Plugin instance, String arenaName,
-			Integer minPlayer, Integer maxPlayer, Integer arenaTime, Location waitingSpawn, String world) {
+	public static void createArena(@Nullable CommandSender sender, Plugin instance, String arenaName, Integer minPlayer,
+			Integer maxPlayer, Integer arenaTime, Location waitingSpawn, String world) {
 		final String arenaDir = DIR + arenaName;
 		final String arenaFile = DIR + arenaName + "/" + arenaName + ".dcnf";
 		String firstValue = null;
@@ -1058,8 +1086,8 @@ public class ArenaManager {
 		}
 	}
 
-	public static void randomAddPlayer(@Nullable CommandSender sender, Plugin instance, String playerName,
-			Arena arena, STATES status, Location locationToSpawn, boolean check) {
+	public static void randomAddPlayer(@Nullable CommandSender sender, Plugin instance, String playerName, Arena arena,
+			STATES status, Location locationToSpawn, boolean check) {
 		Random rand = new Random();
 		int random = rand.nextInt(TEAMS.values().length);
 		TEAMS teamm = TEAMS.values()[random];
@@ -1099,8 +1127,7 @@ public class ArenaManager {
 		}
 	}
 
-	public static void removePlayer(@Nullable CommandSender sender, Plugin instance, String playerName,
-			Arena arena) {
+	public static void removePlayer(@Nullable CommandSender sender, Plugin instance, String playerName, Arena arena) {
 		removeFromARENAS(sender, instance, arena, playerName);
 		PLAYERSRemoveAll(sender, instance, playerName);
 	}
@@ -1335,8 +1362,8 @@ public class ArenaManager {
 		return null;
 	}
 
-	public static ArenaTeam getTeamByArenaAndPlayer(@Nullable CommandSender sender, Plugin instance,
-			String playerName, Arena arena) {
+	public static ArenaTeam getTeamByArenaAndPlayer(@Nullable CommandSender sender, Plugin instance, String playerName,
+			Arena arena) {
 		Optional<Arena> aren = ARENALIST.stream().filter((x) -> x.equals(arena) && x.equals(arena)).findFirst();
 		if (aren.isPresent()) {
 			return getPlayersTeam(sender, instance, playerName);
