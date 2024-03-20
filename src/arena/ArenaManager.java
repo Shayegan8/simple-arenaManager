@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
@@ -85,13 +84,13 @@ public class ArenaManager {
 						if (STATES.valueOf(value) != null) {
 							String statusMSG = Chati
 									.translate(
-											PropertiesAPI.getProperty_C("arenaStatus", "&carena status is now " + value,
+											PropertiesAPI.getProperty_C("putInARENAS", "&carena status is now " + value,
 													ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf"))
 									.replaceAll("{STATUS}", value);
 							player.sendMessage(statusMSG);
 						} else {
 							String MSG = Chati
-									.translate(PropertiesAPI.getProperty_C("arenaStatus", value + "&c ",
+									.translate(PropertiesAPI.getProperty_C("arenaStatus", "&c " + value + " added",
 											ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf"))
 									.replaceAll("{PLAYER}", value);
 							player.sendMessage(MSG);
@@ -116,10 +115,23 @@ public class ArenaManager {
 				List<String> players = ARENAS.get(key);
 				players.remove(0);
 				for (Player player : players.stream().map((x) -> Bukkit.getPlayer(x)).collect(Collectors.toList())) {
-					if (sender.hasPermission("arena.putInARENAS"))
-						player.sendMessage(Chati
-								.translate(PropertiesAPI.getProperty_C("arenaStatus", "&carena status is now " + value,
-										ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf")));
+					if (sender.hasPermission("arena.setInARENAS")) {
+						if (index == 0) {
+							String statusMSG = Chati
+									.translate(
+											PropertiesAPI.getProperty_C("setInARENAS", "&carena status is now " + value,
+													ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf"))
+									.replaceAll("{STATUS}", value);
+							player.sendMessage(statusMSG);
+						} else {
+							String MSG = Chati
+									.translate(PropertiesAPI.getProperty_C("arenaStatus",
+											"&c " + value + " is on " + index,
+											ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf"))
+									.replaceAll("{PLAYER}", value);
+							player.sendMessage(MSG);
+						}
+					}
 				}
 			});
 		}, Executors.newSingleThreadExecutor());
@@ -135,6 +147,18 @@ public class ArenaManager {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				ARENAS.remove(key, value);
+				List<String> players = ARENAS.get(key);
+				players.remove(0);
+				for (Player player : players.stream().map((x) -> Bukkit.getPlayer(x)).collect(Collectors.toList())) {
+					if (sender.hasPermission("arena.removeFromARENAS")) {
+						String MSG = Chati
+								.translate(PropertiesAPI.getProperty_C("removeFromARENAS",
+										"&c " + value + " removed from ARENAS",
+										ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf"))
+								.replaceAll("{PLAYER}", value);
+						player.sendMessage(MSG);
+					}
+				}
 			});
 		});
 		ARENASException(future, sender, key, value, true, true);
@@ -148,6 +172,18 @@ public class ArenaManager {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				ARENAS.removeAll(key);
+				List<String> players = ARENAS.get(key);
+				players.remove(0);
+				for (Player player : players.stream().map((x) -> Bukkit.getPlayer(x)).collect(Collectors.toList())) {
+					if (sender.hasPermission("arena.ARENASRemoveAll")) {
+						String MSG = Chati
+								.translate(PropertiesAPI.getProperty_C("ARENASRemoveAll",
+										"&c " + key.getName() + " removed from ARENAS",
+										ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf"))
+								.replaceAll("{ARENA}", key.getName());
+						player.sendMessage(MSG);
+					}
+				}
 			});
 		}, Executors.newSingleThreadExecutor());
 
@@ -187,6 +223,15 @@ public class ArenaManager {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				PLAYERS.put(key, value);
+				Arena arena = getPlayersArena(sender, key);
+				if (sender.hasPermission("arena.putInPLAYERS")) {
+					String statusMSG = Chati
+							.translate(PropertiesAPI.getProperty_C("putInPLAYERS",
+									"&c" + key + " status is now this \n" + value.toString(),
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"))
+							.replaceAll("{PLAYER}", key);
+					sender.sendMessage(statusMSG);
+				}
 			});
 
 		}, Executors.newSingleThreadExecutor());
@@ -203,6 +248,15 @@ public class ArenaManager {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				PLAYERS.remove(key, value);
+				Arena arena = getPlayersArena(sender, key);
+				if (sender.hasPermission("arena.removeFromPlayers")) {
+					String statusMSG = Chati
+							.translate(PropertiesAPI.getProperty_C("removeFromPlayers",
+									"&c" + key + " is removed from PLAYERS",
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"))
+							.replaceAll("{PLAYER}", key);
+					sender.sendMessage(statusMSG);
+				}
 			});
 		}, Executors.newSingleThreadExecutor());
 		PLAYERSException(future, sender, key, value, true, true);
@@ -216,6 +270,15 @@ public class ArenaManager {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				PLAYERS.remove(key);
+				Arena arena = getPlayersArena(sender, key);
+				if (sender.hasPermission("arena.PLAYERSRemoveAll")) {
+					String statusMSG = Chati
+							.translate(PropertiesAPI.getProperty_C("PLAYERSRemoveAll",
+									"&c" + key + " is removed from PLAYERS",
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"))
+							.replaceAll("{PLAYER}", key);
+					sender.sendMessage(statusMSG);
+				}
 			});
 		}, Executors.newSingleThreadExecutor());
 
@@ -231,8 +294,8 @@ public class ArenaManager {
 	 */
 	public final static ListMultimap<String, NPC> NPCS = MultimapBuilder.hashKeys().arrayListValues().build();
 
-	private static void NPCSException(CompletableFuture<Void> future, @Nullable CommandSender sender, String key,
-			NPC value, boolean checkKey, boolean checkValue) {
+	private static void NPCSException(CompletableFuture<Void> future, CommandSender sender, String key, NPC value,
+			boolean checkKey, boolean checkValue) {
 		future.handle((reuslt, exp) -> {
 			if (checkKey == true)
 				if (key == null)
@@ -246,14 +309,28 @@ public class ArenaManager {
 						sender.sendMessage("Value can't be NULL");
 					else
 						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
+			if (sender == null) {
+				throw new IllegalStateException("sender can't be NULL " + Arrays.toString(exp.getStackTrace()));
+			}
 			throw new IllegalStateException(Arrays.toString(exp.getStackTrace()));
 		});
 	}
 
-	public static void putInNPCS(@Nullable CommandSender sender, Plugin instance, String key, NPC value) {
+	public static void putInNPCS(CommandSender sender, Plugin instance, String key, NPC value) {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				NPCS.put(key, value);
+				Arena arena = null;
+				if (sender instanceof Player) {
+					arena = getPlayersArena(sender, ((Player) sender).getName());
+				}
+				if (sender.hasPermission("arena.putInNPCS")) {
+					String statusMSG = Chati
+							.translate(PropertiesAPI.getProperty_C("putInNPCS", "&c" + key + "->" + value.getName(),
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"))
+							.replaceAll("{PLAYER}", key);
+					sender.sendMessage(statusMSG);
+				}
 			});
 		}, Executors.newSingleThreadExecutor());
 
@@ -264,10 +341,22 @@ public class ArenaManager {
 		NPCS.put(key, value);
 	}
 
-	public static void setInNPCS(int index, @Nullable CommandSender sender, Plugin instance, String key, NPC value) {
+	public static void setInNPCS(int index, CommandSender sender, Plugin instance, String key, NPC value) {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				NPCS.get(key).set(index, value);
+				Arena arena = null;
+				if (sender instanceof Player) {
+					arena = getPlayersArena(sender, ((Player) sender).getName());
+				}
+				if (sender.hasPermission("arena.setInNPCS")) {
+					String statusMSG = Chati
+							.translate(PropertiesAPI.getProperty_C("setInNPCS",
+									"&c" + key + " " + index + " -> " + value.getName(),
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"))
+							.replaceAll("{PLAYER}", key);
+					sender.sendMessage(statusMSG);
+				}
 			});
 
 		}, Executors.newSingleThreadExecutor());
@@ -279,10 +368,21 @@ public class ArenaManager {
 		NPCS.get(key).set(index, value);
 	}
 
-	public static void removeFromNPCS(@Nullable CommandSender sender, Plugin instance, String key, NPC value) {
+	public static void removeFromNPCS(CommandSender sender, Plugin instance, String key, NPC value) {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				NPCS.remove(key, value);
+				Arena arena = null;
+				if (sender instanceof Player) {
+					arena = getPlayersArena(sender, ((Player) sender).getName());
+				}
+				if (sender.hasPermission("arena.removeFromNPCS")) {
+					String statusMSG = Chati
+							.translate(PropertiesAPI.getProperty_C("removeFromNPCS", "&c" + key + " removed from NPCS",
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"))
+							.replaceAll("{PLAYER}", key);
+					sender.sendMessage(statusMSG);
+				}
 			});
 		}, Executors.newSingleThreadExecutor());
 
@@ -293,10 +393,22 @@ public class ArenaManager {
 		NPCS.remove(key, value);
 	}
 
-	public static void NPCSRemoveAll(@Nullable CommandSender sender, Plugin instance, String key) {
+	public static void NPCSRemoveAll(CommandSender sender, Plugin instance, String key) {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				NPCS.removeAll(key);
+				Arena arena = null;
+				if (sender instanceof Player) {
+					arena = getPlayersArena(sender, ((Player) sender).getName());
+				}
+				if (sender.hasPermission("arena.putInPLAYERS")) {
+					String statusMSG = Chati
+							.translate(PropertiesAPI.getProperty_C("arenaStatus",
+									"&c" + key + " status is now this \n" + value.toString(),
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"))
+							.replaceAll("{PLAYER}", key);
+					sender.sendMessage(statusMSG);
+				}
 			});
 		}, Executors.newSingleThreadExecutor());
 

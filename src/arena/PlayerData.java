@@ -134,4 +134,11 @@ public class PlayerData {
 				&& Objects.equals(player, other.player) && status == other.status && Objects.equals(team, other.team);
 	}
 
+	@Override
+	public String toString() {
+		return "PlayerData [helmet=" + helmet + ", chestplate=" + chestplate + ", leggings=" + leggings + ", boots="
+				+ boots + ", location=" + location + ", inventory=" + Arrays.toString(inventory) + ", team=" + team
+				+ ", player=" + player + ", status=" + status + "]";
+	}
+
 }
