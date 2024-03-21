@@ -29,7 +29,7 @@ public class EventMaker implements Listener {
 		}
 	}
 
-	public static void registerJoin(Class<?> makerClass, String pluginName, String arenaName) {
+	public static void registerJoin(Class<?> makerClass, String pluginName, String arenaName, STATES status) {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
 		EventExecutor executor = new EventExecutor() {
 
@@ -44,7 +44,7 @@ public class EventMaker implements Listener {
 						ArenaManager.setArenaStatus(ourEvent.getPlayer(), innerInstance, null, null);
 					}
 					new ReadyJoinTimer(Bukkit.getPluginManager().getPlugin(pluginName), player,
-							ArenaManager.getPlayersArena(player, innerInstance, player.getName()), STATES.STARTED,
+							ArenaManager.getPlayersArena(player, innerInstance, player.getName()), status,
 							Integer.parseInt(PropertiesAPI.getProperty_C("joinTimer", "10",
 									ArenaManager.DIR + arenaName + "/" + arenaName + ".dcnf")))
 							.runTaskTimer(innerInstance, 0, 20);
