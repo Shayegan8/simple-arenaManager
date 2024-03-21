@@ -417,6 +417,26 @@ public class PropertiesAPI {
 		return null;
 	}
 
+	public static ConcurrentSkipListSet<String> getProperties_C(String key, String fileName, String... defaultValues) {
+		ConcurrentSkipListSet<String> lsls = new ConcurrentSkipListSet<>();
+		try {
+
+			lsls = new ConcurrentSkipListSet<>(Files.readAllLines(Paths.get(fileName)));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if (lsls.size() == 0 && defaultValues != null) {
+			return new ConcurrentSkipListSet<>(Arrays.asList(defaultValues));
+		}
+
+		try {
+			return getListPropertiesProcess(key, fileName, lsls, defaultValues);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
 	public static CompletableFuture<List<String>> getProperties(String key, String fileName,
 			List<String> defaultValues) {
 		CompletableFuture<List<String>> result = CompletableFuture.supplyAsync(() -> {
@@ -519,8 +539,8 @@ public class PropertiesAPI {
 		return -1;
 	}
 
-	public static ConcurrentSkipListSet<String> getListPropertiesProcess(Plugin instance, String key,
-			String fileName, ConcurrentSkipListSet<String> allLines, String... defaultValues) throws IOException {
+	public static ConcurrentSkipListSet<String> getListPropertiesProcess(Plugin instance, String key, String fileName,
+			ConcurrentSkipListSet<String> allLines, String... defaultValues) throws IOException {
 
 		ConcurrentSkipListSet<String> ls = new ConcurrentSkipListSet<>();
 		ImmutableList<String> imm = ImmutableList.copyOf(allLines);
@@ -538,6 +558,40 @@ public class PropertiesAPI {
 							Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 								ls.add(currentLine.split(LIST_SPLITOR)[1]);
 							});
+							if (!iterate.hasNext()) {
+								break;
+							}
+							storedFirstString = iterate.next();
+						}
+					}
+				}
+			}
+		}
+
+		if (ls.isEmpty()) {
+			return new ConcurrentSkipListSet<>(Arrays.asList(defaultValues));
+		}
+
+		return ls;
+	}
+
+	public static ConcurrentSkipListSet<String> getListPropertiesProcess(String key, String fileName,
+			ConcurrentSkipListSet<String> allLines, String... defaultValues) throws IOException {
+
+		ConcurrentSkipListSet<String> ls = new ConcurrentSkipListSet<>();
+		ImmutableList<String> imm = ImmutableList.copyOf(allLines);
+		List<String> linesToProcess = new ArrayList<>(imm);
+
+		for (String line : linesToProcess) {
+			if (line.equals(imm.get(getIntByString(allLines, "* " + key)))) {
+				String storedFirstString = line;
+				Iterator<String> iterate = allLines.iterator();
+				while (iterate.hasNext()) {
+					String currentLine = iterate.next();
+					if (currentLine.equals(storedFirstString)) {
+						while (getIntByString(allLines, storedFirstString) < getIntByString(allLines,
+								"* endif " + key)) {
+							ls.add(currentLine.split(LIST_SPLITOR)[1]);
 							if (!iterate.hasNext()) {
 								break;
 							}
