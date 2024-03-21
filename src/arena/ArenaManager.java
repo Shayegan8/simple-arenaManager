@@ -398,7 +398,8 @@ public class ArenaManager {
 	}
 
 	/**
-	 * @apiNote this stores generators by their arenaName
+	 * @apiNote this stores generators by their arenaName 0 name 1 location 2
+	 *          itemStack
 	 */
 	public final static ListMultimap<String, Object> GENERATORS = ListMultimapBuilder.hashKeys().arrayListValues()
 			.build();
@@ -681,7 +682,7 @@ public class ArenaManager {
 
 	public static void loadNPCS(String arenaName) {
 		try {
-			for (String line : Files.readAllLines(Paths.get(DIR + "npc.dcnf"))) {
+			for (String line : Files.readAllLines(Paths.get(DIR + arenaName + "/npc.dcnf"))) {
 				if (line.contains(arenaName + "-")) {
 					String npcName = line.split("-")[1];
 					List<String> npcProperties = PropertiesAPI.getProperties_NS(arenaName + "-" + npcName,
@@ -743,6 +744,75 @@ public class ArenaManager {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		});
+	}
+
+	public static void loadGenerator(CommandSender sender, Plugin instance, String arenaName, String msg,
+			String genName, Location location, ItemStack itemStack) {
+		putInGENS(sender, instance, genName, msg, arenaName);
+		putInGENS(sender, instance, genName, msg, itemStack);
+		putInGENS(sender, instance, genName, msg, location);
+	}
+
+	public static void loadGenerator(String arenaName, String genName, Location location, ItemStack itemStack) {
+		putInGENS(genName, arenaName);
+		putInGENS(genName, itemStack);
+		putInGENS(genName, location);
+	}
+
+	public static void loadGenerators(String arenaName) throws IOException {
+		ImmutableList<String> ls = ImmutableList
+				.copyOf(Files.readAllLines(Paths.get(DIR + arenaName + "/generators.dcnf")));
+		ls.stream().forEach((x) -> {
+			if (x.contains("* ")) {
+				Iterator<String> iterator = ls.iterator();
+				if (iterator.hasNext()) {
+
+					while (ls.get(ls.indexOf(x)) != iterator.next()) {
+						iterator.next();
+					}
+
+					String next = iterator.next();
+					String aName = (String) next;
+
+					String nexti = iterator.next();
+					String middle[] = nexti.split(",");
+					Location location = new Location(Bukkit.getWorld(getArenaByName(arenaName).getWorld()),
+							Integer.parseInt(middle[0]), Integer.parseInt(middle[1]), Integer.parseInt(middle[2]));
+					String nextii = iterator.next();
+					ItemStack item = new ItemStack(Material.valueOf(nextii), 1);
+					loadGenerator(arenaName, aName, location, item);
+				}
+			}
+		});
+	}
+
+	public static void loadGenerators(Plugin instance, String arenaName) throws IOException {
+		ImmutableList<String> ls = ImmutableList
+				.copyOf(Files.readAllLines(Paths.get(DIR + arenaName + "/generators.dcnf")));
+		ls.stream().forEach((x) -> {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				if (x.contains("* ")) {
+					Iterator<String> iterator = ls.iterator();
+					if (iterator.hasNext()) {
+
+						while (ls.get(ls.indexOf(x)) != iterator.next()) {
+							iterator.next();
+						}
+
+						String next = iterator.next();
+						String aName = (String) next;
+
+						String nexti = iterator.next();
+						String middle[] = nexti.split(",");
+						Location location = new Location(Bukkit.getWorld(getArenaByName(arenaName).getWorld()),
+								Integer.parseInt(middle[0]), Integer.parseInt(middle[1]), Integer.parseInt(middle[2]));
+						String nextii = iterator.next();
+						ItemStack item = new ItemStack(Material.valueOf(nextii), 1);
+						loadGenerator(arenaName, aName, location, item);
+					}
+				}
+			});
 		});
 	}
 

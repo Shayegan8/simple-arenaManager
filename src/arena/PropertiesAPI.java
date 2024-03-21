@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableList;
  */
 public class PropertiesAPI {
 
-	private static String alphabets[] = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "k", "j", "l", "m", "n", "o",
+	public static String alphabets[] = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "k", "j", "l", "m", "n", "o",
 			"p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" };
 	public static final String SPLITOR = "@";
 	public static final String LIST_SPLITOR = " - ";
