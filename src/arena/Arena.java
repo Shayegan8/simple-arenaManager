@@ -30,15 +30,6 @@ public class Arena {
 
 	private List<TEAMS> teams = new ArrayList<>();
 
-	/**
-	 * @param minPlayer
-	 * @param maxPlayer
-	 * @param arenaTime
-	 * @param waitingSpawn
-	 * @param status
-	 * @param name
-	 * @param world
-	 */
 	public Arena(int minPlayer, int maxPlayer, int arenaTime, Location waitingSpawn, STATES status, String name,
 			String world) {
 		this.minPlayer = minPlayer;
