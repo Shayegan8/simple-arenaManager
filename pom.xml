@@ -13,28 +13,63 @@
 		</repository>
 	</distributionManagement>
 
-	<build>
-		<sourceDirectory>src</sourceDirectory>
-		<resources>
-			<resource>
-				<directory>src</directory>
-				<excludes>
-					<exclude>**/*.java</exclude>
-				</excludes>
-			</resource>
-		</resources>
+	<profiles>
+		<profile>
+			<id>doclint-java8-disable</id>
+			<activation>
+				<jdk>[1.8,)</jdk>
+			</activation>
+			<build>
+				<sourceDirectory>src</sourceDirectory>
+				<resources>
+					<resource>
+						<directory>src</directory>
+						<excludes>
+							<exclude>**/*.java</exclude>
+						</excludes>
+					</resource>
+				</resources>
 
-		<plugins>
-			<plugin>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.8.1</version>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+				<plugins>
+					<plugin>
+						<artifactId>maven-compiler-plugin</artifactId>
+						<version>3.8.1</version>
+						<configuration>
+							<source>1.8</source>
+							<target>1.8</target>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-javadoc-plugin</artifactId>
+						<configuration>
+							<additionalparam>-Xdoclint:none</additionalparam>
+						</configuration>
+					</plugin>
+
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+
+	<dependencies>
+		<dependency>
+			<groupId>spigot</groupId>
+			<artifactId>spigot</artifactId>
+			<scope>system</scope>
+			<version>1.8.8t</version>
+			<systemPath>${basedir}/lib/spigot-1.8.8.jar</systemPath>
+		</dependency>
+		<dependency>
+			<groupId>spigot</groupId>
+			<artifactId>spigot</artifactId>
+			<scope>system</scope>
+			<version>1.8.8t</version>
+			<systemPath>${basedir}/lib/citizens-2.jar</systemPath>
+		</dependency>
+
+	</dependencies>
 
 
 </project>
