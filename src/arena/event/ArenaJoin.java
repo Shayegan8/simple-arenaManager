@@ -7,6 +7,7 @@ import org.bukkit.event.HandlerList;
 
 import arena.Arena;
 import arena.ArenaTeam;
+import arena.STATES;
 
 public class ArenaJoin extends Event implements Cancellable {
 
@@ -14,6 +15,8 @@ public class ArenaJoin extends Event implements Cancellable {
 	private boolean cancelled = false;
 	private Player player;
 	private Arena arena;
+	private STATES status;
+	private String pluginName;
 
 	public Player getPlayer() {
 		return player;
@@ -41,6 +44,22 @@ public class ArenaJoin extends Event implements Cancellable {
 	public ArenaJoin(Player player, ArenaTeam team) {
 		this.player = player;
 		this.team = team;
+		this.arena = team.getArena();
+	}
+
+	public ArenaJoin(Player player, ArenaTeam team, STATES status) {
+		this.player = player;
+		this.team = team;
+		this.arena = team.getArena();
+		this.status = status;
+	}
+
+	public ArenaJoin(Player player, ArenaTeam team, STATES status, String pluginName) {
+		this.player = player;
+		this.team = team;
+		this.arena = team.getArena();
+		this.status = status;
+		this.pluginName = pluginName;
 	}
 
 	@Override
@@ -56,6 +75,14 @@ public class ArenaJoin extends Event implements Cancellable {
 	@Override
 	public void setCancelled(boolean cancelled) {
 		this.cancelled = cancelled;
+	}
+
+	public STATES getStatus() {
+		return status;
+	}
+
+	public String getPluginName() {
+		return pluginName;
 	}
 
 }

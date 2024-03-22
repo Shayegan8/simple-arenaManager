@@ -9,7 +9,6 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
 
@@ -56,8 +55,8 @@ public class EventMaker implements Listener {
 					lnk.add(arena);
 					new WaitingTimer(innerInstance, player, arena, status,
 							PropertiesAPI.getProperty_C("waitEvent", "Arena will be started in {TIME}",
-									arena.getName()),
-							Integer.parseInt(PropertiesAPI.getProperty_C("joinTimer", "10",
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
+							Integer.parseInt(PropertiesAPI.getProperty_C("waitTimer", "10",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
 							.runTaskTimer(innerInstance, 0, 20);
 
@@ -91,8 +90,10 @@ public class EventMaker implements Listener {
 					lsk.add(player);
 					Arena arena = ourEvent.getArena();
 					lsk.add(arena);
-					new StartedTimer(innerInstance, player, arena, status, pluginName,
-							Integer.parseInt(PropertiesAPI.getProperty_C("joinEvent", "3",
+					new StartedTimer(innerInstance, player, arena, status,
+							PropertiesAPI.getProperty_C("joinEvent", "&cSTARTED",
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
+							Integer.parseInt(PropertiesAPI.getProperty_C("joinTImer", "3",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
 							.runTaskTimer(innerInstance, 0, 20);
 				}

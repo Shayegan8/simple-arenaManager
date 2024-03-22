@@ -49,12 +49,14 @@ public class ArenaWait extends Event implements Cancellable {
 	public ArenaWait(String pluginName, Player player, ArenaTeam team) {
 		this.player = player;
 		this.team = team;
+		this.arena = team.getArena();
 		this.pluginName = pluginName;
 	}
 
-	public ArenaWait(String pluginName, Player player, ArenaTeam team, STATES status) {
+	public ArenaWait(Player player, ArenaTeam team, STATES status, String pluginName) {
 		this.player = player;
 		this.team = team;
+		this.arena = team.getArena();
 		this.pluginName = pluginName;
 		this.status = status;
 	}

@@ -1,7 +1,5 @@
 package arena.threads;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -11,6 +9,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import arena.Arena;
 import arena.ArenaManager;
 import arena.Chati;
+import arena.PropertiesAPI;
 import arena.STATES;
 
 public class StartedTimer extends BukkitRunnable {
@@ -23,14 +22,15 @@ public class StartedTimer extends BukkitRunnable {
 	private CommandSender sender;
 	private String msg;
 
-	public StartedTimer(Plugin instance, @Nullable CommandSender sender, Arena arena, STATES status, String msg,
-			int max) {
+	public StartedTimer(Plugin instance, CommandSender sender, Arena arena, STATES status, String msg, int max) {
 		this.instance = instance;
 		this.max = max;
 		this.status = status;
 		this.arena = arena;
 		this.sender = sender;
-		this.msg = msg;
+		msg.replaceAll("{TIMER}", PropertiesAPI.getProperty_C("waitTimer", "10",
+				ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
+		this.msg = Chati.translate(msg);
 	}
 
 	@Override

@@ -2,12 +2,13 @@ package arena.threads;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import arena.Arena;
 import arena.ArenaManager;
+import arena.Chati;
+import arena.PropertiesAPI;
 import arena.STATES;
 
 public class WaitingTimer extends BukkitRunnable {
@@ -18,7 +19,6 @@ public class WaitingTimer extends BukkitRunnable {
 	private STATES status;
 	private Arena arena;
 	private CommandSender sender;
-	private Player player;
 	private String msg;
 
 	public WaitingTimer(Plugin instance, CommandSender sender, Arena arena, STATES status, String msg, int max) {
@@ -27,15 +27,15 @@ public class WaitingTimer extends BukkitRunnable {
 		this.status = status;
 		this.arena = arena;
 		this.sender = sender;
-		this.msg = msg;
-		if (sender instanceof Player)
-			this.player = (Player) sender;
+		msg.replaceAll("{TIME}", PropertiesAPI.getProperty_C("joinTimer", "10",
+				ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
+		this.msg = Chati.translate(msg);
 	}
 
 	@Override
 	public void run() {
 		if (!ArenaManager.isArenaFull(null)) {
-			ArenaManager.setArenaStatus(player, instance, arena, STATES.WAITING);
+			ArenaManager.setArenaStatus(sender, instance, arena, STATES.WAITING);
 			this.cancel();
 		} else {
 			Bukkit.dispatchCommand(sender,
