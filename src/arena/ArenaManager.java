@@ -28,7 +28,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -405,7 +404,7 @@ public class ArenaManager {
 	public final static ListMultimap<String, Object> GENERATORS = ListMultimapBuilder.hashKeys().arrayListValues()
 			.build();
 
-	private static void GENSException(CompletableFuture<Void> future, CommandSender sender, String key, Object value,
+	private static void GENSException(CompletableFuture<Void> future, CommandSender sender, String key, Generator value,
 			boolean checkKey, boolean checkValue) {
 		future.handle((reuslt, exp) -> {
 			if (checkKey == true)
@@ -424,7 +423,7 @@ public class ArenaManager {
 		});
 	}
 
-	public static void putInGENS(CommandSender sender, Plugin instance, String key, String msg, Object value) {
+	public static void putInGENS(CommandSender sender, Plugin instance, String key, String msg, Generator value) {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				if (sender.hasPermission("arena.putInGENS")) {
@@ -437,12 +436,12 @@ public class ArenaManager {
 		GENSException(future, sender, key, value, true, true);
 	}
 
-	public static void putInGENS(String key, Object value) {
+	public static void putInGENS(String key, Generator value) {
 		GENERATORS.put(key, value);
 	}
 
 	public static void setInGENS(int index, CommandSender sender, Plugin instance, String key, String msg,
-			Object value) {
+			Generator value) {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				if (sender.hasPermission("arena.setInGENS")) {
@@ -459,7 +458,7 @@ public class ArenaManager {
 		GENERATORS.get(key).set(index, value);
 	}
 
-	public static void removeFromGENS(CommandSender sender, Plugin instance, String key, String msg, Object value) {
+	public static void removeFromGENS(CommandSender sender, Plugin instance, String key, String msg, Generator value) {
 		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 				if (sender.hasPermission("arena.removeFromGENS")) {
@@ -748,19 +747,6 @@ public class ArenaManager {
 		});
 	}
 
-	public static void loadGenerator(CommandSender sender, Plugin instance, String arenaName, String msg,
-			String genName, Location location, ItemStack itemStack) {
-		putInGENS(sender, instance, genName, msg, arenaName);
-		putInGENS(sender, instance, genName, msg, itemStack);
-		putInGENS(sender, instance, genName, msg, location);
-	}
-
-	public static void loadGenerator(String arenaName, String genName, Location location, ItemStack itemStack) {
-		putInGENS(genName, arenaName);
-		putInGENS(genName, itemStack);
-		putInGENS(genName, location);
-	}
-
 	public static void loadGenerators(String arenaName) throws IOException {
 		ImmutableList<String> ls = ImmutableList
 				.copyOf(Files.readAllLines(Paths.get(DIR + arenaName + "/generators.dcnf")));
@@ -782,7 +768,7 @@ public class ArenaManager {
 							Integer.parseInt(middle[0]), Integer.parseInt(middle[1]), Integer.parseInt(middle[2]));
 					String nextii = iterator.next();
 					ItemStack item = new ItemStack(Material.valueOf(nextii), 1);
-					loadGenerator(arenaName, aName, location, item);
+					putInGENS(aName, new Generator(arenaName, location, item));
 				}
 			}
 		});
@@ -792,28 +778,30 @@ public class ArenaManager {
 		ImmutableList<String> ls = ImmutableList
 				.copyOf(Files.readAllLines(Paths.get(DIR + arenaName + "/generators.dcnf")));
 		ls.stream().forEach((x) -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				if (x.contains("* ")) {
-					Iterator<String> iterator = ls.iterator();
-					if (iterator.hasNext()) {
+			if (x.contains("* ")) {
+				Iterator<String> iterator = ls.iterator();
+				if (iterator.hasNext()) {
 
-						while (ls.get(ls.indexOf(x)) != iterator.next()) {
-							iterator.next();
-						}
+					while (ls.get(ls.indexOf(x)) != iterator.next()) {
+						iterator.next();
+					}
 
-						String next = iterator.next();
-						String aName = (String) next;
+					String next = iterator.next();
+					String aName = (String) next;
 
-						String nexti = iterator.next();
+					String nexti = iterator.next();
+
+					Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 						String middle[] = nexti.split(",");
 						Location location = new Location(Bukkit.getWorld(getArenaByName(arenaName).getWorld()),
 								Integer.parseInt(middle[0]), Integer.parseInt(middle[1]), Integer.parseInt(middle[2]));
 						String nextii = iterator.next();
 						ItemStack item = new ItemStack(Material.valueOf(nextii), 1);
-						loadGenerator(arenaName, aName, location, item);
-					}
+						putInGENS(aName, new Generator(arenaName, location, item));
+
+					});
 				}
-			});
+			}
 		});
 	}
 

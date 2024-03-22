@@ -1,7 +1,10 @@
 package arena.threads;
 
+import javax.annotation.Nullable;
+
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -10,7 +13,7 @@ import arena.ArenaManager;
 import arena.Chati;
 import arena.STATES;
 
-public class ReadyJoinTimer extends BukkitRunnable {
+public class StartedTimer extends BukkitRunnable {
 
 	private int counter;
 	private int max;
@@ -20,7 +23,8 @@ public class ReadyJoinTimer extends BukkitRunnable {
 	private CommandSender sender;
 	private String msg;
 
-	public ReadyJoinTimer(Plugin instance, CommandSender sender, Arena arena, STATES status, String msg, int max) {
+	public StartedTimer(Plugin instance, @Nullable CommandSender sender, Arena arena, STATES status, String msg,
+			int max) {
 		this.instance = instance;
 		this.max = max;
 		this.status = status;
@@ -34,13 +38,11 @@ public class ReadyJoinTimer extends BukkitRunnable {
 		if (!ArenaManager.isArenaFull(null)) {
 			this.cancel();
 		} else {
-			Bukkit.dispatchCommand(sender,
-					"title " + sender.getName() + " title {\"text\":\""
-							+ msg.replaceAll("{TIME}", String.valueOf(counter))
-							+ " \",\"fadeIn\":20,\"stay\":40,\"fadeOut\":20}");
 			if (counter == max) {
 				ArenaManager.setArenaStatus(sender, instance, arena, status);
-				this.cancel();
+				if (sender != null && sender instanceof Player)
+					Bukkit.dispatchCommand(sender, "title " + sender.getName() + " title {\"text\":\""
+							+ Chati.translate(msg) + " \",\"fadeIn\":20,\"stay\":40,\"fadeOut\":20}");
 			}
 		}
 		counter++;

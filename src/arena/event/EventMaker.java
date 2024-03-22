@@ -45,6 +45,7 @@ public class EventMaker implements Listener {
 					}
 					new ReadyJoinTimer(Bukkit.getPluginManager().getPlugin(pluginName), player,
 							ArenaManager.getPlayersArena(player, innerInstance, player.getName()), status,
+							PropertiesAPI.getProperty_C("joinEvent", "Arena will be started in {TIME}", arenaName),
 							Integer.parseInt(PropertiesAPI.getProperty_C("joinTimer", "10",
 									ArenaManager.DIR + arenaName + "/" + arenaName + ".dcnf")))
 							.runTaskTimer(innerInstance, 0, 20);
