@@ -27,8 +27,8 @@ import com.google.common.collect.ImmutableList;
  */
 public class PropertiesAPI {
 
-	public static String alphabets[] = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "k", "j", "l", "m", "n", "o",
-			"p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" };
+	public static String alphabets[] = { "a", "b", "c", "d", "e", "f", "g", "h", "i", "k", "j", "l", "m", "n", "o", "p",
+			"q", "r", "s", "t", "u", "v", "w", "x", "y", "z" };
 	public static final String SPLITOR = "@";
 	public static final String LIST_SPLITOR = " - ";
 
@@ -396,27 +396,6 @@ public class PropertiesAPI {
 		return result;
 	}
 
-	public static ConcurrentSkipListSet<String> getProperties_C(Plugin instance, String key, String fileName,
-			String... defaultValues) {
-		ConcurrentSkipListSet<String> lsls = new ConcurrentSkipListSet<>();
-		try {
-
-			lsls = new ConcurrentSkipListSet<>(Files.readAllLines(Paths.get(fileName)));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		if (lsls.size() == 0 && defaultValues != null) {
-			return new ConcurrentSkipListSet<>(Arrays.asList(defaultValues));
-		}
-
-		try {
-			return getListPropertiesProcess(instance, key, fileName, lsls, defaultValues);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
-
 	public static ConcurrentSkipListSet<String> getProperties_C(String key, String fileName, String... defaultValues) {
 		ConcurrentSkipListSet<String> lsls = new ConcurrentSkipListSet<>();
 		try {
@@ -430,7 +409,7 @@ public class PropertiesAPI {
 		}
 
 		try {
-			return getListPropertiesProcess(key, fileName, lsls, defaultValues);
+			return bgetListPropertiesProcess(key, fileName, lsls, defaultValues);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -539,7 +518,7 @@ public class PropertiesAPI {
 		return -1;
 	}
 
-	public static ConcurrentSkipListSet<String> getListPropertiesProcess(Plugin instance, String key, String fileName,
+	public static ConcurrentSkipListSet<String> bgetListPropertiesProcess(String key, String fileName,
 			ConcurrentSkipListSet<String> allLines, String... defaultValues) throws IOException {
 
 		ConcurrentSkipListSet<String> ls = new ConcurrentSkipListSet<>();
@@ -555,9 +534,7 @@ public class PropertiesAPI {
 					if (currentLine.equals(storedFirstString)) {
 						while (getIntByString(allLines, storedFirstString) < getIntByString(allLines,
 								"* endif " + key)) {
-							Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-								ls.add(currentLine.split(LIST_SPLITOR)[1]);
-							});
+							ls.add(currentLine.split(LIST_SPLITOR)[1]);
 							if (!iterate.hasNext()) {
 								break;
 							}
