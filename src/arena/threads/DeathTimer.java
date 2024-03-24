@@ -35,9 +35,9 @@ public class DeathTimer extends BukkitRunnable {
 	public void run() {
 		if (sender != null && sender instanceof Player) {
 			((Player) sender).setGameMode(GameMode.SPECTATOR);
-			Bukkit.dispatchCommand(sender, "title " + sender.getName() + " title {\"text\":\"" + Chati.translate(msg)
-					+ " \",\"fadeIn\":20,\"stay\":20,\"fadeOut\":20}");
 			while (counter <= max) {
+				Bukkit.dispatchCommand(sender, "title " + sender.getName() + " title {\"text\":\""
+						+ Chati.translate(msg) + " \",\"fadeIn\":20,\"stay\":20,\"fadeOut\":20}");
 				if (counter == max) {
 					arena.setStatus(status);
 					this.cancel();
