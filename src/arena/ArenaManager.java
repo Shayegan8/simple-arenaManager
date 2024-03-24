@@ -1697,4 +1697,13 @@ public class ArenaManager {
 		return getBlockSpawn(team).getBlock().getType() == Material.AIR;
 	}
 
+	public static PlayerData getPlayersData(Player player) {
+		Optional<Entry<String, PlayerData>> opt = ArenaManager.PLAYERS.entrySet().stream()
+				.filter((x) -> x.getKey().equals(player.getName())).findFirst();
+		if (opt.isPresent()) {
+			return opt.get().getValue();
+		}
+		return null;
+	}
+
 }

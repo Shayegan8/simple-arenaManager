@@ -209,13 +209,10 @@ public class EventMaker implements Listener {
 							Integer.parseInt(PropertiesAPI.getProperty_C("joinTImer", "3",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")));
 					timer.runTaskTimer(innerInstance, 0, 20);
-					ConcurrentLinkedQueue<PlayerData> storedData = new ConcurrentLinkedQueue<>();
-					ArenaManager.PLAYERS.entrySet().stream().filter((x) -> x.getKey().equals(player.getName()))
-							.forEach((x) -> {
-								storedData.add(x.getValue());
-							});
-					storedData.peek().setStoredThread(timer);
-					ArenaManager.putInPLAYERS(player.getName(), storedData.peek()); // I think its not needed
+
+					PlayerData data = ArenaManager.getPlayersData(player);
+					data.setStoredThread(timer);
+					ArenaManager.putInPLAYERS(player.getName(), data); // I think its not needed
 				}
 			}
 		};
