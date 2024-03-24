@@ -1697,6 +1697,11 @@ public class ArenaManager {
 		return getBlockSpawn(team).getBlock().getType() == Material.AIR;
 	}
 
+	/**
+	 * 
+	 * @param player
+	 * @return
+	 */
 	public static PlayerData getPlayersData(Player player) {
 		Optional<Entry<String, PlayerData>> opt = ArenaManager.PLAYERS.entrySet().stream()
 				.filter((x) -> x.getKey().equals(player.getName())).findFirst();

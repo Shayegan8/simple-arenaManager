@@ -7,7 +7,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
+
+import arena.threads.DeathTimer;
+import arena.threads.EndedTimer;
+import arena.threads.StartedTimer;
+import arena.threads.WaitingTimer;
 
 public class PlayerData {
 
@@ -20,7 +24,6 @@ public class PlayerData {
 	private ArenaTeam team;
 	private Player player;
 	private STATES status;
-	private BukkitRunnable storedThread;
 
 	public PlayerData(ArenaTeam team, String playerName, STATES status) {
 		this.player = Bukkit.getPlayer(playerName);
@@ -112,43 +115,69 @@ public class PlayerData {
 		this.team = team;
 	}
 
+	public StartedTimer getStartedTimer() {
+		return startedTimer;
+	}
+
+	public void setStartedTimer(StartedTimer startedTimer) {
+		this.startedTimer = startedTimer;
+	}
+
+	public DeathTimer getDeathTimer() {
+		return deathTimer;
+	}
+
+	public void setDeathTimer(DeathTimer deathTimer) {
+		this.deathTimer = deathTimer;
+	}
+
+	public EndedTimer getEndedTimer() {
+		return endedTimer;
+	}
+
+	public void setEndedTimer(EndedTimer endedTimer) {
+		this.endedTimer = endedTimer;
+	}
+
+	public WaitingTimer getWaitingTimer() {
+		return waitingTimer;
+	}
+
+	public void setWaitingTimer(WaitingTimer waitingTimer) {
+		this.waitingTimer = waitingTimer;
+	}
+
+	private StartedTimer startedTimer;
+	private DeathTimer deathTimer;
+	private EndedTimer endedTimer;
+	private WaitingTimer waitingTimer;
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + Arrays.hashCode(inventory);
-		result = prime * result + Objects.hash(boots, chestplate, helmet, leggings, location, player, status, team);
+		result = prime * result + Objects.hash(boots, chestplate, deathTimer, endedTimer, helmet, leggings, location,
+				player, startedTimer, status, team, waitingTimer);
 		return result;
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
+		if (this == obj) {
 			return true;
-		if (obj == null)
+		}
+		if (!(obj instanceof PlayerData)) {
 			return false;
-		if (getClass() != obj.getClass())
-			return false;
+		}
 		PlayerData other = (PlayerData) obj;
 		return Objects.equals(boots, other.boots) && Objects.equals(chestplate, other.chestplate)
+				&& Objects.equals(deathTimer, other.deathTimer) && Objects.equals(endedTimer, other.endedTimer)
 				&& Objects.equals(helmet, other.helmet) && Arrays.equals(inventory, other.inventory)
 				&& Objects.equals(leggings, other.leggings) && Objects.equals(location, other.location)
-				&& Objects.equals(player, other.player) && status == other.status && Objects.equals(team, other.team);
-	}
-
-	@Override
-	public String toString() {
-		return "PlayerData [helmet=" + helmet + ", chestplate=" + chestplate + ", leggings=" + leggings + ", boots="
-				+ boots + ", location=" + location + ", inventory=" + Arrays.toString(inventory) + ", team=" + team
-				+ ", player=" + player + ", status=" + status + "]";
-	}
-
-	public BukkitRunnable getStoredThread() {
-		return storedThread;
-	}
-
-	public void setStoredThread(BukkitRunnable storedThread) {
-		this.storedThread = storedThread;
+				&& Objects.equals(player, other.player) && Objects.equals(startedTimer, other.startedTimer)
+				&& status == other.status && Objects.equals(team, other.team)
+				&& Objects.equals(waitingTimer, other.waitingTimer);
 	}
 
 }

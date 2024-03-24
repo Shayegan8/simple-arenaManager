@@ -80,7 +80,7 @@ public class ArenaTeam {
 	public Arena getArena() {
 		return arena;
 	}
-
+	
 	/**
 	 * @apiNote thats useless
 	 */
@@ -102,5 +102,7 @@ public class ArenaTeam {
 				&& Objects.equals(maxNumber, other.maxNumber) && Objects.equals(minNumber, other.minNumber)
 				&& team == other.team && Objects.equals(teamSpawn, other.teamSpawn) && teamStatus == other.teamStatus;
 	}
+
+
 
 }

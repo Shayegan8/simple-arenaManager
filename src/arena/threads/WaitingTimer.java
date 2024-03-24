@@ -2,7 +2,6 @@ package arena.threads;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import arena.Arena;
 import arena.ArenaManager;
@@ -10,7 +9,7 @@ import arena.Chati;
 import arena.PropertiesAPI;
 import arena.STATES;
 
-public class WaitingTimer extends BukkitRunnable {
+public class WaitingTimer extends GodThread {
 
 	private int counter;
 	private int max;

@@ -1,7 +1,5 @@
 package arena.event;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -211,7 +209,7 @@ public class EventMaker implements Listener {
 					timer.runTaskTimer(innerInstance, 0, 20);
 
 					PlayerData data = ArenaManager.getPlayersData(player);
-					data.setStoredThread(timer);
+					data.setStartedTimer(timer);
 					ArenaManager.putInPLAYERS(player.getName(), data); // I think its not needed
 				}
 			}
