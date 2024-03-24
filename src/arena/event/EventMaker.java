@@ -60,7 +60,7 @@ public class EventMaker implements Listener {
 					if (!ArenaManager.isEntityOnRegion(arena, player.getLocation())) {
 						Location location = player.getLocation();
 						player.teleport(
-								location.clone().subtract(player.getLocation().getDirection().normalize().multiply(2)));
+								location.clone().subtract(player.getLocation().getDirection().normalize().multiply(5)));
 					}
 					if (player.getLocation().getBlockY() < 0) {
 						if (!ArenaManager.isBlockGone(ArenaManager.getPlayersTeam(player.getName()))) {
