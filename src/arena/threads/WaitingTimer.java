@@ -38,7 +38,7 @@ public class WaitingTimer extends BukkitRunnable {
 
 		int i = 0;
 		while (i <= time) {
-			if (!ArenaManager.isArenaFull(null)) {
+			if (ArenaManager.getArenasPlayers(arena).size() < arena.getMinPlayer()) {
 				arena.setStatus(STATES.WAITING);
 				this.cancel();
 			} else {

@@ -52,7 +52,6 @@
 		</profile>
 	</profiles>
 
-
 	<dependencies>
 		<dependency>
 			<groupId>b</groupId>

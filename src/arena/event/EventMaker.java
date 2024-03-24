@@ -1,12 +1,13 @@
 package arena.event;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.EventExecutor;
@@ -15,6 +16,7 @@ import org.bukkit.plugin.Plugin;
 import arena.Arena;
 import arena.ArenaManager;
 import arena.Chati;
+import arena.PlayerData;
 import arena.PropertiesAPI;
 import arena.STATES;
 import arena.threads.DeathTimer;
@@ -201,12 +203,19 @@ public class EventMaker implements Listener {
 					ArenaStarted e = (ArenaStarted) event;
 					Player player = e.getPlayer();
 					Arena arena = e.getArena();
-					new StartedTimer(player, arena, status,
+					StartedTimer timer = new StartedTimer(player, arena, status,
 							PropertiesAPI.getProperty_C("joinEvent", "&cSTARTED",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
 							Integer.parseInt(PropertiesAPI.getProperty_C("joinTImer", "3",
-									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
-							.runTaskTimer(innerInstance, 0, 20);
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")));
+					timer.runTaskTimer(innerInstance, 0, 20);
+					ConcurrentLinkedQueue<PlayerData> storedData = new ConcurrentLinkedQueue<>();
+					ArenaManager.PLAYERS.entrySet().stream().filter((x) -> x.getKey().equals(player.getName()))
+							.forEach((x) -> {
+								storedData.add(x.getValue());
+							});
+					storedData.peek().setStoredThread(timer);
+					ArenaManager.putInPLAYERS(player.getName(), storedData.peek()); // I think its not needed
 				}
 			}
 		};

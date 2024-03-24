@@ -8,6 +8,7 @@ import org.bukkit.plugin.Plugin;
 
 import arena.Arena;
 import arena.ArenaManager;
+import arena.Chati;
 import arena.PropertiesAPI;
 import arena.STATES;
 import arena.threads.EndedTimer;
@@ -22,7 +23,7 @@ public class EventListener implements Listener {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(event.getPluginName());
 		Player player = event.getPlayer();
 		Arena arena = event.getArena();
-		new WaitingTimer(player, arena, event.getStatus(),
+		new WaitingTimer(player, arena, STATES.WAITING,
 				PropertiesAPI.getProperty_C("waitEvent", "Arena will be started in {TIME}",
 						ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
 				Integer.parseInt(PropertiesAPI.getProperty_C("waitCounterTimer", "10",
@@ -45,16 +46,28 @@ public class EventListener implements Listener {
 	}
 
 	@EventHandler
-	public void onJoin(ArenaJoin event) {
-		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(event.getPluginName());
-		Player player = event.getPlayer();
-		Arena arena = event.getArena();
-		new StartedTimer(player, arena, event.getStatus(),
-				PropertiesAPI.getProperty_C("joinEvent", "Something im tired to set it :) {TIME}",
+	public void onStart(ArenaStarted e) {
+		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(e.getPluginName());
+		Player player = e.getPlayer();
+		Arena arena = e.getArena();
+		new StartedTimer(player, arena, STATES.RUNNING,
+				PropertiesAPI.getProperty_C("joinEvent", "&cSTARTED",
 						ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
-				Integer.parseInt(PropertiesAPI.getProperty_C("joinTimer", "3",
+				Integer.parseInt(PropertiesAPI.getProperty_C("joinTImer", "3",
 						ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
 				.runTaskTimer(innerInstance, 0, 20);
+	}
+
+	@EventHandler
+	public void onLeft(ArenaLeft e) {
+		e.getArena().getPlayersNames().stream().filter((x) -> x.equals(e.getPlayer().getName())).forEach((x) -> {
+			e.getPlayer()
+					.sendMessage(Chati
+							.translate(PropertiesAPI.getProperty_C("leftEvent", "{PLAYER} left the arena",
+									ArenaManager.DIR + "messages.dcnf"))
+							.replaceAll("{PLAYER}", e.getPlayer().getName()));
+			ArenaManager.setPlayerStatus(x, STATES.NONE);
+		});
 	}
 
 }

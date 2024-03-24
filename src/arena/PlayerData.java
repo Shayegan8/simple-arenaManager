@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class PlayerData {
 
@@ -19,6 +20,7 @@ public class PlayerData {
 	private ArenaTeam team;
 	private Player player;
 	private STATES status;
+	private BukkitRunnable storedThread;
 
 	public PlayerData(ArenaTeam team, String playerName, STATES status) {
 		this.player = Bukkit.getPlayer(playerName);
@@ -139,6 +141,14 @@ public class PlayerData {
 		return "PlayerData [helmet=" + helmet + ", chestplate=" + chestplate + ", leggings=" + leggings + ", boots="
 				+ boots + ", location=" + location + ", inventory=" + Arrays.toString(inventory) + ", team=" + team
 				+ ", player=" + player + ", status=" + status + "]";
+	}
+
+	public BukkitRunnable getStoredThread() {
+		return storedThread;
+	}
+
+	public void setStoredThread(BukkitRunnable storedThread) {
+		this.storedThread = storedThread;
 	}
 
 }
