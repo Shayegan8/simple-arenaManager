@@ -2,7 +2,6 @@ package arena.threads;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import arena.Arena;
@@ -15,38 +14,50 @@ public class WaitingTimer extends BukkitRunnable {
 
 	private int counter;
 	private int max;
-	private Plugin instance;
+	private int time;
 	private STATES status;
 	private Arena arena;
 	private CommandSender sender;
 	private String msg;
 
-	public WaitingTimer(Plugin instance, CommandSender sender, Arena arena, STATES status, String msg, int max) {
-		this.instance = instance;
+	public WaitingTimer(CommandSender sender, Arena arena, STATES status, String msg, int max, int time) {
 		this.max = max;
+		this.time = time;
 		this.status = status;
 		this.arena = arena;
 		this.sender = sender;
-		msg.replaceAll("{TIME}", PropertiesAPI.getProperty_C("joinTimer", "10",
+		msg.replaceAll("{TIME}", PropertiesAPI.getProperty_C("waitCounterTimer", "10",
 				ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
 		this.msg = Chati.translate(msg);
 	}
 
 	@Override
 	public void run() {
-		if (!ArenaManager.isArenaFull(null)) {
-			ArenaManager.setArenaStatus(sender, instance, arena, STATES.WAITING);
-			this.cancel();
-		} else {
-			Bukkit.dispatchCommand(sender,
-					"title " + sender.getName() + " title {\"text\":\""
-							+ msg.replaceAll("{TIME}", String.valueOf(counter))
-							+ " \",\"fadeIn\":20,\"stay\":40,\"fadeOut\":20}");
-			if (counter == max) {
-				ArenaManager.setArenaStatus(sender, instance, arena, status);
+		if (arena.getMaxPlayer() == arena.getPlayersNames().size())
+			operation();
+
+		int i = 0;
+		while (i <= time) {
+			if (!ArenaManager.isArenaFull(null)) {
+				ArenaManager.setArenaStatus(arena, STATES.WAITING);
 				this.cancel();
+			} else {
+				if (time == max) {
+					while (counter < max) {
+						operation();
+					}
+				}
 			}
+			i++;
 		}
+	}
+
+	private void operation() {
+		Bukkit.dispatchCommand(sender, "title " + sender.getName() + " title {\"text\":\""
+				+ msg.replaceAll("{TIME}", String.valueOf(counter)) + " \",\"fadeIn\":20,\"stay\":20,\"fadeOut\":20}");
+		ArenaManager.setArenaStatus(arena, status);
+		if (counter == max)
+			this.cancel();
 		counter++;
 	}
 
@@ -56,10 +67,6 @@ public class WaitingTimer extends BukkitRunnable {
 
 	public int getMax() {
 		return max;
-	}
-
-	public Plugin getInstance() {
-		return instance;
 	}
 
 }

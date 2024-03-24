@@ -2,7 +2,6 @@ package arena.threads;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import arena.Arena;
@@ -11,7 +10,7 @@ import arena.Chati;
 import arena.PropertiesAPI;
 import arena.STATES;
 
-public class StartedTimer extends BukkitRunnable {
+public class EndedTimer extends BukkitRunnable {
 
 	private int counter;
 	private int max;
@@ -20,28 +19,26 @@ public class StartedTimer extends BukkitRunnable {
 	private CommandSender sender;
 	private String msg;
 
-	public StartedTimer(CommandSender sender, Arena arena, STATES status, String msg, int max) {
+	public EndedTimer(CommandSender sender, Arena arena, STATES status, String msg, int max) {
 		this.max = max;
 		this.status = status;
 		this.arena = arena;
 		this.sender = sender;
-		msg.replaceAll("{TIMER}", PropertiesAPI.getProperty_C("waitTimer", "10",
+		msg.replaceAll("{TIME}", PropertiesAPI.getProperty_C("endedTimer", "3",
 				ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
 		this.msg = Chati.translate(msg);
 	}
 
 	@Override
 	public void run() {
-		if (sender != null && sender instanceof Player) {
-			Bukkit.dispatchCommand(sender, "title " + sender.getName() + " title {\"text\":\"" + Chati.translate(msg)
-					+ " \",\"fadeIn\":20,\"stay\":40,\"fadeOut\":20}");
-			while (counter <= max) {
-				if (counter == max) {
-					ArenaManager.setArenaStatus(arena, status);
-					this.cancel();
-				}
-				counter++;
+		Bukkit.dispatchCommand(sender, "title " + sender.getName() + " title {\"text\":\""
+				+ msg.replaceAll("{TIME}", String.valueOf(counter)) + " \",\"fadeIn\":20,\"stay\":60,\"fadeOut\":20}");
+		while (counter <= max) {
+			if (counter == max) {
+				ArenaManager.setArenaStatus(arena, status);
+				this.cancel();
 			}
+			counter++;
 		}
 	}
 

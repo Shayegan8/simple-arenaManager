@@ -1,8 +1,5 @@
 package arena.event;
 
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentSkipListSet;
-
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -16,6 +13,7 @@ import arena.Arena;
 import arena.ArenaManager;
 import arena.PropertiesAPI;
 import arena.STATES;
+import arena.threads.EndedTimer;
 import arena.threads.StartedTimer;
 import arena.threads.WaitingTimer;
 
@@ -33,6 +31,35 @@ public class EventMaker implements Listener {
 		}
 	}
 
+	public static void registerEnd(String pluginName) {
+		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
+		EventExecutor executor = new EventExecutor() {
+
+			@Override
+			public void execute(Listener listener, Event event) throws EventException {
+				if (event instanceof ArenaEnded) {
+					ArenaEnded e = (ArenaEnded) event;
+					Arena arena = e.getArena();
+					new EndedTimer(e.getPlayer(), arena, STATES.WAITING, pluginName,
+							Integer.parseInt(PropertiesAPI.getProperty_C("endedTimer", "3",
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
+							.runTaskAsynchronously(innerInstance);
+					ArenaManager.ARENAS.entries().stream().filter((x) -> x.getKey().equals(arena)).skip(0)
+							.forEach((x) -> {
+								ArenaManager.removePlayer(x.getValue(), arena);
+							});
+				}
+			}
+		};
+
+		try {
+			Bukkit.getPluginManager().registerEvent(ArenaEnded.class.newInstance().getClass(), instance,
+					EventPriority.NORMAL, executor, innerInstance);
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+	}
+
 	/**
 	 * @apiNote state is better to be BEFOREWAITING
 	 * @param makerClass
@@ -40,57 +67,47 @@ public class EventMaker implements Listener {
 	 * @param arenaName
 	 * @param status
 	 */
-	public static void registerWait(Class<?> makerClass, String pluginName, STATES status) {
+	public static void registerWait(String pluginName, STATES status) {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
-		ConcurrentLinkedQueue<Object> lnk = new ConcurrentLinkedQueue<>();
 		EventExecutor executor = new EventExecutor() {
 
 			@Override
 			public void execute(Listener listener, Event event) throws EventException {
 				if (event instanceof ArenaWait) {
-					ArenaWait ourEvent = (ArenaWait) event;
-					Player player = ourEvent.getPlayer();
-					lnk.add(player);
-					Arena arena = ourEvent.getArena();
-					lnk.add(arena);
-					new WaitingTimer(innerInstance, player, arena, status,
+					ArenaWait e = (ArenaWait) event;
+					Arena arena = e.getArena();
+					new WaitingTimer(e.getPlayer(), arena, status,
 							PropertiesAPI.getProperty_C("waitEvent", "Arena will be started in {TIME}",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
-							Integer.parseInt(PropertiesAPI.getProperty_C("waitTimer", "10",
+							Integer.parseInt(PropertiesAPI.getProperty_C("waitCounterTimer", "10",
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")),
+							Integer.parseInt(PropertiesAPI.getProperty_C("waitTimer", "60",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
 							.runTaskTimer(innerInstance, 0, 20);
-
+					ArenaManager.getPlayersArena(pluginName);
 				}
 			}
 		};
 
-		Player player = null;
-		if (lnk.peek() instanceof Player)
-			player = (Player) lnk.peek();
-		lnk.poll();
-
-		Arena arena = null;
-		if (lnk.peek() instanceof Arena)
-			arena = (Arena) lnk.peek();
-
-		Bukkit.getPluginManager().registerEvent(new ArenaWait(player, arena).getClass(), instance, EventPriority.NORMAL,
-				executor, innerInstance);
+		try {
+			Bukkit.getPluginManager().registerEvent(ArenaWait.class.newInstance().getClass(), instance,
+					EventPriority.NORMAL, executor, innerInstance);
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
 	}
 
-	public static void registerJoin(Class<?> makerClass, String pluginName, STATES status) {
+	public static void registerJoin(String pluginName, STATES status) {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
-		ConcurrentSkipListSet<Object> lsk = new ConcurrentSkipListSet<>();
 		EventExecutor executor = new EventExecutor() {
 
 			@Override
 			public void execute(Listener listener, Event event) throws EventException {
 				if (event instanceof ArenaJoin) {
-					ArenaJoin ourEvent = (ArenaJoin) event;
-					Player player = ourEvent.getPlayer();
-					lsk.add(player);
-					Arena arena = ourEvent.getArena();
-					lsk.add(arena);
-					new StartedTimer(innerInstance, player, arena, status,
+					ArenaJoin e = (ArenaJoin) event;
+					Player player = e.getPlayer();
+					Arena arena = e.getArena();
+					new StartedTimer(player, arena, status,
 							PropertiesAPI.getProperty_C("joinEvent", "&cSTARTED",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
 							Integer.parseInt(PropertiesAPI.getProperty_C("joinTImer", "3",
@@ -100,24 +117,21 @@ public class EventMaker implements Listener {
 			}
 		};
 
-		Player player = null;
-		if (lsk.first() instanceof Player)
-			player = (Player) lsk.first();
-
-		Arena arena = null;
-		if (lsk.last() instanceof Arena)
-			arena = (Arena) lsk.last();
-		Bukkit.getPluginManager().registerEvent(new ArenaJoin(player, arena).getClass(), instance, EventPriority.NORMAL,
-				executor, innerInstance);
+		try {
+			Bukkit.getPluginManager().registerEvent(ArenaJoin.class.newInstance().getClass(), instance,
+					EventPriority.NORMAL, executor, innerInstance);
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
 
 	}
 
-	public static void register(Class<?> makerClass, String pluginName, STATES status) {
-		registerWait(makerClass, pluginName, status);
+	public static void register(String pluginName, STATES status) {
+		registerWait(pluginName, status);
 	}
 
 	@Deprecated
-	public static void register(Class<?> makerClass, String pluginName) {
+	public static void register(String pluginName) {
 		Bukkit.getPluginManager().registerEvents(new EventListener(), Bukkit.getPluginManager().getPlugin(pluginName));
 
 	}

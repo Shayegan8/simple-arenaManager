@@ -7,24 +7,18 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Random;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.command.CommandSender;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -49,66 +43,10 @@ import net.minecraft.server.v1_8_R3.EntityPlayer;
  */
 public class ArenaManager {
 
-	private static void ARENASException(CompletableFuture<Void> future, @Nullable CommandSender sender, Arena key,
-			String value, boolean checkKey, boolean checkValue) {
-		future.handle((reuslt, exp) -> {
-			if (checkKey == true)
-				if (key == null)
-					if (sender != null)
-						sender.sendMessage("Key can't be NULL");
-					else
-						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
-			if (checkValue == true)
-				if (value == null)
-					if (sender != null)
-						sender.sendMessage("Value can't be NULL");
-					else
-						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
-			throw new IllegalStateException(Arrays.toString(exp.getStackTrace()));
-		});
-	}
-
 	/**
 	 * @apiNote this stores arenas players and status, the status is on first index
 	 */
 	public final static ListMultimap<Arena, String> ARENAS = ListMultimapBuilder.hashKeys().arrayListValues().build();
-
-	/**
-	 * 
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 * @param value
-	 */
-	public static void putInARENAS(@Nullable CommandSender sender, Plugin instance, Arena key, String value) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				ARENAS.put(key, value);
-				List<String> players = ARENAS.get(key);
-				players.remove(0);
-				for (Player player : players.stream().map((x) -> Bukkit.getPlayer(x)).collect(Collectors.toList())) {
-					if (sender.hasPermission("arena.putInARENAS")) {
-						if (STATES.valueOf(value) != null) {
-							String statusMSG = Chati
-									.translate(
-											PropertiesAPI.getProperty_C("putInARENAS", "&carena status is now " + value,
-													ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf"))
-									.replaceAll("{STATUS}", value);
-							player.sendMessage(statusMSG);
-						} else {
-							String MSG = Chati
-									.translate(PropertiesAPI.getProperty_C("arenaStatus", "&c " + value + " added",
-											ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf"))
-									.replaceAll("{PLAYER}", value);
-							player.sendMessage(MSG);
-						}
-					}
-				}
-			});
-		}, Executors.newSingleThreadExecutor());
-
-		ARENASException(future, sender, key, value, true, true);
-	}
 
 	/**
 	 * 
@@ -117,46 +55,6 @@ public class ArenaManager {
 	 */
 	public static void putInARENAS(Arena key, String value) {
 		ARENAS.put(key, value);
-	}
-
-	/**
-	 * 
-	 * @param index
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 * @param value
-	 */
-	public static void setInARENAS(int index, @Nullable CommandSender sender, Plugin instance, Arena key,
-			String value) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				ARENAS.get(key).set(index, value);
-				List<String> players = ARENAS.get(key);
-				players.remove(0);
-				for (Player player : players.stream().map((x) -> Bukkit.getPlayer(x)).collect(Collectors.toList())) {
-					if (sender.hasPermission("arena.setInARENAS")) {
-						if (index == 0) {
-							String statusMSG = Chati
-									.translate(
-											PropertiesAPI.getProperty_C("setInARENAS", "&carena status is now " + value,
-													ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf"))
-									.replaceAll("{STATUS}", value);
-							player.sendMessage(statusMSG);
-						} else {
-							String MSG = Chati
-									.translate(PropertiesAPI.getProperty_C("arenaStatus",
-											"&c " + value + " is on " + index,
-											ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf"))
-									.replaceAll("{PLAYER}", value);
-							player.sendMessage(MSG);
-						}
-					}
-				}
-			});
-		}, Executors.newSingleThreadExecutor());
-
-		ARENASException(future, sender, key, value, true, true);
 	}
 
 	/**
@@ -171,67 +69,11 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 * @param value
-	 */
-	public static void removeFromARENAS(@Nullable CommandSender sender, Plugin instance, Arena key, String value) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				ARENAS.remove(key, value);
-				List<String> players = ARENAS.get(key);
-				players.remove(0);
-				for (Player player : players.stream().map((x) -> Bukkit.getPlayer(x)).collect(Collectors.toList())) {
-					if (sender.hasPermission("arena.removeFromARENAS")) {
-						String MSG = Chati
-								.translate(PropertiesAPI.getProperty_C("removeFromARENAS",
-										"&c " + value + " removed from ARENAS",
-										ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf"))
-								.replaceAll("{PLAYER}", value);
-						player.sendMessage(MSG);
-					}
-				}
-			});
-		});
-		ARENASException(future, sender, key, value, true, true);
-	}
-
-	/**
-	 * 
 	 * @param key
 	 * @param value
 	 */
 	public static void removeFromARENAS(Arena key, String value) {
 		ARENAS.remove(key, value);
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 */
-	public static void ARENASRemoveAll(@Nullable CommandSender sender, Plugin instance, Arena key) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				ARENAS.removeAll(key);
-				List<String> players = ARENAS.get(key);
-				players.remove(0);
-				for (Player player : players.stream().map((x) -> Bukkit.getPlayer(x)).collect(Collectors.toList())) {
-					if (sender.hasPermission("arena.ARENASRemoveAll")) {
-						String MSG = Chati
-								.translate(PropertiesAPI.getProperty_C("ARENASRemoveAll",
-										"&c " + key.getName() + " removed from ARENAS",
-										ArenaManager.DIR + key.getName() + "/" + key.getName() + ".dcnf"))
-								.replaceAll("{ARENA}", key.getName());
-						player.sendMessage(MSG);
-					}
-				}
-			});
-		}, Executors.newSingleThreadExecutor());
-
-		ARENASException(future, sender, key, null, true, false);
 	}
 
 	/**
@@ -248,52 +90,6 @@ public class ArenaManager {
 	 */
 	public final static Map<String, PlayerData> PLAYERS = new MapMaker().weakKeys().weakValues().makeMap();
 
-	private static void PLAYERSException(CompletableFuture<Void> future, @Nullable CommandSender sender, String key,
-			PlayerData value, boolean checkKey, boolean checkValue) {
-		future.handle((reuslt, exp) -> {
-			if (checkKey == true)
-				if (key == null)
-					if (sender != null)
-						sender.sendMessage("Key can't be NULL");
-					else
-						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
-			if (checkValue == true)
-				if (value == null)
-					if (sender != null)
-						sender.sendMessage("Value can't be NULL");
-					else
-						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
-			throw new IllegalStateException(Arrays.toString(exp.getStackTrace()));
-		});
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 * @param value
-	 */
-	public static void putInPLAYERS(@Nullable CommandSender sender, Plugin instance, String key, PlayerData value) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				PLAYERS.put(key, value);
-				Arena arena = getPlayersArena(sender, key);
-				if (sender.hasPermission("arena.putInPLAYERS")) {
-					String statusMSG = Chati
-							.translate(PropertiesAPI.getProperty_C("putInPLAYERS",
-									"&c" + key + " status is now this \n" + value.toString(),
-									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"))
-							.replaceAll("{PLAYER}", key);
-					sender.sendMessage(statusMSG);
-				}
-			});
-
-		}, Executors.newSingleThreadExecutor());
-
-		PLAYERSException(future, sender, key, value, true, true);
-	}
-
 	/**
 	 * 
 	 * @param key
@@ -305,62 +101,11 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 * @param value
-	 */
-	public static void removeFromPLAYERS(@Nullable CommandSender sender, Plugin instance, String key,
-			PlayerData value) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				PLAYERS.remove(key, value);
-				Arena arena = getPlayersArena(sender, key);
-				if (sender.hasPermission("arena.removeFromPlayers")) {
-					String statusMSG = Chati
-							.translate(PropertiesAPI.getProperty_C("removeFromPlayers",
-									"&c" + key + " is removed from PLAYERS",
-									DIR + arena.getName() + "/" + arena.getName() + ".dcnf"))
-							.replaceAll("{PLAYER}", key);
-					sender.sendMessage(statusMSG);
-				}
-			});
-		}, Executors.newSingleThreadExecutor());
-		PLAYERSException(future, sender, key, value, true, true);
-	}
-
-	/**
-	 * 
 	 * @param key
 	 * @param value
 	 */
 	public static void removeFromPLAYERS(String key, PlayerData value) {
 		PLAYERS.remove(key, value);
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 */
-	public static void PLAYERSRemoveAll(@Nullable CommandSender sender, Plugin instance, String key) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				PLAYERS.remove(key);
-				Arena arena = getPlayersArena(sender, key);
-				if (sender.hasPermission("arena.PLAYERSRemoveAll")) {
-					String statusMSG = Chati
-							.translate(PropertiesAPI.getProperty_C("PLAYERSRemoveAll",
-									"&c" + arena.getName() + " is removed from PLAYERS",
-									DIR + arena.getName() + "/" + arena.getName() + ".dcnf"))
-							.replaceAll("{PLAYER}", key);
-					sender.sendMessage(statusMSG);
-				}
-			});
-		}, Executors.newSingleThreadExecutor());
-
-		PLAYERSException(future, sender, key, null, true, false);
 	}
 
 	/**
@@ -376,51 +121,6 @@ public class ArenaManager {
 	 */
 	public final static ListMultimap<String, NPC> NPCS = MultimapBuilder.hashKeys().arrayListValues().build();
 
-	private static void NPCSException(CompletableFuture<Void> future, CommandSender sender, String key, NPC value,
-			boolean checkKey, boolean checkValue) {
-		future.handle((reuslt, exp) -> {
-			if (checkKey == true)
-				if (key == null)
-					if (sender != null)
-						sender.sendMessage("Key can't be NULL");
-					else
-						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
-			if (checkValue == true)
-				if (value == null)
-					if (sender != null)
-						sender.sendMessage("Value can't be NULL");
-					else
-						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
-			if (sender == null) {
-				throw new IllegalStateException("sender can't be NULL " + Arrays.toString(exp.getStackTrace()));
-			}
-			throw new IllegalStateException(Arrays.toString(exp.getStackTrace()));
-		});
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 * @param value
-	 */
-	public static void putInNPCS(CommandSender sender, Plugin instance, String key, NPC value) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				NPCS.put(key, value);
-				if (sender.hasPermission("arena.putInNPCS")) {
-					String statusMSG = Chati.translate(PropertiesAPI.getProperty_C("putInNPCS",
-							"&c" + key + "->" + value.getName(), DIR + key + "/" + key + ".dcnf"))
-							.replaceAll("{PLAYER}", key);
-					sender.sendMessage(statusMSG);
-				}
-			});
-		}, Executors.newSingleThreadExecutor());
-
-		NPCSException(future, sender, key, value, true, true);
-	}
-
 	/**
 	 * 
 	 * @param key
@@ -428,31 +128,6 @@ public class ArenaManager {
 	 */
 	public static void putInNPCS(String key, NPC value) {
 		NPCS.put(key, value);
-	}
-
-	/**
-	 * 
-	 * @param index
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 * @param value
-	 */
-	public static void setInNPCS(int index, CommandSender sender, Plugin instance, String key, NPC value) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				NPCS.get(key).set(index, value);
-				if (sender.hasPermission("arena.setInNPCS")) {
-					String statusMSG = Chati.translate(PropertiesAPI.getProperty_C("setInNPCS",
-							"&c" + key + " " + index + " -> " + value.getName(),
-							ArenaManager.DIR + key + "/" + key + ".dcnf")).replaceAll("{PLAYER}", key);
-					sender.sendMessage(statusMSG);
-				}
-			});
-
-		}, Executors.newSingleThreadExecutor());
-
-		NPCSException(future, sender, key, value, true, true);
 	}
 
 	/**
@@ -467,56 +142,11 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 * @param value
-	 */
-	public static void removeFromNPCS(CommandSender sender, Plugin instance, String key, NPC value) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				NPCS.remove(key, value);
-				if (sender.hasPermission("arena.removeFromNPCS")) {
-					String statusMSG = Chati.translate(PropertiesAPI.getProperty_C("removeFromNPCS",
-							"&c" + key + " removed from NPCS", ArenaManager.DIR + key + "/" + key + ".dcnf"))
-							.replaceAll("{PLAYER}", key);
-					sender.sendMessage(statusMSG);
-				}
-			});
-		}, Executors.newSingleThreadExecutor());
-
-		NPCSException(future, sender, key, value, true, true);
-	}
-
-	/**
-	 * 
 	 * @param key
 	 * @param value
 	 */
 	public static void removeFromNPCS(String key, NPC value) {
 		NPCS.remove(key, value);
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 */
-	public static void NPCSRemoveAll(CommandSender sender, Plugin instance, String key) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				NPCS.removeAll(key);
-				if (sender.hasPermission("arena.NPCRemoveAll")) {
-					String statusMSG = Chati.translate(PropertiesAPI.getProperty_C("NPCRemoveAll",
-							"&cAll npc's removed for " + key, DIR + key + "/" + key + ".dcnf"))
-							.replaceAll("{PLAYER}", key);
-					sender.sendMessage(statusMSG);
-				}
-			});
-		}, Executors.newSingleThreadExecutor());
-
-		NPCSException(future, sender, key, null, true, false);
 	}
 
 	/**
@@ -534,46 +164,6 @@ public class ArenaManager {
 	public final static ListMultimap<String, Object> GENERATORS = ListMultimapBuilder.hashKeys().arrayListValues()
 			.build();
 
-	private static void GENSException(CompletableFuture<Void> future, CommandSender sender, String key, Generator value,
-			boolean checkKey, boolean checkValue) {
-		future.handle((reuslt, exp) -> {
-			if (checkKey == true)
-				if (key == null)
-					if (sender != null)
-						sender.sendMessage("Key can't be NULL");
-					else
-						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
-			if (checkValue == true)
-				if (value == null)
-					if (sender != null)
-						sender.sendMessage("Value can't be NULL");
-					else
-						throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
-			throw new IllegalStateException(Arrays.toString(exp.getStackTrace()));
-		});
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 * @param msg
-	 * @param value
-	 */
-	public static void putInGENS(CommandSender sender, Plugin instance, String key, String msg, Generator value) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				if (sender.hasPermission("arena.putInGENS")) {
-					sender.sendMessage(msg);
-				}
-				GENERATORS.put(key, value);
-			});
-		}, Executors.newSingleThreadExecutor());
-
-		GENSException(future, sender, key, value, true, true);
-	}
-
 	/**
 	 * 
 	 * @param key
@@ -581,29 +171,6 @@ public class ArenaManager {
 	 */
 	public static void putInGENS(String key, Generator value) {
 		GENERATORS.put(key, value);
-	}
-
-	/**
-	 * 
-	 * @param index
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 * @param msg
-	 * @param value
-	 */
-	public static void setInGENS(int index, CommandSender sender, Plugin instance, String key, String msg,
-			Generator value) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				if (sender.hasPermission("arena.setInGENS")) {
-					sender.sendMessage(msg);
-				}
-				GENERATORS.get(key).set(index, value);
-			});
-		}, Executors.newSingleThreadExecutor());
-
-		GENSException(future, sender, key, value, true, true);
 	}
 
 	/**
@@ -618,52 +185,11 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 * @param msg
-	 * @param value
-	 */
-	public static void removeFromGENS(CommandSender sender, Plugin instance, String key, String msg, Generator value) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				if (sender.hasPermission("arena.removeFromGENS")) {
-					sender.sendMessage(msg);
-				}
-				NPCS.remove(key, value);
-			});
-		}, Executors.newSingleThreadExecutor());
-
-		GENSException(future, sender, key, value, true, true);
-	}
-
-	/**
-	 * 
 	 * @param key
 	 * @param value
 	 */
 	public static void removeFromGENS(String key, Object value) {
 		NPCS.remove(key, value);
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 * @param msg
-	 */
-	public static void GENSRemoveAll(CommandSender sender, Plugin instance, String key, String msg) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				if (sender.hasPermission("arena.GENSRemoveAll")) {
-					sender.sendMessage(msg);
-				}
-				GENERATORS.removeAll(key);
-			});
-		}, Executors.newSingleThreadExecutor());
-
-		GENSException(future, sender, key, null, true, false);
 	}
 
 	/**
@@ -679,37 +205,6 @@ public class ArenaManager {
 	 */
 	public final static List<Arena> ARENALIST = new ArrayList<>();
 
-	private static void ARENALISTException(CompletableFuture<Void> future, CommandSender sender, Arena key) {
-		future.handle((reuslt, exp) -> {
-			if (key == null)
-				if (sender != null)
-					sender.sendMessage("Key can't be NULL");
-				else
-					throw new IllegalStateException("key can't be NULL " + Arrays.toString(exp.getStackTrace()));
-			throw new IllegalStateException(Arrays.toString(exp.getStackTrace()));
-		});
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 * @param msg
-	 */
-	public static void addInARENALIST(CommandSender sender, Plugin instance, Arena key, String msg) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				if (sender.hasPermission("arena.addInARENALIST")) {
-					sender.sendMessage(msg);
-				}
-				ARENALIST.add(key);
-			});
-		}, Executors.newSingleThreadExecutor());
-
-		ARENALISTException(future, sender, key);
-	}
-
 	/**
 	 * 
 	 * @param key
@@ -721,52 +216,10 @@ public class ArenaManager {
 	/**
 	 * 
 	 * @param index
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 * @param msg
-	 */
-	public static void setInARENALIST(int index, CommandSender sender, Plugin instance, Arena key, String msg) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				if (sender.hasPermission("arena.setInARENALIST")) {
-					sender.sendMessage(msg);
-				}
-			});
-			ARENALIST.set(index, key);
-		}, Executors.newSingleThreadExecutor());
-
-		ARENALISTException(future, sender, key);
-	}
-
-	/**
-	 * 
-	 * @param index
 	 * @param key
 	 */
 	public static void setInARENALIST(int index, Arena key) {
 		ARENALIST.set(index, key);
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param instance
-	 * @param key
-	 * @param msg
-	 */
-	public static void removeFromARENALIST(CommandSender sender, Plugin instance, Arena key, String msg) {
-		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
-			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-				if (sender.hasPermission("arena.removeFromARENALIST")) {
-					sender.sendMessage(msg);
-				}
-
-				ARENALIST.remove(key);
-			});
-		}, Executors.newSingleThreadExecutor());
-
-		ARENALISTException(future, sender, key);
 	}
 
 	/**
@@ -896,8 +349,8 @@ public class ArenaManager {
 	 * @param location
 	 * @return
 	 */
-	public static NPC addNPC(@Nullable CommandSender sender, Plugin instance, String arenaName, EntityType type,
-			Material hand, String uuid, String data, String name, String skinName, Location location) {
+	public static NPC addNPC(Plugin instance, String arenaName, EntityType type, Material hand, String uuid,
+			String data, String name, String skinName, Location location) {
 		PropertiesAPI.setProperties(instance, true, arenaName + "-" + name, DIR + "npc.dcnf",
 				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), type.name(),
 				hand.name(), uuid, data, name, skinName);
@@ -911,7 +364,7 @@ public class ArenaManager {
 		npc.getOrAddTrait(SkinTrait.class).setSkinPersistent(skinName, uuid, data);
 		npc.setSneaking(false);
 		npc.setProtected(true);
-		putInNPCS(sender, instance, arenaName, npc);
+		putInNPCS(arenaName, npc);
 		return npc;
 	}
 
@@ -1118,8 +571,8 @@ public class ArenaManager {
 	 * @param world
 	 * @return
 	 */
-	public static Arena createArena(@Nullable CommandSender sender, Plugin instance, String arenaName,
-			Integer minPlayer, Integer maxPlayer, Integer arenaTime, Location waitingSpawn, String world) {
+	public static Arena createArena(Plugin instance, String arenaName, Integer minPlayer, Integer maxPlayer,
+			Integer arenaTime, Location waitingSpawn, String world) {
 		final String arenaDir = DIR + arenaName;
 		final String arenaFile = DIR + arenaName + "/" + arenaName + ".dcnf";
 		String firstValue = null;
@@ -1193,27 +646,13 @@ public class ArenaManager {
 	 * @param playerName
 	 * @param team
 	 */
-	public static void selectTeam(@Nullable CommandSender sender, Plugin instance, String playerName, TEAMS team) {
-		Arena arena = getPlayersArena(sender, instance, playerName);
+	public static void selectTeam(String playerName, TEAMS team) {
+		Arena arena = getPlayersArena(playerName);
 		ArenaTeam teamm = createTeam(arena, arena.getWorld(), team);
 		ARENAS.entries().stream().filter((x) -> x.getKey().equals(arena) && ARENAS.get(arena).contains(playerName))
 				.forEach((unused) -> {
-					setPlayerTeam(sender, instance, playerName, teamm);
+					setPlayerTeam(playerName, teamm);
 				});
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param playerName
-	 * @param team
-	 */
-	public static void selectTeam(@Nullable CommandSender sender, String playerName, TEAMS team) {
-		Arena arena = getPlayersArena(sender, playerName);
-		ArenaTeam teamm = createTeam(arena, arena.getWorld(), team);
-
-		if (ARENAS.get(arena).contains(playerName))
-			setPlayerTeam(playerName, teamm);
 	}
 
 	/**
@@ -1502,62 +941,25 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param sender
-	 * @param name
-	 * @return
-	 */
-	public static Arena getPlayersArena(@Nullable CommandSender sender, String name) {
-		LinkedList<Arena> lnk = new LinkedList<>();
-		for (Arena arena : ARENALIST) {
-			List<String> ls = ARENAS.get(arena);
-			ls.remove(0);
-			for (String playerName : ls) {
-				if (playerName.equals(name)) {
-					lnk.add(arena);
-					break;
-				}
-			}
-			if (lnk.peek() != null) {
-				break;
-			}
-		}
-		if (lnk.getFirst() == null) {
-			if (sender != null)
-				sender.sendMessage("Arena not found");
-			throw new IllegalStateException("Arena not found");
-		}
-
-		return lnk.getFirst();
-	}
-
-	/**
-	 * 
-	 * @param sender
 	 * @param instance
 	 * @param playerName
 	 * @return
 	 */
-	public static Arena getPlayersArena(@Nullable CommandSender sender, Plugin instance, String playerName) {
-		ConcurrentLinkedQueue<Arena> lnk = new ConcurrentLinkedQueue<>();
+	public static Arena getPlayersArena(String playerName) {
 		Optional<Arena> arena = ARENALIST.stream().filter((x) -> ARENAS.get(x).contains(playerName)).findFirst();
-		if (arena.isPresent()) {
-			lnk.add(arena.get());
-		} else {
-			if (sender != null)
-				sender.sendMessage("Arena not found");
-			throw new IllegalStateException("Arena not found");
-		}
-		return lnk.peek();
+		if (arena.isPresent())
+			arena.get();
+
+		return null;
 	}
 
 	/**
 	 * 
-	 * @param sender
 	 * @param instance
 	 * @param playerName
 	 * @return
 	 */
-	public static ArenaTeam getPlayersTeam(@Nullable CommandSender sender, Plugin instance, String playerName) {
+	public static ArenaTeam getPlayersTeam(String playerName) {
 		ConcurrentLinkedQueue<ArenaTeam> lnk = new ConcurrentLinkedQueue<>();
 		Optional<String> player = PLAYERS.keySet().stream().filter((x) -> x.equals(playerName)).findFirst();
 		if (player.isPresent()) {
@@ -1565,28 +967,7 @@ public class ArenaManager {
 					.filter((x) -> x.getKey().equals(player.get()) && x.getValue().equals(PLAYERS.get(player.get())))
 					.findFirst();
 			PlayerData playerData = pData.get().getValue();
-			Arena arena = getPlayersArena(sender, instance, playerName);
-			ArenaTeam arenaTeam = createTeam(arena, arena.getWorld(), playerData.getTeam().getTeam());
-			lnk.add(arenaTeam);
-		}
-		return lnk.peek();
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param playerName
-	 * @return
-	 */
-	public static ArenaTeam getPlayersTeam(@Nullable CommandSender sender, String playerName) {
-		ConcurrentLinkedQueue<ArenaTeam> lnk = new ConcurrentLinkedQueue<>();
-		Optional<String> player = PLAYERS.keySet().stream().filter((x) -> x.equals(playerName)).findFirst();
-		if (player.isPresent()) {
-			Optional<Entry<String, PlayerData>> pData = PLAYERS.entrySet().stream()
-					.filter((x) -> x.getKey().equals(player.get()) && x.getValue().equals(PLAYERS.get(player.get())))
-					.findFirst();
-			PlayerData playerData = pData.get().getValue();
-			Arena arena = getPlayersArena(sender, playerName);
+			Arena arena = getPlayersArena(playerName);
 			ArenaTeam arenaTeam = createTeam(arena, arena.getWorld(), playerData.getTeam().getTeam());
 			lnk.add(arenaTeam);
 		}
@@ -1605,44 +986,11 @@ public class ArenaManager {
 	public static void addPlayer(String playerName, Arena arena, STATES status, ArenaTeam team,
 			Location locationToSpawn, boolean check) {
 		Player player = Bukkit.getPlayer(playerName);
-		if (player != null && ARENALIST.contains(arena)) {
+		if (player != null) {
 			if (!isPlayerSettedOnce(playerName)) {
 				PlayerData data = new PlayerData(team, playerName, status);
 				putInPLAYERS(playerName, data);
 				putInARENAS(arena, playerName);
-			} else {
-				setInARENAS(getArenaIndex(arena), arena, playerName);
-			}
-		}
-		if (locationToSpawn != null && player != null)
-			player.teleport(locationToSpawn);
-		if (check == true) {
-			String property = PropertiesAPI.getProperty_C("selectTeamItem", "COMPASS",
-					DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
-			ItemStack item = new ItemStack(Material.valueOf(property), 1);
-			player.getInventory().setItem(40, item);
-		}
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param instance
-	 * @param playerName
-	 * @param arena
-	 * @param status
-	 * @param team
-	 * @param locationToSpawn
-	 * @param check
-	 */
-	public static void addPlayer(@Nullable CommandSender sender, Plugin instance, String playerName, Arena arena,
-			STATES status, ArenaTeam team, Location locationToSpawn, boolean check) {
-		Player player = Bukkit.getPlayer(playerName);
-		if (player != null) {
-			if (!isPlayerSettedOnce(playerName)) {
-				PlayerData data = new PlayerData(team, playerName, status);
-				putInPLAYERS(sender, instance, playerName, data);
-				putInARENAS(sender, instance, arena, playerName);
 			} else {
 				setInARENAS(getArenaIndex(arena), arena, playerName);
 			}
@@ -1697,16 +1045,12 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param sender
-	 * @param instance
 	 * @param playerName
 	 * @param arena
 	 * @param status
 	 * @param locationToSpawn
-	 * @param check
 	 */
-	public static void randomAddPlayer(@Nullable CommandSender sender, Plugin instance, String playerName, Arena arena,
-			STATES status, Location locationToSpawn, boolean check) {
+	public static void randomAddPlayer(String playerName, Arena arena, STATES status, Location locationToSpawn) {
 		Random rand = new Random();
 		int random = rand.nextInt(TEAMS.values().length);
 		TEAMS teamm = TEAMS.values()[random];
@@ -1728,34 +1072,12 @@ public class ArenaManager {
 				teamm, bed, spawn);
 		Player player = Bukkit.getPlayer(playerName);
 		if (player != null && ARENALIST.contains(arena)) {
-			putInARENAS(sender, instance, arena, playerName);
+			putInARENAS(arena, playerName);
 			PlayerData data = new PlayerData(team, playerName, status);
-			putInPLAYERS(sender, instance, playerName, data);
+			putInPLAYERS(playerName, data);
 		}
 		if (locationToSpawn != null && player != null)
 			player.teleport(locationToSpawn);
-		if (check == true) {
-			PropertiesAPI
-					.getProperty("selectTeamItem", "COMPASS", DIR + arena.getName() + "/" + arena.getName() + ".dcnf")
-					.thenAccept((x) -> {
-						Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-							ItemStack item = new ItemStack(Material.valueOf(x), 1);
-							player.getInventory().setItem(40, item);
-						});
-					});
-		}
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param instance
-	 * @param playerName
-	 * @param arena
-	 */
-	public static void removePlayer(@Nullable CommandSender sender, Plugin instance, String playerName, Arena arena) {
-		removeFromARENAS(sender, instance, arena, playerName);
-		PLAYERSRemoveAll(sender, instance, playerName);
 	}
 
 	/**
@@ -1793,17 +1115,6 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param sender
-	 * @param instance
-	 * @param arena
-	 * @param status
-	 */
-	public static void setArenaStatus(@Nullable CommandSender sender, Plugin instance, Arena arena, STATES status) {
-		setInARENAS(0, sender, instance, arena, status.name());
-	}
-
-	/**
-	 * 
 	 * @param playerName
 	 * @return
 	 */
@@ -1832,35 +1143,27 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param sender
-	 * @param instance
 	 * @param arena
 	 * @param team
 	 * @return
 	 */
-	public static ConcurrentSkipListSet<String> getTeamsPlayers(@Nullable CommandSender sender, Plugin instance,
-			Arena arena, TEAMS team) {
+	public static ConcurrentSkipListSet<String> getTeamsPlayers(Arena arena, TEAMS team) {
 		ConcurrentSkipListSet<String> fls = new ConcurrentSkipListSet<>();
-		arena.getPlayersNames().stream().filter((x) -> getPlayersTeam(sender, instance, x).getTeam() == team)
-				.forEach((x) -> {
-					fls.add(x);
-				});
+		arena.getPlayersNames().stream().filter((x) -> getPlayersTeam(x).getTeam() == team).forEach((x) -> {
+			fls.add(x);
+		});
 		return fls;
 	}
 
 	/**
 	 * 
-	 * @param sender
-	 * @param instance
 	 * @param playerName
 	 * @param team
 	 * @return
 	 */
-	public static Arena getArenaByPlayerAndTeam(@Nullable CommandSender sender, Plugin instance, String playerName,
-			ArenaTeam team) {
+	public static Arena getArenaByPlayerAndTeam(String playerName, ArenaTeam team) {
 		Optional<Arena> value = ARENALIST.stream()
-				.filter((x) -> x.equals(team.getArena()) && x.equals(getPlayersArena(sender, instance, playerName)))
-				.findFirst();
+				.filter((x) -> x.equals(team.getArena()) && x.equals(getPlayersArena(playerName))).findFirst();
 		if (value.isPresent()) {
 			return value.get();
 		}
@@ -1917,25 +1220,14 @@ public class ArenaManager {
 
 	/**
 	 * 
+	 * @param sender
+	 * @param instance
 	 * @param playerName
 	 * @param team
 	 */
 	public static void setPlayerTeam(String playerName, ArenaTeam team) {
 		PlayerData data = new PlayerData(team, playerName, getPlayerStatus(playerName));
 		putInPLAYERS(playerName, data);
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param instance
-	 * @param playerName
-	 * @param team
-	 */
-	public static void setPlayerTeam(@Nullable CommandSender sender, Plugin instance, String playerName,
-			ArenaTeam team) {
-		PlayerData data = new PlayerData(team, playerName, getPlayerStatus(playerName));
-		putInPLAYERS(sender, instance, playerName, data);
 	}
 
 	/**
@@ -2052,14 +1344,30 @@ public class ArenaManager {
 	 * @param arenaName
 	 * @param generatorName
 	 * @param itemName
-	 * @param secounds
+	 * @param seconds
+	 * @param amount
+	 */
+	public static void setGenerator(Plugin instance, Location location, String arenaName, String generatorName,
+			String itemName, String seconds, String amount) {
+		PropertiesAPI.setProperties(instance, true, generatorName + "." + itemName,
+				DIR + arenaName + "/" + arenaName + ".dcnf",
+				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), seconds, amount);
+	}
+
+	/**
+	 * 
+	 * @param location
+	 * @param arenaName
+	 * @param generatorName
+	 * @param itemName
+	 * @param seconds
 	 * @param amount
 	 */
 	public static void setGenerator(Location location, String arenaName, String generatorName, String itemName,
-			String secounds, String amount) {
+			String seconds, String amount) {
 		PropertiesAPI.setProperties_NS(true, generatorName + "." + itemName,
 				DIR + arenaName + "/" + arenaName + ".dcnf",
-				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), secounds, amount);
+				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), seconds, amount);
 	}
 
 	/**
@@ -2089,27 +1397,10 @@ public class ArenaManager {
 	 * @param arena
 	 * @return
 	 */
-	public static ArenaTeam getTeamByArenaAndPlayer(@Nullable CommandSender sender, String playerName, Arena arena) {
+	public static ArenaTeam getTeamByArenaAndPlayer(String playerName, Arena arena) {
 		Optional<Arena> aren = ARENALIST.stream().filter((x) -> x.equals(arena) && x.equals(arena)).findFirst();
 		if (aren.isPresent()) {
-			return getPlayersTeam(sender, playerName);
-		}
-		return null;
-	}
-
-	/**
-	 * 
-	 * @param sender
-	 * @param instance
-	 * @param playerName
-	 * @param arena
-	 * @return
-	 */
-	public static ArenaTeam getTeamByArenaAndPlayer(@Nullable CommandSender sender, Plugin instance, String playerName,
-			Arena arena) {
-		Optional<Arena> aren = ARENALIST.stream().filter((x) -> x.equals(arena) && x.equals(arena)).findFirst();
-		if (aren.isPresent()) {
-			return getPlayersTeam(sender, instance, playerName);
+			return getPlayersTeam(playerName);
 		}
 		return null;
 	}
@@ -2390,6 +1681,27 @@ public class ArenaManager {
 				&& entityLocation.getX() <= Math.max(pos1.getX(), pos2.getX())
 				&& entityLocation.getY() <= Math.max(pos1.getY(), pos2.getY())
 				&& entityLocation.getZ() <= Math.max(pos1.getZ(), pos2.getZ())) ? true : false;
+	}
+
+	/**
+	 * 
+	 * @param arena
+	 */
+	public static void regenerateBlocks(Arena arena) {
+		arena.getBlocks().stream().filter((x) -> isEntityOnRegion(arena, x)).forEach((x) -> {
+			arena.getStoredBlocks().stream().filter((y) -> isEntityOnRegion(arena, y)).forEach((y) -> {
+				x.getBlock().setType(y.getBlock().getType());
+			});
+		});
+	}
+
+	/**
+	 * 
+	 * @param arena
+	 * @param location
+	 */
+	public static void saveBlock(Arena arena, Location location) {
+		arena.getStoredBlocks().add(location);
 	}
 
 	/**

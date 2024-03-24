@@ -20,10 +20,12 @@ public class EventListener implements Listener {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(event.getPluginName());
 		Player player = event.getPlayer();
 		Arena arena = event.getArena();
-		new WaitingTimer(innerInstance, player, arena, event.getStatus(),
+		new WaitingTimer(player, arena, event.getStatus(),
 				PropertiesAPI.getProperty_C("waitEvent", "Arena will be started in {TIME}",
 						ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
-				Integer.parseInt(PropertiesAPI.getProperty_C("waitTimer", "10",
+				Integer.parseInt(PropertiesAPI.getProperty_C("waitCounterTimer", "10",
+						ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")),
+				Integer.parseInt(PropertiesAPI.getProperty_C("waitTimer", "60",
 						ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
 				.runTaskTimer(innerInstance, 0, 20);
 
@@ -34,7 +36,7 @@ public class EventListener implements Listener {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(event.getPluginName());
 		Player player = event.getPlayer();
 		Arena arena = event.getArena();
-		new StartedTimer(innerInstance, player, arena, event.getStatus(),
+		new StartedTimer(player, arena, event.getStatus(),
 				PropertiesAPI.getProperty_C("joinEvent", "Something im tired to set it :) {TIME}",
 						ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
 				Integer.parseInt(PropertiesAPI.getProperty_C("joinTimer", "3",

@@ -1,2 +1,4 @@
-./lib
-./target
+lib/
+lib/citizens-2.jar
+lib/spigot-1.8.8.jar
+target/
