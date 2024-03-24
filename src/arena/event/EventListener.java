@@ -9,6 +9,8 @@ import org.bukkit.plugin.Plugin;
 import arena.Arena;
 import arena.ArenaManager;
 import arena.PropertiesAPI;
+import arena.STATES;
+import arena.threads.EndedTimer;
 import arena.threads.StartedTimer;
 import arena.threads.WaitingTimer;
 
@@ -29,6 +31,17 @@ public class EventListener implements Listener {
 						ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
 				.runTaskTimer(innerInstance, 0, 20);
 
+	}
+
+	@EventHandler
+	public void onEnd(ArenaEnded event) {
+		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(event.getPluginName());
+		ArenaEnded e = (ArenaEnded) event;
+		Arena arena = e.getArena();
+		new EndedTimer(e.getPlayer(), arena, STATES.WAITING, event.getPluginName(),
+				Integer.parseInt(PropertiesAPI.getProperty_C("endedTimer", "3",
+						ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
+				.runTaskAsynchronously(innerInstance);
 	}
 
 	@EventHandler

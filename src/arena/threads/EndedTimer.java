@@ -35,6 +35,9 @@ public class EndedTimer extends BukkitRunnable {
 				+ msg.replaceAll("{TIME}", String.valueOf(counter)) + " \",\"fadeIn\":20,\"stay\":60,\"fadeOut\":20}");
 		while (counter <= max) {
 			if (counter == max) {
+				ArenaManager.ARENAS.entries().stream().filter((x) -> x.getKey().equals(arena)).skip(0).forEach((x) -> {
+					ArenaManager.removePlayer(x.getValue(), arena);
+				});
 				ArenaManager.setArenaStatus(arena, status);
 				this.cancel();
 			}

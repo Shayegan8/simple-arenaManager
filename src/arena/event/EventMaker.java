@@ -31,6 +31,10 @@ public class EventMaker implements Listener {
 		}
 	}
 
+	/**
+	 * 
+	 * @param pluginName
+	 */
 	public static void registerEnd(String pluginName) {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
 		EventExecutor executor = new EventExecutor() {
@@ -44,10 +48,6 @@ public class EventMaker implements Listener {
 							Integer.parseInt(PropertiesAPI.getProperty_C("endedTimer", "3",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
 							.runTaskAsynchronously(innerInstance);
-					ArenaManager.ARENAS.entries().stream().filter((x) -> x.getKey().equals(arena)).skip(0)
-							.forEach((x) -> {
-								ArenaManager.removePlayer(x.getValue(), arena);
-							});
 				}
 			}
 		};
@@ -62,9 +62,7 @@ public class EventMaker implements Listener {
 
 	/**
 	 * @apiNote state is better to be BEFOREWAITING
-	 * @param makerClass
 	 * @param pluginName
-	 * @param arenaName
 	 * @param status
 	 */
 	public static void registerWait(String pluginName, STATES status) {
@@ -97,6 +95,11 @@ public class EventMaker implements Listener {
 		}
 	}
 
+	/**
+	 * 
+	 * @param pluginName
+	 * @param status
+	 */
 	public static void registerJoin(String pluginName, STATES status) {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
 		EventExecutor executor = new EventExecutor() {
@@ -128,6 +131,8 @@ public class EventMaker implements Listener {
 
 	public static void register(String pluginName, STATES status) {
 		registerWait(pluginName, status);
+		registerJoin(pluginName, status);
+		registerEnd(pluginName);
 	}
 
 	@Deprecated

@@ -12,6 +12,7 @@ public class ArenaEnded extends Event implements Cancellable {
 
 	private HandlerList handlers = new HandlerList();
 	private boolean cancelled = false;
+	private String pluginName;
 	private Player player;
 	private Arena arena;
 
@@ -43,6 +44,12 @@ public class ArenaEnded extends Event implements Cancellable {
 		this.team = team;
 	}
 
+	public ArenaEnded(String pluginName, Player player, ArenaTeam team) {
+		this.player = player;
+		this.team = team;
+		this.pluginName = pluginName;
+	}
+
 	@Override
 	public HandlerList getHandlers() {
 		return handlers;
@@ -56,6 +63,10 @@ public class ArenaEnded extends Event implements Cancellable {
 	@Override
 	public void setCancelled(boolean cancelled) {
 		this.cancelled = cancelled;
+	}
+
+	public String getPluginName() {
+		return pluginName;
 	}
 
 }
