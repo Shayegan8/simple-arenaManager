@@ -2,6 +2,7 @@ package scoreboard;
 
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.stream.Collectors;
 
 import org.bukkit.entity.Player;
 import com.google.common.collect.ImmutableList;
@@ -18,7 +19,7 @@ public class Scoresex {
 		FastBoard board = new FastBoard(player);
 		Arena arena = ArenaManager.getPlayersArena(player.getName());
 		ImmutableList<String> im = ImmutableList.copyOf(PropertiesAPI.getProperties_C("waitScores",
-				ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf", "&r", "I dontknow"));
+				ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf", "&c&lSEXWARS", "I dontknow"));
 		ConcurrentSkipListSet<String> data = new ConcurrentSkipListSet<>();
 		Iterator<String> iterate = im.iterator();
 		while (iterate.hasNext()) {
@@ -29,7 +30,8 @@ public class Scoresex {
 			data.add(nstr);
 		}
 
-		board.updateLines(data);
+		board.updateTitle(data.first());
+		board.updateLines(data.stream().skip(0).collect(Collectors.toList()));
 	}
 
 }
