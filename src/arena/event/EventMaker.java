@@ -13,6 +13,7 @@ import arena.Arena;
 import arena.ArenaManager;
 import arena.PropertiesAPI;
 import arena.STATES;
+import arena.threads.DeathTimer;
 import arena.threads.EndedTimer;
 import arena.threads.StartedTimer;
 import arena.threads.WaitingTimer;
@@ -31,11 +32,41 @@ public class EventMaker implements Listener {
 		}
 	}
 
-	/**
-	 * 
-	 * @param pluginName
-	 */
-	public static void registerEnd(String pluginName) {
+	private static String pluginName;
+
+	public static void setPlugin(String pluginName) {
+		EventMaker.pluginName = pluginName;
+	}
+
+	public static void registerDeath(STATES status) {
+		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
+		EventExecutor executor = new EventExecutor() {
+
+			@Override
+			public void execute(Listener listener, Event event) throws EventException {
+				if (event instanceof PlayerDeath) {
+					PlayerDeath e = (PlayerDeath) event;
+					Arena arena = e.getArena();
+					new DeathTimer(e.getPlayer(), arena, status,
+							PropertiesAPI.getProperty_C("deathEvent", "Respawn in {TIME}",
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
+							Integer.parseInt(PropertiesAPI.getProperty_C("deathTimer", "3",
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")));
+				}
+
+			}
+
+		};
+
+		try {
+			Bukkit.getPluginManager().registerEvent(PlayerDeath.class.newInstance().getClass(), instance,
+					EventPriority.NORMAL, executor, innerInstance);
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void registerEnd() {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
 		EventExecutor executor = new EventExecutor() {
 
@@ -44,7 +75,9 @@ public class EventMaker implements Listener {
 				if (event instanceof ArenaEnded) {
 					ArenaEnded e = (ArenaEnded) event;
 					Arena arena = e.getArena();
-					new EndedTimer(e.getPlayer(), arena, STATES.WAITING, pluginName,
+					new EndedTimer(e.getPlayer(), arena, STATES.WAITING,
+							PropertiesAPI.getProperty_C("endedEvent", "&cGAME ENDED",
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
 							Integer.parseInt(PropertiesAPI.getProperty_C("endedTimer", "3",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
 							.runTaskAsynchronously(innerInstance);
@@ -62,10 +95,9 @@ public class EventMaker implements Listener {
 
 	/**
 	 * @apiNote state is better to be BEFOREWAITING
-	 * @param pluginName
 	 * @param status
 	 */
-	public static void registerWait(String pluginName, STATES status) {
+	public static void registerWait(STATES status) {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
 		EventExecutor executor = new EventExecutor() {
 
@@ -97,10 +129,9 @@ public class EventMaker implements Listener {
 
 	/**
 	 * 
-	 * @param pluginName
 	 * @param status
 	 */
-	public static void registerJoin(String pluginName, STATES status) {
+	public static void registerJoin(STATES status) {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
 		EventExecutor executor = new EventExecutor() {
 
@@ -129,10 +160,10 @@ public class EventMaker implements Listener {
 
 	}
 
-	public static void register(String pluginName, STATES status) {
-		registerWait(pluginName, status);
-		registerJoin(pluginName, status);
-		registerEnd(pluginName);
+	public static void register(String pluginName, STATES status1, STATES status2) {
+		registerWait(status1);
+		registerJoin(status2);
+		registerEnd();
 	}
 
 	@Deprecated
