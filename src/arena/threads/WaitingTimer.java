@@ -39,7 +39,7 @@ public class WaitingTimer extends BukkitRunnable {
 		int i = 0;
 		while (i <= time) {
 			if (!ArenaManager.isArenaFull(null)) {
-				ArenaManager.setArenaStatus(arena, STATES.WAITING);
+				arena.setStatus(STATES.WAITING);
 				this.cancel();
 			} else {
 				if (time == max) {
@@ -55,9 +55,10 @@ public class WaitingTimer extends BukkitRunnable {
 	private void operation() {
 		Bukkit.dispatchCommand(sender, "title " + sender.getName() + " title {\"text\":\""
 				+ msg.replaceAll("{TIME}", String.valueOf(counter)) + " \",\"fadeIn\":20,\"stay\":20,\"fadeOut\":20}");
-		ArenaManager.setArenaStatus(arena, status);
+		arena.setStatus(status);
 		if (counter == max)
 			this.cancel();
+
 		counter++;
 	}
 

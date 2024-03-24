@@ -37,7 +37,7 @@ public class StartedTimer extends BukkitRunnable {
 					+ " \",\"fadeIn\":20,\"stay\":40,\"fadeOut\":20}");
 			while (counter <= max) {
 				if (counter == max) {
-					ArenaManager.setArenaStatus(arena, status);
+					arena.setStatus(status);
 					this.cancel();
 				}
 				counter++;

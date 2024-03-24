@@ -44,47 +44,6 @@ import net.minecraft.server.v1_8_R3.EntityPlayer;
 public class ArenaManager {
 
 	/**
-	 * @apiNote this stores arenas players and status, the status is on first index
-	 */
-	public final static ListMultimap<Arena, String> ARENAS = ListMultimapBuilder.hashKeys().arrayListValues().build();
-
-	/**
-	 * 
-	 * @param key
-	 * @param value
-	 */
-	public static void putInARENAS(Arena key, String value) {
-		ARENAS.put(key, value);
-	}
-
-	/**
-	 * 
-	 * @param index
-	 * @param key
-	 * @param value
-	 */
-	public static void setInARENAS(int index, Arena key, String value) {
-		ARENAS.get(key).set(index, value);
-	}
-
-	/**
-	 * 
-	 * @param key
-	 * @param value
-	 */
-	public static void removeFromARENAS(Arena key, String value) {
-		ARENAS.remove(key, value);
-	}
-
-	/**
-	 * 
-	 * @param key
-	 */
-	public static void ARENASRemoveAll(Arena key) {
-		ARENAS.removeAll(key);
-	}
-
-	/**
 	 * @apiNote this stores players values, first is arena name, second is their
 	 *          status and last one is their team
 	 */
@@ -649,10 +608,8 @@ public class ArenaManager {
 	public static void selectTeam(String playerName, TEAMS team) {
 		Arena arena = getPlayersArena(playerName);
 		ArenaTeam teamm = createTeam(arena, arena.getWorld(), team);
-		ARENAS.entries().stream().filter((x) -> x.getKey().equals(arena) && ARENAS.get(arena).contains(playerName))
-				.forEach((unused) -> {
-					setPlayerTeam(playerName, teamm);
-				});
+		setPlayerTeam(playerName, teamm);
+
 	}
 
 	/**
@@ -936,7 +893,7 @@ public class ArenaManager {
 	 * @return
 	 */
 	public static List<Player> getArenasPlayers(Arena arena) {
-		return ARENAS.get(arena).stream().map((x) -> Bukkit.getPlayer(x)).collect(Collectors.toList());
+		return arena.getPlayersNames().stream().map((x) -> Bukkit.getPlayer(x)).collect(Collectors.toList());
 	}
 
 	/**
@@ -946,7 +903,8 @@ public class ArenaManager {
 	 * @return
 	 */
 	public static Arena getPlayersArena(String playerName) {
-		Optional<Arena> arena = ARENALIST.stream().filter((x) -> ARENAS.get(x).contains(playerName)).findFirst();
+		Optional<Arena> arena = ARENALIST.stream()
+				.filter((x) -> getPlayersArena(playerName).getPlayersNames().contains(playerName)).findFirst();
 		if (arena.isPresent())
 			arena.get();
 
@@ -990,9 +948,12 @@ public class ArenaManager {
 			if (!isPlayerSettedOnce(playerName)) {
 				PlayerData data = new PlayerData(team, playerName, status);
 				putInPLAYERS(playerName, data);
-				putInARENAS(arena, playerName);
+				arena.getPlayersNames().add(playerName);
 			} else {
-				setInARENAS(getArenaIndex(arena), arena, playerName);
+				Bukkit.getPlayer(playerName).sendMessage(Chati.translate(PropertiesAPI
+						.getProperty_C("playerAlreadyInIt", "&c{PLAYER} is already in arena", DIR + "messages.dcnf")
+						.replaceAll("{PLAYER}", playerName)));
+				Bukkit.getLogger().severe("Player is already exist!");
 			}
 			if (locationToSpawn != null && player != null)
 				player.teleport(locationToSpawn);
@@ -1012,16 +973,7 @@ public class ArenaManager {
 	 * @return
 	 */
 	public static int getArenaIndex(Arena arena) {
-		ConcurrentLinkedQueue<Integer> lnk = new ConcurrentLinkedQueue<>();
-		Optional<Arena> cachedArena = ARENAS.keys().stream().filter((x -> x.equals(arena))).findFirst();
-		if (cachedArena.isPresent()) {
-			ImmutableList<Arena> keySet = ImmutableList.copyOf(ARENAS.keySet());
-			lnk.add(keySet.indexOf(cachedArena.get()));
-		} else {
-			lnk.add(-1);
-		}
-
-		return lnk.peek();
+		return ARENALIST.indexOf(arena);
 	}
 
 	/**
@@ -1072,7 +1024,7 @@ public class ArenaManager {
 				teamm, bed, spawn);
 		Player player = Bukkit.getPlayer(playerName);
 		if (player != null && ARENALIST.contains(arena)) {
-			putInARENAS(arena, playerName);
+			arena.getPlayersNames().add(playerName);
 			PlayerData data = new PlayerData(team, playerName, status);
 			putInPLAYERS(playerName, data);
 		}
@@ -1086,31 +1038,8 @@ public class ArenaManager {
 	 * @param arena
 	 */
 	public static void removePlayer(String playerName, Arena arena) {
-		removeFromARENAS(arena, playerName);
+		arena.getPlayersNames().remove(playerName);
 		PLAYERSRemoveAll(playerName);
-	}
-
-	/**
-	 * 
-	 * @param arena
-	 * @return
-	 */
-	public static STATES getArenaStatus(Arena arena) {
-		Optional<Entry<Arena, String>> status = ARENAS.entries().stream()
-				.filter((x) -> x.getKey().equals(arena) && STATES.valueOf(x.getValue()) != null).findFirst();
-		if (status.isPresent()) {
-			return (STATES.valueOf(status.get().getValue()));
-		}
-		return null;
-	}
-
-	/**
-	 * 
-	 * @param arena
-	 * @param status
-	 */
-	public static void setArenaStatus(Arena arena, STATES status) {
-		setInARENAS(0, arena, status.name());
 	}
 
 	/**
@@ -1720,13 +1649,13 @@ public class ArenaManager {
 	 * @return
 	 */
 	public static boolean isArenaFull(Arena arena) {
-		Optional<Entry<Arena, String>> aren = ARENAS.entries().stream()
-				.filter((x) -> x.getKey().equals(arena) && x.getKey().getMaxPlayer() == ARENAS.get(arena).size() - 1)
-				.findFirst();
-		if (aren.isPresent())
-			if (aren.get().getKey() != null)
-				return true;
-		return false;
+		return arena.getPlayersNames().size() - 1 == arena.getMaxPlayer();
+	}
+
+	public static void teleportPlayers(Arena arena, Location location) {
+		arena.getPlayersNames().stream().forEach((x) -> {
+			Bukkit.getPlayer(x).teleport(location);
+		});
 	}
 
 }
