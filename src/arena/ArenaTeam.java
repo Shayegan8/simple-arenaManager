@@ -12,6 +12,8 @@ public class ArenaTeam {
 
 	private Location teamSpawn;
 
+	private Location npc;
+
 	private Location block;
 
 	private Arena arena;
@@ -20,12 +22,15 @@ public class ArenaTeam {
 
 	private TEAMS team;
 
-	public ArenaTeam(Arena arena, int minNumber, int maxNumber, TEAMS team, Location block, Location teamSpawn) {
+	public ArenaTeam(Arena arena, int minNumber, int maxNumber, TEAMS team, Location block, Location npc,
+			Location teamSpawn) {
 		this.arena = arena;
 		this.minNumber = minNumber;
 		this.maxNumber = maxNumber;
 		this.team = team;
 		this.block = block;
+		if (npc != null)
+			this.npc = npc;
 		this.teamSpawn = teamSpawn;
 	}
 
@@ -80,13 +85,17 @@ public class ArenaTeam {
 	public Arena getArena() {
 		return arena;
 	}
-	
+
+	public Location getNpc() {
+		return npc;
+	}
+
 	/**
 	 * @apiNote thats useless
 	 */
 	@Override
 	public int hashCode() {
-		return Objects.hash(arena, block, maxNumber, minNumber, team, teamSpawn, teamStatus);
+		return Objects.hash(arena, block, maxNumber, minNumber, npc, team, teamSpawn, teamStatus);
 	}
 
 	@Override
@@ -100,9 +109,8 @@ public class ArenaTeam {
 		ArenaTeam other = (ArenaTeam) obj;
 		return Objects.equals(arena, other.arena) && Objects.equals(block, other.block)
 				&& Objects.equals(maxNumber, other.maxNumber) && Objects.equals(minNumber, other.minNumber)
-				&& team == other.team && Objects.equals(teamSpawn, other.teamSpawn) && teamStatus == other.teamStatus;
+				&& Objects.equals(npc, other.npc) && team == other.team && Objects.equals(teamSpawn, other.teamSpawn)
+				&& teamStatus == other.teamStatus;
 	}
-
-
 
 }

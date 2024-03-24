@@ -21,7 +21,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
@@ -29,13 +28,8 @@ import org.bukkit.plugin.Plugin;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MapMaker;
-import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.MultimapBuilder.ListMultimapBuilder;
 
-import net.citizensnpcs.api.CitizensAPI;
-import net.citizensnpcs.api.npc.NPC;
-import net.citizensnpcs.trait.LookClose;
-import net.citizensnpcs.trait.SkinTrait;
 import net.minecraft.server.v1_8_R3.EntityPlayer;
 
 /**
@@ -76,47 +70,6 @@ public class ArenaManager {
 	}
 
 	/**
-	 * @apiNote this stores npcs by their arenaName
-	 */
-	public final static ListMultimap<String, NPC> NPCS = MultimapBuilder.hashKeys().arrayListValues().build();
-
-	/**
-	 * 
-	 * @param key
-	 * @param value
-	 */
-	public static void putInNPCS(String key, NPC value) {
-		NPCS.put(key, value);
-	}
-
-	/**
-	 * 
-	 * @param index
-	 * @param key
-	 * @param value
-	 */
-	public static void setInNPCS(int index, String key, NPC value) {
-		NPCS.get(key).set(index, value);
-	}
-
-	/**
-	 * 
-	 * @param key
-	 * @param value
-	 */
-	public static void removeFromNPCS(String key, NPC value) {
-		NPCS.remove(key, value);
-	}
-
-	/**
-	 * 
-	 * @param key
-	 */
-	public static void NPCSRemoveAll(String key) {
-		NPCS.removeAll(key);
-	}
-
-	/**
 	 * @apiNote this stores generators by their arenaName 0 name 1 location 2
 	 *          itemStack
 	 */
@@ -148,7 +101,7 @@ public class ArenaManager {
 	 * @param value
 	 */
 	public static void removeFromGENS(String key, Object value) {
-		NPCS.remove(key, value);
+		GENERATORS.remove(key, value);
 	}
 
 	/**
@@ -240,8 +193,8 @@ public class ArenaManager {
 	 */
 	@Deprecated
 	public static ArenaTeam team(Arena arena, int minNumber, int maxNumber, TEAMS team, Location blockLocation,
-			Location waitingSpawn) {
-		return new ArenaTeam(arena, minNumber, maxNumber, team, blockLocation, waitingSpawn);
+			Location npc, Location waitingSpawn) {
+		return new ArenaTeam(arena, minNumber, maxNumber, team, blockLocation, npc, waitingSpawn);
 	}
 
 	/**
@@ -263,158 +216,24 @@ public class ArenaManager {
 		return null;
 	}
 
-	/**
-	 * 
-	 * @param arenaName
-	 * @param type
-	 * @param hand
-	 * @param uuid
-	 * @param data
-	 * @param name
-	 * @param skinName
-	 * @param location
-	 * @return
-	 */
-	public static NPC addNPC(String arenaName, EntityType type, Material hand, String uuid, String data, String name,
-			String skinName, Location location) {
-		PropertiesAPI.setProperties_NS(true, arenaName + "-" + name, DIR + "npc.dcnf",
-				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), type.name(),
-				hand.name(), uuid, data, name, skinName);
-		NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, name);
-		npc.data().set(NPC.Metadata.REMOVE_FROM_PLAYERLIST, name);
-		npc.getOrAddTrait(LookClose.class).lookClose(true);
-		if (hand != null)
-			npc.setItemProvider(() -> {
-				return new ItemStack(hand, 1);
-			});
-		npc.getOrAddTrait(SkinTrait.class).setSkinPersistent(skinName, uuid, data);
-		npc.setSneaking(false);
-		npc.setProtected(true);
-		putInNPCS(arenaName, npc);
-		return npc;
+	public static Location getNPCLocation(String arenaName, TEAMS team, String name) {
+
+		String lsk[] = PropertiesAPI
+				.getProperty_C(arenaName + "." + name + "." + team.name() != null ? team.name() : null, null,
+						DIR + "npcs.dcnf")
+				.split(",");
+		return new Location(Bukkit.getWorld(ArenaManager.getArenaByName(arenaName).getName()), Integer.parseInt(lsk[0]),
+				Integer.parseInt(lsk[1]), Integer.parseInt(lsk[2]));
 	}
 
-	/**
-	 * 
-	 * @param sender
-	 * @param instance
-	 * @param arenaName
-	 * @param type
-	 * @param hand
-	 * @param uuid
-	 * @param data
-	 * @param name
-	 * @param skinName
-	 * @param location
-	 * @return
-	 */
-	public static NPC addNPC(Plugin instance, String arenaName, EntityType type, Material hand, String uuid,
-			String data, String name, String skinName, Location location) {
-		PropertiesAPI.setProperties(instance, true, arenaName + "-" + name, DIR + "npc.dcnf",
-				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), type.name(),
-				hand.name(), uuid, data, name, skinName);
-		NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, name);
-		npc.data().set(NPC.Metadata.REMOVE_FROM_PLAYERLIST, name);
-		npc.getOrAddTrait(LookClose.class).lookClose(true);
-		if (hand != null)
-			npc.setItemProvider(() -> {
-				return new ItemStack(hand, 1);
-			});
-		npc.getOrAddTrait(SkinTrait.class).setSkinPersistent(skinName, uuid, data);
-		npc.setSneaking(false);
-		npc.setProtected(true);
-		putInNPCS(arenaName, npc);
-		return npc;
-	}
-
-	/**
-	 * 
-	 * @param instance
-	 * @param game
-	 */
-	public void spawnNPCS(Plugin instance, Arena game) {
-		for (Arena arena : ArenaManager.ARENALIST) {
-			for (int i = 0; i < ArenaManager.NPCS.get(arena.getName()).size(); i++) {
-				NPC npc = ArenaManager.NPCS.get(arena.getName()).get(i);
-				if (game.getWorld().equals(npc.getStoredLocation().getWorld().getName())) {
-					ConcurrentSkipListSet<String> lsk = PropertiesAPI.getProperties_C(
-							game.getName() + "-" + game.getName(), ArenaManager.DIR + "npc.dcnf", "NULL");
-					lsk.stream().filter((x) -> lsk.headSet(x).size() == 0).forEach((x) -> {
-						if (x != "NULL") {
-							String locates[] = x.split(",");
-							Location location = new Location(Bukkit.getWorld(game.getWorld()),
-									Double.parseDouble(locates[0]), Double.parseDouble(locates[1]),
-									Double.parseDouble(locates[2]));
-							npc.spawn(location);
-						}
-					});
-				}
-			}
+	public static void setNPCLocation(Plugin instance, String arenaName, TEAMS team, String name, Location location,
+			boolean check) {
+		try {
+			PropertiesAPI.setProperty(instance, arenaName + "." + name + "," + team.name() != null ? team.name() : null,
+					location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), DIR + "npcs.dcnf");
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-	}
-
-	/**
-	 * 
-	 * @param game
-	 */
-	public void spawnNPCS(Arena game) {
-		for (Arena arena : ArenaManager.ARENALIST) {
-			for (int i = 0; i < ArenaManager.NPCS.get(arena.getName()).size(); i++) {
-				NPC npc = ArenaManager.NPCS.get(arena.getName()).get(i);
-				if (game.getWorld().equals(npc.getStoredLocation().getWorld().getName())) {
-					ConcurrentSkipListSet<String> npcProperties = PropertiesAPI.getProperties_C(
-							game.getName() + "-" + game.getName(), ArenaManager.DIR + "npc.dcnf", "NULL");
-					String locates[] = npcProperties.first().split(",");
-					Location location = new Location(Bukkit.getWorld(game.getWorld()), Double.parseDouble(locates[0]),
-							Double.parseDouble(locates[1]), Double.parseDouble(locates[2]));
-					npc.spawn(location);
-				}
-			}
-		}
-	}
-
-	/**
-	 * @apiNote material have to be exist in configuration
-	 * @param arenaName
-	 * @throws IOException
-	 */
-	public static void loadNPCS(String arenaName) throws IOException {
-		ImmutableList<String> ls = ImmutableList.copyOf(Files.readAllLines(Paths.get(DIR + arenaName + "npc.dcnf")));
-		ls.stream().forEach((x) -> {
-			if (x.contains(arenaName + "-")) {
-				ConcurrentSkipListSet<String> lsk = PropertiesAPI.getProperties_C(x, arenaName, "NULL");
-				if (!lsk.first().equals("NULL")) {
-					Iterator<String> iterator = lsk.iterator();
-					EntityType type = null;
-					String uuid = null;
-					String data = null;
-					String name = null;
-					String skinName = null;
-					if (iterator.hasNext())
-						type = EntityType.valueOf(iterator.next());
-					Material hand = Material.valueOf(iterator.next());
-					if (iterator.hasNext())
-						uuid = iterator.next();
-					if (iterator.hasNext())
-						data = iterator.next();
-					if (iterator.hasNext())
-						name = iterator.next();
-					if (iterator.hasNext())
-						skinName = iterator.next();
-					NPC npc = CitizensAPI.getNPCRegistry().createNPC(type, name);
-					npc.data().set(NPC.Metadata.REMOVE_FROM_PLAYERLIST, name);
-					npc.getOrAddTrait(LookClose.class).lookClose(true);
-					if (hand != null)
-						npc.setItemProvider(() -> {
-							return new ItemStack(hand, 1);
-						});
-					npc.getOrAddTrait(SkinTrait.class).setSkinPersistent(skinName, uuid, data);
-					npc.setSneaking(false);
-					npc.setProtected(true);
-					putInNPCS(arenaName, npc);
-				}
-			}
-		});
 	}
 
 	/**
@@ -619,7 +438,7 @@ public class ArenaManager {
 	 */
 	public static void selectTeam(String playerName, TEAMS team) {
 		Arena arena = getPlayersArena(playerName);
-		ArenaTeam teamm = createTeam(arena, arena.getWorld(), team);
+		ArenaTeam teamm = createTeam(arena, arena.getWorld(), null, team);
 		setPlayerTeam(playerName, teamm);
 
 	}
@@ -631,7 +450,7 @@ public class ArenaManager {
 	 * @param teamm
 	 * @return
 	 */
-	public static ArenaTeam createTeam(Arena arena, String world, TEAMS teamm) {
+	public static ArenaTeam createTeam(Arena arena, String world, String npcName, TEAMS teamm) {
 
 		int min = Integer.parseInt(PropertiesAPI.getProperty_C(teamm.name() + ".min", "1",
 				DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
@@ -641,14 +460,22 @@ public class ArenaManager {
 		String coordinates[] = PropertiesAPI
 				.getProperty_C(teamm.name() + ".block", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf")
 				.split(",");
-		Location bed = new Location(Bukkit.getWorld(world), Double.parseDouble(coordinates[0]),
-				Double.parseDouble(coordinates[1]), Double.parseDouble(coordinates[2]));
+		Location bed = new Location(Bukkit.getWorld(world), Integer.parseInt(coordinates[0]),
+				Integer.parseInt(coordinates[1]), Integer.parseInt(coordinates[2]));
 		String ncoordinates[] = PropertiesAPI.getProperty_C(teamm.name() + ".teamspawn", null,
 				DIR + arena.getName() + "/" + arena.getName() + ".dcnf").split(",");
-		Location spawn = new Location(Bukkit.getWorld(world), Double.parseDouble(ncoordinates[0]),
-				Double.parseDouble(ncoordinates[1]), Double.parseDouble(ncoordinates[2]));
+		Location spawn = new Location(Bukkit.getWorld(world), Integer.parseInt(ncoordinates[0]),
+				Integer.parseInt(ncoordinates[1]), Integer.parseInt(ncoordinates[2]));
+		String nncoordinates[] = PropertiesAPI
+				.getProperty_C(arena.getName() + "." + npcName + "." + teamm.name() != null ? teamm.name() : null, null,
+						DIR + "npcs.dcnf")
+				.split(",");
+		Location npc = null;
+		if (npcName != null)
+			npc = new Location(Bukkit.getWorld(world), Integer.parseInt(nncoordinates[0]),
+					Integer.parseInt(nncoordinates[1]), Integer.parseInt(nncoordinates[2]));
 
-		return new ArenaTeam(arena, min, max, teamm, bed, spawn);
+		return new ArenaTeam(arena, min, max, teamm, bed, npc, spawn);
 	}
 
 	/**
@@ -819,12 +646,6 @@ public class ArenaManager {
 				e.printStackTrace();
 			}
 
-			try {
-				loadNPCS(arenaName);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
 			if (pos2 == null || pos1 == null || location == null || world == null)
 				throw new IllegalStateException("Some of values or null for " + arenaName);
 			Arena arena = new Arena(Integer.parseInt(min), Integer.parseInt(max), Integer.parseInt(time), location,
@@ -885,12 +706,6 @@ public class ArenaManager {
 				e.printStackTrace();
 			}
 
-			try {
-				loadNPCS(arenaName);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
 			if (pos2 == null || pos1 == null || location == null || world == null)
 				throw new IllegalStateException("Some of values or null for " + arenaName);
 			Arena arena = new Arena(Integer.parseInt(min), Integer.parseInt(max), Integer.parseInt(time), location,
@@ -938,7 +753,7 @@ public class ArenaManager {
 					.findFirst();
 			PlayerData playerData = pData.get().getValue();
 			Arena arena = getPlayersArena(playerName);
-			ArenaTeam arenaTeam = createTeam(arena, arena.getWorld(), playerData.getTeam().getTeam());
+			ArenaTeam arenaTeam = createTeam(arena, arena.getWorld(), null, playerData.getTeam().getTeam());
 			lnk.add(arenaTeam);
 		}
 		return lnk.peek();
@@ -1033,7 +848,7 @@ public class ArenaManager {
 						PropertiesAPI.getProperty_C(teamm.name() + ".min", "1", DIR + "/" + arena.getName() + ".dcnf")),
 				Integer.parseInt(
 						PropertiesAPI.getProperty_C(teamm.name() + ".max", "2", DIR + "/" + arena.getName() + ".dcnf")),
-				teamm, bed, spawn);
+				teamm, bed, null, spawn);
 		Player player = Bukkit.getPlayer(playerName);
 		if (player != null && ARENALIST.contains(arena)) {
 			arena.getPlayersNames().add(playerName);
@@ -1760,6 +1575,11 @@ public class ArenaManager {
 		return null;
 	}
 
+	/**
+	 * 
+	 * @param instance
+	 * @param location
+	 */
 	public static void setLobbySpawn(Plugin instance, Location location) {
 		try {
 			PropertiesAPI.setProperty(

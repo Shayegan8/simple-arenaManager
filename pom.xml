@@ -60,14 +60,6 @@
 			<version>1.8.8t</version>
 			<systemPath>${basedir}/lib/spigot-1.8.8.jar</systemPath>
 		</dependency>
-		<dependency>
-			<groupId>a</groupId>
-			<artifactId>aa</artifactId>
-			<scope>system</scope>
-			<version>1.8.8t</version>
-			<systemPath>${basedir}/lib/citizens-2.jar</systemPath>
-		</dependency>
-
 	</dependencies>
 
 
