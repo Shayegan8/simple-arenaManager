@@ -1,9 +1,12 @@
 package arena.event;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.EventExecutor;
@@ -11,6 +14,7 @@ import org.bukkit.plugin.Plugin;
 
 import arena.Arena;
 import arena.ArenaManager;
+import arena.Chati;
 import arena.PropertiesAPI;
 import arena.STATES;
 import arena.threads.DeathTimer;
@@ -23,6 +27,7 @@ public class EventMaker implements Listener {
 	private static EventMaker instance;
 
 	{
+		Bukkit.getPluginManager().registerEvents(instance, Bukkit.getPluginManager().getPlugin(pluginName));
 		if (instance == null) {
 			try {
 				instance = EventMaker.class.newInstance();
@@ -34,32 +39,89 @@ public class EventMaker implements Listener {
 
 	private static String pluginName;
 
+	/**
+	 * @apiNote YOU HAVE TO USE THIS FUNCTION FIRST
+	 * @param pluginName
+	 */
 	public static void setPlugin(String pluginName) {
 		EventMaker.pluginName = pluginName;
 	}
 
-	public static void registerDeath(STATES status) {
+	@EventHandler
+	public void onArena(ArenaEvent event) {
+		Player player = event.getPlayer();
+		Arena arena = event.getArena();
+		if (!ArenaManager.isEntityOnRegion(event.getArena(), player.getLocation())) {
+			Location location = player.getLocation();
+			player.teleport(location.clone().subtract(player.getLocation().getDirection().normalize().multiply(2)));
+		}
+		if (player.getLocation().getBlockY() < 0) {
+			if (!ArenaManager.isBlockGone(ArenaManager.getPlayersTeam(player.getName()))) {
+				new DeathTimer(player, arena, STATES.DEAD,
+						PropertiesAPI.getProperty_C("deathEvent", "Respawn in {TIME}",
+								ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
+						Integer.parseInt(PropertiesAPI.getProperty_C("deathTimer", "5",
+								ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")));
+			} else {
+				player.setGameMode(GameMode.SPECTATOR);
+				Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "title " + player.getName() + " title {\"text\":\""
+						+ Chati.translate("&cYou lost") + " \",\"fadeIn\":20,\"stay\":60,\"fadeOut\":20}");
+			}
+		}
+
+	}
+
+	public static void registerJoin() {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
 		EventExecutor executor = new EventExecutor() {
 
 			@Override
 			public void execute(Listener listener, Event event) throws EventException {
-				if (event instanceof PlayerDeath) {
-					PlayerDeath e = (PlayerDeath) event;
-					Arena arena = e.getArena();
-					new DeathTimer(e.getPlayer(), arena, status,
-							PropertiesAPI.getProperty_C("deathEvent", "Respawn in {TIME}",
-									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
-							Integer.parseInt(PropertiesAPI.getProperty_C("deathTimer", "3",
-									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")));
+				if (event instanceof ArenaJoin) {
+					ArenaJoin e = (ArenaJoin) event;
+					e.getArena().getPlayersNames().stream().forEach((x) -> {
+						e.getPlayer()
+								.sendMessage(Chati
+										.translate(PropertiesAPI.getProperty_C("joinEvent",
+												"{PLAYER} joined to the arena", ArenaManager.DIR + "messages.dcnf"))
+										.replaceAll("{PLAYER}", e.getPlayer().getName()));
+						ArenaManager.setPlayerStatus(x, STATES.WAITING);
+					});
 				}
-
 			}
-
 		};
 
 		try {
-			Bukkit.getPluginManager().registerEvent(PlayerDeath.class.newInstance().getClass(), instance,
+			Bukkit.getPluginManager().registerEvent(ArenaJoin.class.newInstance().getClass(), instance,
+					EventPriority.NORMAL, executor, innerInstance);
+		} catch (InstantiationException | IllegalAccessException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public static void registerLeft() {
+		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
+		EventExecutor executor = new EventExecutor() {
+
+			@Override
+			public void execute(Listener listener, Event event) throws EventException {
+				if (event instanceof ArenaJoin) {
+					ArenaJoin e = (ArenaJoin) event;
+					e.getArena().getPlayersNames().stream().filter((x) -> x.equals(e.getPlayer().getName()))
+							.forEach((x) -> {
+								e.getPlayer()
+										.sendMessage(Chati
+												.translate(PropertiesAPI.getProperty_C("leftEvent",
+														"{PLAYER} left the arena", ArenaManager.DIR + "messages.dcnf"))
+												.replaceAll("{PLAYER}", e.getPlayer().getName()));
+								ArenaManager.setPlayerStatus(x, STATES.NONE);
+							});
+				}
+			}
+		};
+
+		try {
+			Bukkit.getPluginManager().registerEvent(ArenaJoin.class.newInstance().getClass(), instance,
 					EventPriority.NORMAL, executor, innerInstance);
 		} catch (InstantiationException | IllegalAccessException e) {
 			e.printStackTrace();
@@ -131,14 +193,14 @@ public class EventMaker implements Listener {
 	 * 
 	 * @param status
 	 */
-	public static void registerJoin(STATES status) {
+	public static void registerStarted(STATES status) {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
 		EventExecutor executor = new EventExecutor() {
 
 			@Override
 			public void execute(Listener listener, Event event) throws EventException {
 				if (event instanceof ArenaJoin) {
-					ArenaJoin e = (ArenaJoin) event;
+					ArenaStarted e = (ArenaStarted) event;
 					Player player = e.getPlayer();
 					Arena arena = e.getArena();
 					new StartedTimer(player, arena, status,
@@ -162,7 +224,7 @@ public class EventMaker implements Listener {
 
 	public static void register(String pluginName, STATES status1, STATES status2) {
 		registerWait(status1);
-		registerJoin(status2);
+		registerStarted(status2);
 		registerEnd();
 	}
 

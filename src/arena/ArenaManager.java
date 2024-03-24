@@ -1057,6 +1057,22 @@ public class ArenaManager {
 		return null;
 	}
 
+	public static void setPlayerStatus(String playerName, STATES status) {
+		PLAYERS.entrySet().stream().filter((x) -> x.getKey().equals(playerName) && x.getValue() instanceof PlayerData)
+				.forEach((x) -> {
+					PlayerData oldData = x.getValue();
+					oldData.setStatus(status);
+					x.setValue(oldData);
+				});
+	}
+
+	public static void setPlayerData(String playerName, PlayerData data) {
+		PLAYERS.entrySet().stream().filter((x) -> x.getKey().equals(playerName) && x.getValue() instanceof PlayerData)
+				.forEach((x) -> {
+					x.setValue(data);
+				});
+	}
+
 	/**
 	 * 
 	 * @param arenaName
@@ -1652,10 +1668,33 @@ public class ArenaManager {
 		return arena.getPlayersNames().size() - 1 == arena.getMaxPlayer();
 	}
 
+	/**
+	 * 
+	 * @param arena
+	 * @param location
+	 */
 	public static void teleportPlayers(Arena arena, Location location) {
 		arena.getPlayersNames().stream().forEach((x) -> {
 			Bukkit.getPlayer(x).teleport(location);
 		});
+	}
+
+	/**
+	 * 
+	 * @param team
+	 * @return
+	 */
+	public static boolean isPlayersGone(ArenaTeam team) {
+		return getTeamsPlayers(team.getArena(), team.getTeam()).size() == 0;
+	}
+
+	/**
+	 * 
+	 * @param team
+	 * @return
+	 */
+	public static boolean isBlockGone(ArenaTeam team) {
+		return getBlockSpawn(team).getBlock().getType() == Material.AIR;
 	}
 
 }

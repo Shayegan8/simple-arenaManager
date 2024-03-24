@@ -7,13 +7,16 @@ import org.bukkit.event.HandlerList;
 
 import arena.Arena;
 import arena.ArenaTeam;
+import arena.STATES;
 
-public class ArenaBorder extends Event implements Cancellable {
+public class ArenaLeft extends Event implements Cancellable {
 
 	private HandlerList handlers = new HandlerList();
 	private boolean cancelled = false;
 	private Player player;
 	private Arena arena;
+	private STATES status;
+	private String pluginName;
 
 	public Player getPlayer() {
 		return player;
@@ -29,18 +32,34 @@ public class ArenaBorder extends Event implements Cancellable {
 
 	private ArenaTeam team;
 
-	public ArenaBorder(Player player) {
+	public ArenaLeft(Player player) {
 		this.player = player;
 	}
 
-	public ArenaBorder(Player player, Arena arena) {
+	public ArenaLeft(Player player, Arena arena) {
 		this.player = player;
 		this.arena = arena;
 	}
 
-	public ArenaBorder(Player player, ArenaTeam team) {
+	public ArenaLeft(Player player, ArenaTeam team) {
 		this.player = player;
 		this.team = team;
+		this.arena = team.getArena();
+	}
+
+	public ArenaLeft(Player player, ArenaTeam team, STATES status) {
+		this.player = player;
+		this.team = team;
+		this.arena = team.getArena();
+		this.status = status;
+	}
+
+	public ArenaLeft(Player player, ArenaTeam team, STATES status, String pluginName) {
+		this.player = player;
+		this.team = team;
+		this.arena = team.getArena();
+		this.status = status;
+		this.pluginName = pluginName;
 	}
 
 	@Override
@@ -56,6 +75,14 @@ public class ArenaBorder extends Event implements Cancellable {
 	@Override
 	public void setCancelled(boolean cancelled) {
 		this.cancelled = cancelled;
+	}
+
+	public STATES getStatus() {
+		return status;
+	}
+
+	public String getPluginName() {
+		return pluginName;
 	}
 
 }
