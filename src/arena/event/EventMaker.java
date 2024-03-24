@@ -17,10 +17,12 @@ import arena.Chati;
 import arena.PlayerData;
 import arena.PropertiesAPI;
 import arena.STATES;
+import arena.threads.ArenaTimer;
 import arena.threads.DeathTimer;
 import arena.threads.EndedTimer;
 import arena.threads.StartedTimer;
 import arena.threads.WaitingTimer;
+import scoreboard.Scoresex;
 
 public class EventMaker implements Listener {
 
@@ -57,6 +59,12 @@ public class EventMaker implements Listener {
 					ArenaEvent e = (ArenaEvent) event;
 					Player player = e.getPlayer();
 					Arena arena = e.getArena();
+					Scoresex.gameScores(arena);
+					new ArenaTimer(player,
+							PropertiesAPI.getProperty_C("endedEventHalf", "&cGAME ENDED",
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
+							Integer.parseInt(PropertiesAPI.getProperty_C("arenaTime", "1800",
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")));
 					if (!ArenaManager.isEntityOnRegion(arena, player.getLocation())) {
 						Location location = player.getLocation();
 						player.teleport(
@@ -210,7 +218,7 @@ public class EventMaker implements Listener {
 
 					PlayerData data = ArenaManager.getPlayersData(player);
 					data.setStartedTimer(timer);
-					ArenaManager.putInPLAYERS(player.getName(), data); // I think its not needed
+					ArenaManager.putInPLAYERS(player.getName(), data);
 				}
 			}
 		};

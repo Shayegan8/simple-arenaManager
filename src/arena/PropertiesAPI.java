@@ -53,8 +53,8 @@ public class PropertiesAPI {
 	}
 
 	public static void setProperties(Plugin instance, boolean check, String key, String fileName, String... args) {
-		Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-			if (check) {
+		if (check) {
+			Bukkit.getScheduler().runTask(instance, () -> {
 				if (Files.notExists(Paths.get(fileName))) {
 					try {
 						Files.createFile(Paths.get(fileName));
@@ -62,23 +62,23 @@ public class PropertiesAPI {
 						e.printStackTrace();
 					}
 				}
-			}
+			});
+		}
 
-			int i = 0;
+		int i = 0;
 
-			try (FileWriter writer = new FileWriter(fileName, true)) {
-				writer.write("\n" + "* " + key + "\n");
-				while (i < args.length) {
-					writer.write(i + LIST_SPLITOR + args[i] + "\n");
-					writer.flush();
-					i++;
-				}
-				writer.write("* endif " + key);
+		try (FileWriter writer = new FileWriter(fileName, true)) {
+			writer.write("\n" + "* " + key + "\n");
+			while (i < args.length) {
+				writer.write(i + LIST_SPLITOR + args[i] + "\n");
 				writer.flush();
-			} catch (IOException e) {
-				e.printStackTrace();
+				i++;
 			}
-		});
+			writer.write("* endif " + key);
+			writer.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void setProperties_NS(String key, boolean check, String fileName, List<String> args) {
@@ -246,37 +246,26 @@ public class PropertiesAPI {
 			writer.write("\n" + key + SPLITOR + value + "\n");
 			writer.flush();
 		} catch (IOException e) {
-			if (Files.notExists(Paths.get(fileName))) {
-				try {
-					Files.createFile(Paths.get(fileName));
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-				if (Files.exists(Paths.get(fileName))) {
-					setPropertyProcess(key, value, fileName);
-				}
-			}
+			e.printStackTrace();
 		}
 	}
 
-	public static void setProperty(Plugin instance, String key, String value, String fileName) {
-		Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
-			List<String> allLines = null;
-			try {
-				allLines = Files.readAllLines(Paths.get(fileName));
-			} catch (IOException e) {
-				allLines = null;
-			}
-			if (allLines != null) {
-				if (allLines.contains(key + SPLITOR + value)) {
-					int ini = getByID_NS(key + SPLITOR + value, fileName);
+	public static void setProperty(Plugin instance, String key, String value, String fileName) throws IOException {
+		List<String> allLines = new ArrayList<>(Files.readAllLines(Paths.get(fileName)));
+
+		if (allLines.isEmpty()) {
+			if (allLines.contains(key + SPLITOR + value)) {
+				int ini = getByID_NS(key + SPLITOR + value, fileName);
+				Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
 					removeProperty(instance, allLines.get(ini), fileName);
 					setPropertyProcess(key, value, fileName);
-				}
-			} else {
-				setPropertyProcess(key, value, fileName);
+				});
 			}
-		});
+		} else {
+			Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+				setPropertyProcess(key, value, fileName);
+			});
+		}
 	}
 
 	public static void removeProperty_NS(String key, String fileName) {

@@ -10,7 +10,6 @@ import arena.ArenaManager;
 import arena.Chati;
 import arena.PropertiesAPI;
 import arena.STATES;
-import arena.event.ArenaEvent;
 
 public class StartedTimer extends BukkitRunnable {
 
@@ -34,8 +33,6 @@ public class StartedTimer extends BukkitRunnable {
 	@Override
 	public void run() {
 		if (sender != null && sender instanceof Player) {
-			Bukkit.getPluginManager()
-					.callEvent(new ArenaEvent(((Player) sender), ArenaManager.getPlayersTeam(sender.getName())));
 			Bukkit.dispatchCommand(sender, "title " + sender.getName() + " title {\"text\":\"" + Chati.translate(msg)
 					+ " \",\"fadeIn\":20,\"stay\":40,\"fadeOut\":20}");
 			while (counter <= max) {

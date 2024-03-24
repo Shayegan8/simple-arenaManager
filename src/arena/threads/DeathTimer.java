@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import arena.Arena;
 import arena.ArenaManager;
@@ -11,7 +12,7 @@ import arena.Chati;
 import arena.PropertiesAPI;
 import arena.STATES;
 
-public class DeathTimer extends GodThread {
+public class DeathTimer extends BukkitRunnable {
 
 	private int counter;
 	private int max;

@@ -550,17 +550,29 @@ public class ArenaManager {
 			}
 		});
 		if (minPlayer != null) {
-			PropertiesAPI.setProperty(instance, "minPlayers", String.valueOf(minPlayer), arenaFile);
+			try {
+				PropertiesAPI.setProperty(instance, "minPlayers", String.valueOf(minPlayer), arenaFile);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		String minC = PropertiesAPI.getProperty_C("minPlayers", "2", arenaFile);
 
 		if (maxPlayer != null) {
-			PropertiesAPI.setProperty(instance, "maxPlayers", String.valueOf(maxPlayer), arenaFile);
+			try {
+				PropertiesAPI.setProperty(instance, "maxPlayers", String.valueOf(maxPlayer), arenaFile);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		String maxC = PropertiesAPI.getProperty_C("maxPlayers", "8", arenaFile);
 
 		if (arenaTime != null) {
-			PropertiesAPI.setProperty(instance, "arenaTime", String.valueOf(arenaTime), arenaFile);
+			try {
+				PropertiesAPI.setProperty(instance, "arenaTime", String.valueOf(arenaTime), arenaFile);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		String timeC = PropertiesAPI.getProperty_C("arenaTime", "1800", arenaFile);
 
@@ -1160,7 +1172,12 @@ public class ArenaManager {
 	 */
 	public static void setArenaWorld(Plugin instance, Arena arena, String world) {
 		arena.setWorld(world);
-		PropertiesAPI.setProperty(instance, "world", world, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+		try {
+			PropertiesAPI.setProperty(instance, "world", world,
+					DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -1195,9 +1212,13 @@ public class ArenaManager {
 	 */
 	public static void setPos1(Plugin instance, Arena arena, Location location) {
 		arena.setPos1(location);
-		PropertiesAPI.setProperty(instance, "pos1",
-				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
-				DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+		try {
+			PropertiesAPI.setProperty(instance, "pos1",
+					location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
+					DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -1220,9 +1241,13 @@ public class ArenaManager {
 	 */
 	public static void setPos2(Plugin instance, Arena arena, Location location) {
 		arena.setPos2(location);
-		PropertiesAPI.setProperty(instance, "pos2",
-				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
-				DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+		try {
+			PropertiesAPI.setProperty(instance, "pos2",
+					location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
+					DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -1370,9 +1395,13 @@ public class ArenaManager {
 	 */
 	public static void setTeamSpawn(Plugin instance, ArenaTeam team, Location location) {
 		team.setTeamSpawn(location);
-		PropertiesAPI.setProperty(instance, team.getTeam().name() + ".teamspawn",
-				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
-				DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf");
+		try {
+			PropertiesAPI.setProperty(instance, team.getTeam().name() + ".teamspawn",
+					location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
+					DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -1411,9 +1440,13 @@ public class ArenaManager {
 	 */
 	public static void setBlockSpawn(Plugin instance, ArenaTeam team, Location location) {
 		team.setBlockSpawn(location);
-		PropertiesAPI.setProperty(instance, team.getTeam().name() + ".block",
-				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
-				DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf");
+		try {
+			PropertiesAPI.setProperty(instance, team.getTeam().name() + ".block",
+					location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
+					DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -1497,7 +1530,11 @@ public class ArenaManager {
 	 */
 	public static void setMaxArena(Plugin instance, Arena arena, String number) {
 		arena.setMaxPlayers(Integer.parseInt(number));
-		PropertiesAPI.setProperty(instance, "max", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+		try {
+			PropertiesAPI.setProperty(instance, "max", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -1529,7 +1566,11 @@ public class ArenaManager {
 	 */
 	public static void setMinArena(Plugin instance, Arena arena, String number) {
 		arena.setMinPlayers(Integer.parseInt(number));
-		PropertiesAPI.setProperty(instance, "min", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+		try {
+			PropertiesAPI.setProperty(instance, "min", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -1562,8 +1603,12 @@ public class ArenaManager {
 	 */
 	public static void setTeamMax(Plugin instance, ArenaTeam team, String number) {
 		team.setMaxNumber(Integer.parseInt(number));
-		PropertiesAPI.setProperty(instance, team.getTeam().name() + ".min", number,
-				DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
+		try {
+			PropertiesAPI.setProperty(instance, team.getTeam().name() + ".min", number,
+					DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -1596,8 +1641,12 @@ public class ArenaManager {
 	 */
 	public static void setTeamMin(Plugin instance, ArenaTeam team, String number) {
 		team.setMinNumber(Integer.parseInt(number));
-		PropertiesAPI.setProperty(instance, team.getTeam().name() + ".max", number,
-				DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
+		try {
+			PropertiesAPI.setProperty(instance, team.getTeam().name() + ".max", number,
+					DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -1709,6 +1758,17 @@ public class ArenaManager {
 			return opt.get().getValue();
 		}
 		return null;
+	}
+
+	public static void setLobbySpawn(Plugin instance, Location location) {
+		try {
+			PropertiesAPI.setProperty(
+					instance, "lobbySpawn", String.valueOf(location.getBlockX()) + ","
+							+ String.valueOf(location.getBlockY()) + "," + String.valueOf(location.getBlockZ()),
+					DIR + "messages.dcnf");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
