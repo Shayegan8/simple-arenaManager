@@ -3,17 +3,23 @@ package arena.event;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
+import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByBlockEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
 
 import arena.Arena;
 import arena.ArenaManager;
+import arena.ArenaTeam;
 import arena.Chati;
 import arena.PlayerData;
 import arena.PropertiesAPI;
@@ -49,6 +55,17 @@ public class EventMaker implements Listener {
 	 */
 	public static void setPlugin(String pluginName) {
 		EventMaker.pluginName = pluginName;
+	}
+
+	@EventHandler
+	public void onNPC(ArenaEvent e, EntityDamageByBlockEvent e1, EntityDamageByEntityEvent e2) {
+		Player player = e.getPlayer();
+		ArenaTeam team = ArenaManager.getPlayersTeam(player.getName());
+		Arena arena = team.getArena();
+		Entity damagedByEntity = e2.getDamager();
+		Entity npcE = e2.getEntity();
+		Block damagedByBlock = e1.getDamager();
+		Entity npcB = e1.getEntity();
 	}
 
 	public static void registerArena() {
@@ -211,7 +228,7 @@ public class EventMaker implements Listener {
 					ArenaStarted e = (ArenaStarted) event;
 					Player player = e.getPlayer();
 					Arena arena = e.getArena();
-					NPC.npc(EntityType.VILLAGER, ArenaManager.getPlayersTeam(player.getName()).getNpc(), arena);
+					
 					StartedTimer timer = new StartedTimer(player, arena, status,
 							PropertiesAPI.getProperty_C("joinEvent", "&cSTARTED",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),

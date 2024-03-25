@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -31,15 +32,46 @@ import com.google.common.collect.MapMaker;
 import com.google.common.collect.MultimapBuilder.ListMultimapBuilder;
 
 import net.minecraft.server.v1_8_R3.EntityPlayer;
+import npc.NPC;
 
 /**
  * @author shayegan8
  */
 public class ArenaManager {
 
+	public final static Map<ArenaTeam, NPC> SNPCS = new HashMap<>();
+
 	/**
-	 * <p> this stores players values, first is arena name, second is their
-	 *          status and last one is their team </p>
+	 * 
+	 * @param team
+	 * @param npc
+	 */
+	public static void putInSNPCS(ArenaTeam team, NPC npc) {
+		SNPCS.put(team, npc);
+	}
+
+	/**
+	 * 
+	 * @param tea
+	 * @param npc
+	 */
+	public static void removeFromSNPCS(ArenaTeam tea, NPC npc) {
+		SNPCS.remove(tea, npc);
+	}
+
+	/**
+	 * 
+	 * @param team
+	 */
+	public static void SNPCSRemoveAll(ArenaTeam team) {
+		SNPCS.remove(team);
+	}
+
+	/**
+	 * <p>
+	 * this stores players values, first is arena name, second is their status and
+	 * last one is their team
+	 * </p>
 	 */
 	public final static Map<String, PlayerData> PLAYERS = new MapMaker().weakKeys().weakValues().makeMap();
 
@@ -70,8 +102,9 @@ public class ArenaManager {
 	}
 
 	/**
-	 * <p> this stores generators by their arenaName 0 name 1 location 2
-	 *          itemStack </p>
+	 * <p>
+	 * this stores generators by their arenaName 0 name 1 location 2 itemStack
+	 * </p>
 	 */
 	public final static ListMultimap<String, Object> GENERATORS = ListMultimapBuilder.hashKeys().arrayListValues()
 			.build();
@@ -143,7 +176,9 @@ public class ArenaManager {
 	}
 
 	/**
-	 * <p> this is the arenas directory location </p>
+	 * <p>
+	 * this is the arenas directory location
+	 * </p>
 	 */
 	public final static String DIR = "plugins/";
 
