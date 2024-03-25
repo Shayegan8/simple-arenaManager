@@ -20,7 +20,6 @@
 				<jdk>[1.8,)</jdk>
 			</activation>
 			<build>
-				<!-- <sourceDirectory>src</sourceDirectory> -->
 				<resources>
 					<resource>
 						<directory>src</directory>
@@ -41,9 +40,16 @@
 					</plugin>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-site-plugin</artifactId>
+						<version>3.9.1</version>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
+						<version>3.6.3</version>
 						<configuration>
-							<additionalparam>-Xdoclint:none</additionalparam>
+							<sourcepath>src</sourcepath>
+							<reportOutputDirectory>${basedir}/apidocs</reportOutputDirectory>
 						</configuration>
 					</plugin>
 

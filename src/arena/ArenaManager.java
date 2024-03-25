@@ -38,8 +38,8 @@ import net.minecraft.server.v1_8_R3.EntityPlayer;
 public class ArenaManager {
 
 	/**
-	 * @apiNote this stores players values, first is arena name, second is their
-	 *          status and last one is their team
+	 * <p> this stores players values, first is arena name, second is their
+	 *          status and last one is their team </p>
 	 */
 	public final static Map<String, PlayerData> PLAYERS = new MapMaker().weakKeys().weakValues().makeMap();
 
@@ -70,8 +70,8 @@ public class ArenaManager {
 	}
 
 	/**
-	 * @apiNote this stores generators by their arenaName 0 name 1 location 2
-	 *          itemStack
+	 * <p> this stores generators by their arenaName 0 name 1 location 2
+	 *          itemStack </p>
 	 */
 	public final static ListMultimap<String, Object> GENERATORS = ListMultimapBuilder.hashKeys().arrayListValues()
 			.build();
@@ -143,7 +143,7 @@ public class ArenaManager {
 	}
 
 	/**
-	 * @apiNote this is the arenas directory location
+	 * <p> this is the arenas directory location </p>
 	 */
 	public final static String DIR = "plugins/";
 

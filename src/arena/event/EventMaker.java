@@ -3,6 +3,7 @@ package arena.event;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
@@ -22,6 +23,7 @@ import arena.threads.DeathTimer;
 import arena.threads.EndedTimer;
 import arena.threads.StartedTimer;
 import arena.threads.WaitingTimer;
+import npc.NPC;
 import scoreboard.Scoresex;
 
 public class EventMaker implements Listener {
@@ -209,6 +211,7 @@ public class EventMaker implements Listener {
 					ArenaStarted e = (ArenaStarted) event;
 					Player player = e.getPlayer();
 					Arena arena = e.getArena();
+					NPC.npc(EntityType.VILLAGER, ArenaManager.getPlayersTeam(player.getName()).getNpc(), arena);
 					StartedTimer timer = new StartedTimer(player, arena, status,
 							PropertiesAPI.getProperty_C("joinEvent", "&cSTARTED",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
