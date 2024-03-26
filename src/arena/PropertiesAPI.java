@@ -638,7 +638,7 @@ public class PropertiesAPI {
 			return defaultValue;
 		}
 
-		Optional<String> retrn = cLines.parallelStream()
+		Optional<String> retrn = cLines.stream()
 				.filter(x -> x.contains(key + SPLITOR) && x.split(SPLITOR).length == 2).findFirst();
 		if (retrn.isPresent()) {
 			return retrn.get().split(SPLITOR)[1];
