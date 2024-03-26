@@ -241,28 +241,67 @@ public class ArenaManager {
 
 	public static Location getNPCLocation(String arenaName, TEAMS team) {
 
-		String lsk[] = PropertiesAPI
-				.getProperty_C(arenaName + "." + team.name() != null ? team.name() : null, null, DIR + "npcs.dcnf")
-				.split(",");
+		String lsk[] = PropertiesAPI.getProperty_C(arenaName + "." + team.name() != null ? team.name() : null, null,
+				DIR + arenaName + "/npcs.dcnf").split(",");
 		return new Location(Bukkit.getWorld(ArenaManager.getArenaByName(arenaName).getName()), Integer.parseInt(lsk[0]),
 				Integer.parseInt(lsk[1]), Integer.parseInt(lsk[2]));
 	}
 
-	public static void setNPCLocation(Plugin instance, String arenaName, TEAMS team, Location location,
-			EntityType type) {
+	public static ArenaTeam setNPCLocation(Plugin instance, String arenaName, TEAMS team, Location location) {
 		try {
 			PropertiesAPI.setProperty(instance, arenaName + "." + team.name() != null ? team.name() : null,
 					location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
 					DIR + arenaName + "/npcs.dcnf");
 			ArenaTeam teamm = getTeamByArenaAndName(getArenaByName(arenaName), team);
-			putInSNPCS(teamm, new NPC(teamm, type, location));
+			return teamm;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return null;
+	}
+
+	public static EntityType setNPCType(Plugin instance, String arenaName, TEAMS team, EntityType type) {
+		try {
+			PropertiesAPI.setProperty(instance, arenaName + "." + team.name() != null ? team.name() : null, type.name(),
+					DIR + arenaName + "/npcs.dcnf");
+			return type;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	public static void addNPC(Plugin instance, String arenaName, Location location, TEAMS team, EntityType type) {
+		ArenaTeam teamm = setNPCLocation(instance, arenaName, team, location);
+		EntityType typee = setNPCType(instance, arenaName, team, type);
+		putInSNPCS(teamm, new NPC(teamm, typee, location));
 	}
 
 	public static void loadNPCS(String arenaName) throws IOException {
+		final ConcurrentLinkedQueue<String> lnk = new ConcurrentLinkedQueue<>(
+				Files.readAllLines(Paths.get(DIR + arenaName + "/npcs.dcnf")));
+		Iterator<String> iterate = lnk.iterator();
+		lnk.stream().forEach((x -> {
+			String next = null;
+			if (x.contains(arenaName)) {
+				while (iterate.hasNext()) {
+					next = iterate.next();
+					if (next.equals(x))
+						break;
+				}
+			}
+			String property[] = PropertiesAPI.getProperty_C(next, null, DIR + arenaName + "/npcs.dcnf").split(",");
+			Location loc = new Location(Bukkit.getWorld(getArenaByName(arenaName).getWorld()),
+					Integer.parseInt(property[0]), Integer.parseInt(property[1]), Integer.parseInt(property[2]));
+			String propertyy[] = next.split(".");
 
+			ArenaTeam teamm = getTeamByArenaAndName(getArenaByName(propertyy[0]), TEAMS.valueOf(propertyy[1]));
+
+			NPC npc = new NPC(teamm, EntityType.valueOf(
+					PropertiesAPI.getProperty_C(arenaName + "." + propertyy[1], null, DIR + arenaName + "/npcs.dcnf")),
+					loc);
+			putInSNPCS(teamm, npc);
+		}));
 	}
 
 	public static void loadGenerators(String arenaName) throws IOException {
@@ -274,9 +313,9 @@ public class ArenaManager {
 			if (x.contains("* ")) {
 				while (iterate.hasNext()) {
 					next = iterate.next();
-					if (next.equals(x)) {
+					if (next.equals(x))
 						break;
-					}
+
 				}
 			}
 			String property[] = next.split(".");
