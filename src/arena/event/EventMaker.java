@@ -2,7 +2,6 @@ package arena.event;
 
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Properties;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;

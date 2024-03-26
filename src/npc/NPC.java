@@ -19,11 +19,11 @@ public class NPC {
 
 	private String name;
 
-	public void npc(String name, ArenaTeam team, EntityType type, Location location) {
+	public NPC(ArenaTeam team, EntityType type, Location location) {
 		if (!ArenaManager.SNPCS.containsKey(team) && ArenaManager.SNPCS.containsValue(this)) {
 			this.type = type;
 			this.location = location;
-			this.name = name;
+			name = team.getTeam().name();
 			Entity entity = location.getWorld().spawnEntity(location, type);
 			entity.setVelocity(new Vector(0, 0, 0));
 			entity.setCustomName(Chati.translate(team.getArena().getName() + " &lSHOPKEEPER"));
@@ -38,10 +38,6 @@ public class NPC {
 
 	public EntityType getType() {
 		return type;
-	}
-
-	public String getName() {
-		return name;
 	}
 
 	@Override
@@ -61,6 +57,8 @@ public class NPC {
 		return Objects.equals(location, other.location) && Objects.equals(name, other.name) && type == other.type;
 	}
 
-	
-	
+	public String getName() {
+		return name;
+	}
+
 }

@@ -33,7 +33,7 @@ public class Arena {
 
 	private List<Block> breakedBlocks = new ArrayList<>();
 
-	private List<TEAMS> teams = new ArrayList<>();
+	private List<ArenaTeam> teams = new ArrayList<>();
 
 	public Arena(int minPlayer, int maxPlayer, int arenaTime, Location waitingSpawn, STATES status, String name,
 			String world) {
@@ -63,7 +63,7 @@ public class Arena {
 		this.status = status;
 	}
 
-	public List<TEAMS> getTeams() {
+	public List<ArenaTeam> getTeams() {
 		return teams;
 	}
 
@@ -93,10 +93,6 @@ public class Arena {
 
 	public void setWaitingSpawn(Location waitingSpawn) {
 		this.waitingSpawn = waitingSpawn;
-	}
-
-	public void setTeams(List<TEAMS> teams) {
-		this.teams = teams;
 	}
 
 	public Integer getArenaTime() {
