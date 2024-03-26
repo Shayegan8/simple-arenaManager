@@ -317,9 +317,15 @@ public class EventMaker implements Listener {
 	}
 
 	public static void register(String pluginName, STATES status1, STATES status2) {
-		registerWait(status1);
-		registerStarted(status2);
+		registerArena();
+		registerBEnd();
+		registerBreak();
 		registerEnd();
+		registerJoin();
+		registerLeft();
+		registerPlaced();
+		registerStarted(status1);
+		registerWait(status2);
 	}
 
 	@Deprecated
