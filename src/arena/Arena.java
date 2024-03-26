@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 
 public class Arena {
 
@@ -27,11 +28,11 @@ public class Arena {
 	private Location pos2;
 
 	private List<String> playersNames = new ArrayList<>();
-	
-	private List<Location> blocks = new ArrayList<>();
-		
-	private List<Location> storedBlocks = new ArrayList<>();
-	
+
+	private List<Block> placedBlocks = new ArrayList<>();
+
+	private List<Block> breakedBlocks = new ArrayList<>();
+
 	private List<TEAMS> teams = new ArrayList<>();
 
 	public Arena(int minPlayer, int maxPlayer, int arenaTime, Location waitingSpawn, STATES status, String name,
@@ -167,20 +168,12 @@ public class Arena {
 				&& Objects.equals(waitingSpawn, other.waitingSpawn) && Objects.equals(world, other.world);
 	}
 
-	public List<Location> getBlocks() {
-		return blocks;
+	public List<Block> getBreakedBlocks() {
+		return breakedBlocks;
 	}
 
-	public void setBlocks(List<Location> blocks) {
-		this.blocks = blocks;
-	}
-
-	public List<Location> getStoredBlocks() {
-		return storedBlocks;
-	}
-
-	public void setStoredBlocks(List<Location> storedBlocks) {
-		this.storedBlocks = storedBlocks;
+	public List<Block> getPlacedBlocks() {
+		return placedBlocks;
 	}
 
 }

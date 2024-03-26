@@ -4,15 +4,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
@@ -28,7 +26,6 @@ import org.bukkit.plugin.Plugin;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.MapMaker;
 import com.google.common.collect.MultimapBuilder.ListMultimapBuilder;
 
 import net.minecraft.server.v1_8_R3.EntityPlayer;
@@ -39,7 +36,7 @@ import npc.NPC;
  */
 public class ArenaManager {
 
-	public final static Map<ArenaTeam, NPC> SNPCS = new HashMap<>();
+	public final static ConcurrentHashMap<ArenaTeam, NPC> SNPCS = new ConcurrentHashMap<>();
 
 	/**
 	 * 
@@ -73,7 +70,7 @@ public class ArenaManager {
 	 * last one is their team
 	 * </p>
 	 */
-	public final static Map<String, PlayerData> PLAYERS = new MapMaker().weakKeys().weakValues().makeMap();
+	public final static ConcurrentHashMap<String, PlayerData> PLAYERS = new ConcurrentHashMap<>();
 
 	/**
 	 * 
@@ -148,7 +145,7 @@ public class ArenaManager {
 	/**
 	 * @apiNote this saves arenas
 	 */
-	public final static List<Arena> ARENALIST = new ArrayList<>();
+	public final static ConcurrentSkipListSet<Arena> ARENALIST = new ConcurrentSkipListSet<>();
 
 	/**
 	 * 
@@ -156,15 +153,6 @@ public class ArenaManager {
 	 */
 	public static void addInARENALIST(Arena key) {
 		ARENALIST.add(key);
-	}
-
-	/**
-	 * 
-	 * @param index
-	 * @param key
-	 */
-	public static void setInARENALIST(int index, Arena key) {
-		ARENALIST.set(index, key);
 	}
 
 	/**
@@ -553,7 +541,7 @@ public class ArenaManager {
 	 * @param clazz
 	 * @return
 	 */
-	public static List<Arena> loadArenasByAnnotation(Class<?> clazz) {
+	public static ConcurrentSkipListSet<Arena> loadArenasByAnnotation(Class<?> clazz) {
 		ArenaMaker maker = clazz.getAnnotation(ArenaMaker.class);
 		List<String> files = Arrays.asList(maker.arenas());
 		files.stream().forEach((x) -> {
@@ -831,15 +819,6 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param arena
-	 * @return
-	 */
-	public static int getArenaIndex(Arena arena) {
-		return ARENALIST.indexOf(arena);
-	}
-
-	/**
-	 * 
 	 * @param playerName
 	 * @return
 	 */
@@ -973,20 +952,6 @@ public class ArenaManager {
 				.filter((x) -> x.equals(team.getArena()) && x.equals(getPlayersArena(playerName))).findFirst();
 		if (value.isPresent()) {
 			return value.get();
-		}
-		return null;
-	}
-
-	/**
-	 * 
-	 * @param playerName
-	 * @param arena
-	 * @return
-	 */
-	public static Integer getPlayerIndexInArena(String playerName, Arena arena) {
-		Optional<Arena> arenaa = ARENALIST.stream().filter((x) -> x.equals(arena)).findFirst();
-		if (arenaa.isPresent()) {
-			return ARENALIST.indexOf(arenaa.get());
 		}
 		return null;
 	}
@@ -1531,11 +1496,19 @@ public class ArenaManager {
 	 * 
 	 * @param arena
 	 */
-	public static void regenerateBlocks(Arena arena) {
-		arena.getBlocks().stream().filter((x) -> isEntityOnRegion(arena, x)).forEach((x) -> {
-			arena.getStoredBlocks().stream().filter((y) -> isEntityOnRegion(arena, y)).forEach((y) -> {
-				x.getBlock().setType(y.getBlock().getType());
-			});
+	public static void regenerateBreakedBlocks(Arena arena) {
+		arena.getBreakedBlocks().stream().filter((x) -> isEntityOnRegion(arena, x.getLocation())).forEach((x) -> {
+			Bukkit.getWorld(arena.getWorld()).getBlockAt(x.getLocation()).setType(x.getType());
+		});
+	}
+
+	/**
+	 * 
+	 * @param arena
+	 */
+	public static void deletePlacedBlocks(Arena arena) {
+		arena.getPlacedBlocks().stream().filter((x) -> isEntityOnRegion(arena, x.getLocation())).forEach((x) -> {
+			Bukkit.getWorld(arena.getWorld()).getBlockAt(x.getLocation()).setType(Material.AIR);
 		});
 	}
 
@@ -1544,8 +1517,17 @@ public class ArenaManager {
 	 * @param arena
 	 * @param location
 	 */
-	public static void saveBlock(Arena arena, Location location) {
-		arena.getStoredBlocks().add(location);
+	public static void addBreakedBlock(Arena arena, Location location) {
+		arena.getBreakedBlocks().add(location.getBlock());
+	}
+
+	/**
+	 * 
+	 * @param arena
+	 * @param location
+	 */
+	public static void addPlacedBlock(Arena arena, Location location) {
+		arena.getPlacedBlocks().add(location.getBlock());
 	}
 
 	/**

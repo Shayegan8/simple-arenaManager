@@ -6,6 +6,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 import arena.Arena;
+import arena.ArenaManager;
 import arena.ArenaTeam;
 import arena.STATES;
 
@@ -39,11 +40,13 @@ public class ArenaWait extends Event implements Cancellable {
 	public ArenaWait(Player player, Arena arena) {
 		this.player = player;
 		this.arena = arena;
+		this.team = ArenaManager.getPlayersTeam(player.getName());
 	}
 
 	public ArenaWait(Player player, ArenaTeam team) {
 		this.player = player;
 		this.team = team;
+		this.arena = ArenaManager.getPlayersArena(player.getName());
 	}
 
 	public ArenaWait(String pluginName, Player player, ArenaTeam team) {

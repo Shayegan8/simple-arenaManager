@@ -2,6 +2,7 @@ package arena.threads;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import arena.Arena;
@@ -9,6 +10,7 @@ import arena.ArenaManager;
 import arena.Chati;
 import arena.PropertiesAPI;
 import arena.STATES;
+import arena.event.ArenaBEnded;
 
 public class EndedTimer extends BukkitRunnable {
 
@@ -39,6 +41,8 @@ public class EndedTimer extends BukkitRunnable {
 					ArenaManager.removePlayer(x, arena);
 				});
 				arena.setStatus(status);
+				if (status == STATES.BEFOREENDED)
+					Bukkit.getPluginManager().callEvent(new ArenaBEnded(((Player) sender), arena));
 				this.cancel();
 			}
 			counter++;

@@ -1,19 +1,21 @@
 package arena.event;
 
+import java.util.Map.Entry;
+import java.util.Optional;
+
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageByBlockEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
 
@@ -58,14 +60,61 @@ public class EventMaker implements Listener {
 	}
 
 	@EventHandler
-	public void onNPC(ArenaEvent e, EntityDamageByBlockEvent e1, EntityDamageByEntityEvent e2) {
+	public void onNPC(ArenaEvent e, EntityDamageEvent e1) {
 		Player player = e.getPlayer();
 		ArenaTeam team = ArenaManager.getPlayersTeam(player.getName());
 		Arena arena = team.getArena();
-		Entity damagedByEntity = e2.getDamager();
-		Entity npcE = e2.getEntity();
-		Block damagedByBlock = e1.getDamager();
-		Entity npcB = e1.getEntity();
+		Entity npcE = e1.getEntity();
+
+		Optional<Entry<ArenaTeam, NPC>> opt = ArenaManager.SNPCS.entrySet().stream()
+				.filter((x) -> x.getKey().equals(ArenaManager.getPlayersTeam(player.getName()))
+						&& x.getValue().getName().equals(npcE.getCustomName())
+						&& npcE.getWorld().equals(Bukkit.getWorld(arena.getWorld())))
+				.findFirst();
+
+		if (opt.isPresent())
+			e1.setCancelled(true);
+
+	}
+
+	public static void registerBreak() {
+		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
+		EventExecutor executor = new EventExecutor() {
+
+			@Override
+			public void execute(Listener listener, Event event) throws EventException {
+				if (event instanceof BlockBreakEvent) {
+					BlockBreakEvent e = (BlockBreakEvent) event;
+					Player player = e.getPlayer();
+					Arena arena = ArenaManager.getPlayersArena(player.getName());
+					if (arena.getStatus() == STATES.RUNNING)
+						arena.getBreakedBlocks().add(e.getBlock());
+				}
+			}
+		};
+
+		Bukkit.getPluginManager().registerEvent(BlockBreakEvent.class, instance, EventPriority.NORMAL, executor,
+				innerInstance);
+	}
+
+	public static void registerPlaced() {
+		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
+		EventExecutor executor = new EventExecutor() {
+
+			@Override
+			public void execute(Listener listener, Event event) throws EventException {
+				if (event instanceof BlockPlaceEvent) {
+					BlockPlaceEvent e = (BlockPlaceEvent) event;
+					Player player = e.getPlayer();
+					Arena arena = ArenaManager.getPlayersArena(player.getName());
+					if (arena.getStatus() == STATES.RUNNING)
+						arena.getPlacedBlocks().add(e.getBlock());
+				}
+			}
+		};
+
+		Bukkit.getPluginManager().registerEvent(BlockBreakEvent.class, instance, EventPriority.NORMAL, executor,
+				innerInstance);
 	}
 
 	public static void registerArena() {
@@ -170,12 +219,31 @@ public class EventMaker implements Listener {
 				if (event instanceof ArenaEnded) {
 					ArenaEnded e = (ArenaEnded) event;
 					Arena arena = e.getArena();
-					new EndedTimer(e.getPlayer(), arena, STATES.WAITING,
+					new EndedTimer(e.getPlayer(), arena, STATES.BEFOREENDED,
 							PropertiesAPI.getProperty_C("endedEvent", "&cGAME ENDED",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
 							Integer.parseInt(PropertiesAPI.getProperty_C("endedTimer", "3",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
 							.runTaskAsynchronously(innerInstance);
+				}
+			}
+		};
+
+		Bukkit.getPluginManager().registerEvent(ArenaEnded.class, instance, EventPriority.NORMAL, executor,
+				innerInstance);
+	}
+
+	public static void registerBEnd() {
+		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
+		EventExecutor executor = new EventExecutor() {
+
+			@Override
+			public void execute(Listener listener, Event event) throws EventException {
+				if (event instanceof ArenaBEnded) {
+					ArenaBEnded e = (ArenaBEnded) event;
+					Arena arena = e.getArena();
+					ArenaManager.regenerateBreakedBlocks(arena);
+					ArenaManager.deletePlacedBlocks(arena);
 				}
 			}
 		};
@@ -228,7 +296,7 @@ public class EventMaker implements Listener {
 					ArenaStarted e = (ArenaStarted) event;
 					Player player = e.getPlayer();
 					Arena arena = e.getArena();
-					
+
 					StartedTimer timer = new StartedTimer(player, arena, status,
 							PropertiesAPI.getProperty_C("joinEvent", "&cSTARTED",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),

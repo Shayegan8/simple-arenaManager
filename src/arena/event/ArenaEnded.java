@@ -6,6 +6,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 import arena.Arena;
+import arena.ArenaManager;
 import arena.ArenaTeam;
 
 public class ArenaEnded extends Event implements Cancellable {
@@ -32,21 +33,26 @@ public class ArenaEnded extends Event implements Cancellable {
 
 	public ArenaEnded(Player player) {
 		this.player = player;
+		this.arena = ArenaManager.getPlayersArena(player.getName());
+		this.team = ArenaManager.getPlayersTeam(player.getName());
 	}
 
 	public ArenaEnded(Player player, Arena arena) {
 		this.player = player;
 		this.arena = arena;
+		this.team = ArenaManager.getPlayersTeam(player.getName());
 	}
 
 	public ArenaEnded(Player player, ArenaTeam team) {
 		this.player = player;
 		this.team = team;
+		this.arena = team.getArena();
 	}
 
 	public ArenaEnded(String pluginName, Player player, ArenaTeam team) {
 		this.player = player;
 		this.team = team;
+		this.arena = team.getArena();
 		this.pluginName = pluginName;
 	}
 

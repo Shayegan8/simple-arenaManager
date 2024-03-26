@@ -6,6 +6,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 import arena.Arena;
+import arena.ArenaManager;
 import arena.ArenaTeam;
 import arena.STATES;
 
@@ -34,11 +35,14 @@ public class ArenaJoin extends Event implements Cancellable {
 
 	public ArenaJoin(Player player) {
 		this.player = player;
+		this.arena = ArenaManager.getPlayersArena(player.getName());
+		this.team = ArenaManager.getPlayersTeam(player.getName());
 	}
 
 	public ArenaJoin(Player player, Arena arena) {
 		this.player = player;
 		this.arena = arena;
+		this.team = ArenaManager.getPlayersTeam(player.getName());
 	}
 
 	public ArenaJoin(Player player, ArenaTeam team) {
