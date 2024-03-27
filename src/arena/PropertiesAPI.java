@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -46,7 +47,7 @@ public class PropertiesAPI {
 		return PropertiesAPI.alphabets;
 	}
 
-	public static void setProperties(boolean check, String key, String fileName, String... args) {
+	public static void setProperties(Plugin instance, boolean check, String key, String fileName, String... args) {
 		if (check) {
 			if (Files.notExists(Paths.get(fileName))) {
 				try {
@@ -57,11 +58,8 @@ public class PropertiesAPI {
 			}
 		}
 
-		int i = 0;
-
-		Object obProcess = new Object();
-
-		synchronized (obProcess) {
+		Bukkit.getScheduler().runTaskAsynchronously(instance, () -> {
+			int i = 0;
 			try (FileWriter writer = new FileWriter(fileName, true)) {
 				writer.write("\n" + "* " + key + "\n");
 				while (i < args.length) {
@@ -74,7 +72,8 @@ public class PropertiesAPI {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}
+		});
+
 	}
 
 	private static void setPropertyProcess(String key, String value, String fileName) {

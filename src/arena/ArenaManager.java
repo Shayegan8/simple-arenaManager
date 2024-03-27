@@ -319,9 +319,9 @@ public class ArenaManager {
 				}
 			}
 			String property[] = next.split(".");
-			ConcurrentSkipListSet<String> ls = PropertiesAPI.getProperties(property[0] + "." + property[1],
+			ConcurrentLinkedQueue<String> ls = PropertiesAPI.getProperties(property[0] + "." + property[1],
 					DIR + arenaName + "/generators.dcnf", "NULL");
-			if (!ls.first().equals("NULL")) {
+			if (!ls.peek().equals("NULL")) {
 				Iterator<String> iti = ls.iterator();
 				if (iti.hasNext()) {
 					String[] splitedL = iti.next().split(",");
@@ -397,7 +397,7 @@ public class ArenaManager {
 		}
 		String timeC = PropertiesAPI.getProperty("arenaTime", "1800", arenaFile);
 
-		ConcurrentSkipListSet<String> waitingC = PropertiesAPI.getProperties("waitingSpawn", arenaFile, "0", "0", "0");
+		ConcurrentLinkedQueue<String> waitingC = PropertiesAPI.getProperties("waitingSpawn", arenaFile, "0", "0", "0");
 		if (waitingSpawn != null) {
 			PropertiesAPI.setProperties(instance, true, "waitingSpawn", String.valueOf(waitingSpawn.getBlockX()),
 					String.valueOf(waitingSpawn.getBlockY()), String.valueOf(waitingSpawn.getBlockZ()));
