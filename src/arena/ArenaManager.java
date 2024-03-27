@@ -226,7 +226,7 @@ public class ArenaManager {
 	 */
 	public static EntityPlayer getEntityPlayer(Location location, Entity entity, String arenaName) {
 		for (Entity e : Bukkit
-				.getWorld(PropertiesAPI.getProperty_C("world", null, DIR + arenaName + "/" + arenaName + ".dcnf"))
+				.getWorld(PropertiesAPI.getProperty("world", null, DIR + arenaName + "/" + arenaName + ".dcnf"))
 				.getEntities()) {
 			if (e instanceof Player) {
 				Player player = (Player) e;
@@ -241,7 +241,7 @@ public class ArenaManager {
 
 	public static Location getNPCLocation(String arenaName, TEAMS team) {
 
-		String lsk[] = PropertiesAPI.getProperty_C(arenaName + "." + team.name() != null ? team.name() : null, null,
+		String lsk[] = PropertiesAPI.getProperty(arenaName + "." + team.name() != null ? team.name() : null, null,
 				DIR + arenaName + "/npcs.dcnf").split(",");
 		return new Location(Bukkit.getWorld(ArenaManager.getArenaByName(arenaName).getName()), Integer.parseInt(lsk[0]),
 				Integer.parseInt(lsk[1]), Integer.parseInt(lsk[2]));
@@ -290,7 +290,7 @@ public class ArenaManager {
 						break;
 				}
 			}
-			String property[] = PropertiesAPI.getProperty_C(next, null, DIR + arenaName + "/npcs.dcnf").split(",");
+			String property[] = PropertiesAPI.getProperty(next, null, DIR + arenaName + "/npcs.dcnf").split(",");
 			Location loc = new Location(Bukkit.getWorld(getArenaByName(arenaName).getWorld()),
 					Integer.parseInt(property[0]), Integer.parseInt(property[1]), Integer.parseInt(property[2]));
 			String propertyy[] = next.split(".");
@@ -298,7 +298,7 @@ public class ArenaManager {
 			ArenaTeam teamm = getTeamByArenaAndName(getArenaByName(propertyy[0]), TEAMS.valueOf(propertyy[1]));
 
 			NPC npc = new NPC(teamm, EntityType.valueOf(
-					PropertiesAPI.getProperty_C(arenaName + "." + propertyy[1], null, DIR + arenaName + "/npcs.dcnf")),
+					PropertiesAPI.getProperty(arenaName + "." + propertyy[1], null, DIR + arenaName + "/npcs.dcnf")),
 					loc);
 			putInSNPCS(teamm, npc);
 		}));
@@ -319,7 +319,7 @@ public class ArenaManager {
 				}
 			}
 			String property[] = next.split(".");
-			ConcurrentSkipListSet<String> ls = PropertiesAPI.getProperties_C(property[0] + "." + property[1],
+			ConcurrentSkipListSet<String> ls = PropertiesAPI.getProperties(property[0] + "." + property[1],
 					DIR + arenaName + "/generators.dcnf", "NULL");
 			if (!ls.first().equals("NULL")) {
 				Iterator<String> iti = ls.iterator();
@@ -337,75 +337,6 @@ public class ArenaManager {
 
 			}
 		});
-	}
-
-	/**
-	 * 
-	 * @param arenaName
-	 * @param minPlayer
-	 * @param maxPlayer
-	 * @param arenaTime
-	 * @param waitingSpawn
-	 * @param world
-	 * @return
-	 */
-	public static Arena createArena(String arenaName, Integer minPlayer, Integer maxPlayer, Integer arenaTime,
-			Location waitingSpawn, String world) {
-		String arenaDir = DIR + arenaName;
-		String arenaFile = DIR + arenaName + "/" + arenaName + ".dcnf";
-		try {
-			if (Files.notExists(Paths.get(arenaDir)))
-				Files.createDirectory(Paths.get(arenaDir));
-			if (Files.notExists(Paths.get(arenaFile)))
-				Files.createFile(Paths.get(arenaFile));
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-		int min;
-
-		if (minPlayer != null) {
-			min = minPlayer;
-			PropertiesAPI.setProperty_NS("minPlayers", String.valueOf(min), arenaFile);
-		} else {
-			min = Integer.parseInt(PropertiesAPI.getProperty_C("minPlayers", "2", arenaFile));
-		}
-
-		int max;
-
-		if (maxPlayer != null) {
-			max = maxPlayer;
-			PropertiesAPI.setProperty_NS("maxPlayers", String.valueOf(max), arenaFile);
-		} else {
-			max = Integer.parseInt(PropertiesAPI.getProperty_C("maxPlayers", "8", arenaFile));
-		}
-
-		int time;
-
-		if (arenaTime != null) {
-			time = arenaTime;
-			PropertiesAPI.setProperty_NS("arenaTime", String.valueOf(min), arenaFile);
-		} else {
-			time = Integer.parseInt(PropertiesAPI.getProperty_C("arenaTime", "1800", arenaFile));
-		}
-
-		Location waiting;
-		if (waitingSpawn != null) {
-			waiting = waitingSpawn;
-			PropertiesAPI.setProperties_NS(true, "waitingSpawn", arenaFile, String.valueOf(waiting.getBlockX()),
-					String.valueOf(waiting.getBlockY()), String.valueOf(waiting.getBlockZ()));
-		} else {
-
-			List<String> locationCoordinates = PropertiesAPI.getProperties_NNS("waitingSpawn", arenaFile, "0", "0",
-					"0");
-			waiting = new Location(Bukkit.getWorld(world), Integer.parseInt(locationCoordinates.get(0)),
-					Integer.parseInt(locationCoordinates.get(1)), Integer.parseInt(locationCoordinates.get(2)));
-		}
-
-		Arena arena = new Arena(min, max, time, waiting, STATES.INPROCESS, arenaFile, world);
-		addInARENALIST(arena);
-		return arena;
 	}
 
 	/**
@@ -446,7 +377,7 @@ public class ArenaManager {
 				e.printStackTrace();
 			}
 		}
-		String minC = PropertiesAPI.getProperty_C("minPlayers", "2", arenaFile);
+		String minC = PropertiesAPI.getProperty("minPlayers", "2", arenaFile);
 
 		if (maxPlayer != null) {
 			try {
@@ -455,7 +386,7 @@ public class ArenaManager {
 				e.printStackTrace();
 			}
 		}
-		String maxC = PropertiesAPI.getProperty_C("maxPlayers", "8", arenaFile);
+		String maxC = PropertiesAPI.getProperty("maxPlayers", "8", arenaFile);
 
 		if (arenaTime != null) {
 			try {
@@ -464,10 +395,9 @@ public class ArenaManager {
 				e.printStackTrace();
 			}
 		}
-		String timeC = PropertiesAPI.getProperty_C("arenaTime", "1800", arenaFile);
+		String timeC = PropertiesAPI.getProperty("arenaTime", "1800", arenaFile);
 
-		ConcurrentSkipListSet<String> waitingC = PropertiesAPI.getProperties_C("waitingSpawn", arenaFile, "0", "0",
-				"0");
+		ConcurrentSkipListSet<String> waitingC = PropertiesAPI.getProperties("waitingSpawn", arenaFile, "0", "0", "0");
 		if (waitingSpawn != null) {
 			PropertiesAPI.setProperties(instance, true, "waitingSpawn", String.valueOf(waitingSpawn.getBlockX()),
 					String.valueOf(waitingSpawn.getBlockY()), String.valueOf(waitingSpawn.getBlockZ()));
@@ -523,22 +453,23 @@ public class ArenaManager {
 	 */
 	public static ArenaTeam createTeam(Arena arena, String world, String npcName, TEAMS teamm) {
 
-		int min = Integer.parseInt(PropertiesAPI.getProperty_C(teamm.name() + ".min", "1",
+		int min = Integer.parseInt(PropertiesAPI.getProperty(teamm.name() + ".min", "1",
 				DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
-		int max = Integer.parseInt(PropertiesAPI.getProperty_C(teamm.name() + "max", "2",
+		int max = Integer.parseInt(PropertiesAPI.getProperty(teamm.name() + "max", "2",
 				DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
 
 		String coordinates[] = PropertiesAPI
-				.getProperty_C(teamm.name() + ".block", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf")
+				.getProperty(teamm.name() + ".block", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf")
 				.split(",");
 		Location bed = new Location(Bukkit.getWorld(world), Integer.parseInt(coordinates[0]),
 				Integer.parseInt(coordinates[1]), Integer.parseInt(coordinates[2]));
-		String ncoordinates[] = PropertiesAPI.getProperty_C(teamm.name() + ".teamspawn", null,
-				DIR + arena.getName() + "/" + arena.getName() + ".dcnf").split(",");
+		String ncoordinates[] = PropertiesAPI
+				.getProperty(teamm.name() + ".teamspawn", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf")
+				.split(",");
 		Location spawn = new Location(Bukkit.getWorld(world), Integer.parseInt(ncoordinates[0]),
 				Integer.parseInt(ncoordinates[1]), Integer.parseInt(ncoordinates[2]));
 		String nncoordinates[] = PropertiesAPI
-				.getProperty_C(arena.getName() + "." + npcName + "." + teamm.name() != null ? teamm.name() : null, null,
+				.getProperty(arena.getName() + "." + npcName + "." + teamm.name() != null ? teamm.name() : null, null,
 						DIR + "npcs.dcnf")
 				.split(",");
 		Location npc = null;
@@ -558,36 +489,37 @@ public class ArenaManager {
 	 * @return
 	 */
 	public static Arena loadArena(String arenaName, String arenaFile) {
-		int min = Integer.parseInt(PropertiesAPI.getProperty_C("min", "2", arenaFile));
-		int max = Integer.parseInt(PropertiesAPI.getProperty_C("max", "8", arenaFile));
-		int time = Integer.parseInt(PropertiesAPI.getProperty_C("arenaTime", "1800", arenaFile));
+		int min = Integer.parseInt(PropertiesAPI.getProperty("min", "2", arenaFile));
+		int max = Integer.parseInt(PropertiesAPI.getProperty("max", "8", arenaFile));
+		int time = Integer.parseInt(PropertiesAPI.getProperty("arenaTime", "1800", arenaFile));
 
-		String locationCoordinates[] = PropertiesAPI.getProperty_C("waitingSpawn", null, arenaFile).split(",");
+		String locationCoordinates[] = PropertiesAPI.getProperty("waitingSpawn", null, arenaFile).split(",");
 
-		Location location = new Location(Bukkit.getWorld(PropertiesAPI.getProperty_C("world", null, arenaFile)),
+		Location location = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", null, arenaFile)),
 				Double.parseDouble(locationCoordinates[0]), Double.parseDouble(locationCoordinates[1]),
 				Double.parseDouble(locationCoordinates[2]));
 
-		String nlocationCoordinates[] = PropertiesAPI.getProperty_C("pos1", null, arenaFile).split(",");
+		String nlocationCoordinates[] = PropertiesAPI.getProperty("pos1", null, arenaFile).split(",");
 
-		Location pos1 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty_C("world", arenaFile, null)),
+		Location pos1 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", arenaFile, null)),
 				Double.parseDouble(nlocationCoordinates[0]), Double.parseDouble(nlocationCoordinates[1]),
 				Double.parseDouble(nlocationCoordinates[2]));
 
-		String nnlocationCoordinates[] = PropertiesAPI.getProperty_C("pos2", null, arenaFile).split(",");
+		String nnlocationCoordinates[] = PropertiesAPI.getProperty("pos2", null, arenaFile).split(",");
 
-		Location pos2 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty_C("world", null, arenaFile)),
+		Location pos2 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", null, arenaFile)),
 				Double.parseDouble(nnlocationCoordinates[0]), Double.parseDouble(nnlocationCoordinates[1]),
 				Double.parseDouble(nnlocationCoordinates[2]));
 
 		Arena arena = new Arena(min, max, time, location, STATES.WAITING, arenaName,
-				PropertiesAPI.getProperty_C("world", null, arenaFile), pos1, pos2);
+				PropertiesAPI.getProperty("world", null, arenaFile), pos1, pos2);
 		final List<TEAMS> tm = arena.getTeams().stream().map((x) -> x.getTeam()).collect(Collectors.toList());
 
 		tm.stream().forEach((x) -> {
 			String ls[] = new String[3];
-			PropertiesAPI.getProperties_C(x.name() + ".block", DIR + arena.getName() + "/" + arena.getName() + ".dcnf",
-					"NULL").stream().map((y) -> y.split("-\\s*", 2)[1].split(",")).forEach((y) -> {
+			PropertiesAPI
+					.getProperties(x.name() + ".block", DIR + arena.getName() + "/" + arena.getName() + ".dcnf", "NULL")
+					.stream().map((y) -> y.split("-\\s*", 2)[1].split(",")).forEach((y) -> {
 						ls[0] = y[0];
 						ls[1] = y[1];
 						ls[2] = y[2];
@@ -596,9 +528,9 @@ public class ArenaManager {
 					Integer.parseInt(ls[1]), Integer.parseInt(ls[2]));
 
 			ArenaTeam team = team(arena,
-					Integer.parseInt(PropertiesAPI.getProperty_C(x.name() + ".min", null,
+					Integer.parseInt(PropertiesAPI.getProperty(x.name() + ".min", null,
 							DIR + arena.getName() + "/" + x.name() + ".dcnf")),
-					Integer.parseInt(PropertiesAPI.getProperty_C(x.name() + ".max", null,
+					Integer.parseInt(PropertiesAPI.getProperty(x.name() + ".max", null,
 							DIR + arena.getName() + "/" + x.name() + ".dcnf")),
 					x, blockSpawn, getNPCLocation(arenaName, x), getWaitingSpawn(arena));
 			arena.getTeams().add(team);
@@ -618,36 +550,36 @@ public class ArenaManager {
 		files.stream().forEach((x) -> {
 			String arenaFile = DIR + x + "/" + x + ".dcnf";
 
-			int min = Integer.parseInt(PropertiesAPI.getProperty_C("min", "2", arenaFile));
-			int max = Integer.parseInt(PropertiesAPI.getProperty_C("max", "8", arenaFile));
-			int time = Integer.parseInt(PropertiesAPI.getProperty_C("arenaTime", "1800", arenaFile));
+			int min = Integer.parseInt(PropertiesAPI.getProperty("min", "2", arenaFile));
+			int max = Integer.parseInt(PropertiesAPI.getProperty("max", "8", arenaFile));
+			int time = Integer.parseInt(PropertiesAPI.getProperty("arenaTime", "1800", arenaFile));
 
-			String locationCoordinates[] = PropertiesAPI.getProperty_C("waitingSpawn", null, arenaFile).split(",");
+			String locationCoordinates[] = PropertiesAPI.getProperty("waitingSpawn", null, arenaFile).split(",");
 
-			Location location = new Location(Bukkit.getWorld(PropertiesAPI.getProperty_C("world", null, arenaFile)),
+			Location location = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", null, arenaFile)),
 					Double.parseDouble(locationCoordinates[0]), Double.parseDouble(locationCoordinates[1]),
 					Double.parseDouble(locationCoordinates[2]));
 
-			String nlocationCoordinates[] = PropertiesAPI.getProperty_C("pos1", null, arenaFile).split(",");
+			String nlocationCoordinates[] = PropertiesAPI.getProperty("pos1", null, arenaFile).split(",");
 
-			Location pos1 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty_C("world", arenaFile, null)),
+			Location pos1 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", arenaFile, null)),
 					Double.parseDouble(nlocationCoordinates[0]), Double.parseDouble(nlocationCoordinates[1]),
 					Double.parseDouble(nlocationCoordinates[2]));
 
-			String nnlocationCoordinates[] = PropertiesAPI.getProperty_C("pos2", null, arenaFile).split(",");
+			String nnlocationCoordinates[] = PropertiesAPI.getProperty("pos2", null, arenaFile).split(",");
 
-			Location pos2 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty_C("world", null, arenaFile)),
+			Location pos2 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", null, arenaFile)),
 					Double.parseDouble(nnlocationCoordinates[0]), Double.parseDouble(nnlocationCoordinates[1]),
 					Double.parseDouble(nnlocationCoordinates[2]));
 
 			Arena arena = new Arena(min, max, time, location, STATES.WAITING, x,
-					PropertiesAPI.getProperty_C("world", null, arenaFile), pos1, pos2);
+					PropertiesAPI.getProperty("world", null, arenaFile), pos1, pos2);
 
 			final List<TEAMS> tm = arena.getTeams().stream().map((y) -> y.getTeam()).collect(Collectors.toList());
 
 			tm.stream().forEach((y) -> {
 				String ls[] = new String[3];
-				PropertiesAPI.getProperties_C(y.name() + ".block",
+				PropertiesAPI.getProperties(y.name() + ".block",
 						DIR + arena.getName() + "/" + arena.getName() + ".dcnf", "NULL").stream()
 						.map((z) -> z.split("-\\s*", 2)[1].split(",")).forEach((z) -> {
 							ls[0] = z[0];
@@ -658,9 +590,9 @@ public class ArenaManager {
 						Integer.parseInt(ls[1]), Integer.parseInt(ls[2]));
 
 				ArenaTeam team = team(arena,
-						Integer.parseInt(PropertiesAPI.getProperty_C(y.name() + ".min", null,
+						Integer.parseInt(PropertiesAPI.getProperty(y.name() + ".min", null,
 								DIR + arena.getName() + "/" + y.name() + ".dcnf")),
-						Integer.parseInt(PropertiesAPI.getProperty_C(y.name() + ".max", null,
+						Integer.parseInt(PropertiesAPI.getProperty(y.name() + ".max", null,
 								DIR + arena.getName() + "/" + y.name() + ".dcnf")),
 						y, blockSpawn, getNPCLocation(x, y), getWaitingSpawn(arena));
 				arena.getTeams().add(team);
@@ -683,36 +615,36 @@ public class ArenaManager {
 		files.stream().forEach((x) -> {
 			String arenaFile = DIR + x + "/" + x + ".dcnf";
 
-			int min = Integer.parseInt(PropertiesAPI.getProperty_C("min", "2", arenaFile));
-			int max = Integer.parseInt(PropertiesAPI.getProperty_C("max", "8", arenaFile));
-			int time = Integer.parseInt(PropertiesAPI.getProperty_C("arenaTime", "1800", arenaFile));
+			int min = Integer.parseInt(PropertiesAPI.getProperty("min", "2", arenaFile));
+			int max = Integer.parseInt(PropertiesAPI.getProperty("max", "8", arenaFile));
+			int time = Integer.parseInt(PropertiesAPI.getProperty("arenaTime", "1800", arenaFile));
 
-			String locationCoordinates[] = PropertiesAPI.getProperty_C("waitingSpawn", null, arenaFile).split(",");
+			String locationCoordinates[] = PropertiesAPI.getProperty("waitingSpawn", null, arenaFile).split(",");
 
-			Location location = new Location(Bukkit.getWorld(PropertiesAPI.getProperty_C("world", null, arenaFile)),
+			Location location = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", null, arenaFile)),
 					Double.parseDouble(locationCoordinates[0]), Double.parseDouble(locationCoordinates[1]),
 					Double.parseDouble(locationCoordinates[2]));
 
-			String nlocationCoordinates[] = PropertiesAPI.getProperty_C("pos1", null, arenaFile).split(",");
+			String nlocationCoordinates[] = PropertiesAPI.getProperty("pos1", null, arenaFile).split(",");
 
-			Location pos1 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty_C("world", arenaFile, null)),
+			Location pos1 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", arenaFile, null)),
 					Double.parseDouble(nlocationCoordinates[0]), Double.parseDouble(nlocationCoordinates[1]),
 					Double.parseDouble(nlocationCoordinates[2]));
 
-			String nnlocationCoordinates[] = PropertiesAPI.getProperty_C("pos2", null, arenaFile).split(",");
+			String nnlocationCoordinates[] = PropertiesAPI.getProperty("pos2", null, arenaFile).split(",");
 
-			Location pos2 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty_C("world", null, arenaFile)),
+			Location pos2 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", null, arenaFile)),
 					Double.parseDouble(nnlocationCoordinates[0]), Double.parseDouble(nnlocationCoordinates[1]),
 					Double.parseDouble(nnlocationCoordinates[2]));
 
 			Arena arena = new Arena(min, max, time, location, STATES.WAITING, x,
-					PropertiesAPI.getProperty_C("world", null, arenaFile), pos1, pos2);
+					PropertiesAPI.getProperty("world", null, arenaFile), pos1, pos2);
 
 			final List<TEAMS> tm = arena.getTeams().stream().map((y) -> y.getTeam()).collect(Collectors.toList());
 
 			tm.stream().forEach((y) -> {
 				String ls[] = new String[3];
-				PropertiesAPI.getProperties_C(y.name() + ".block",
+				PropertiesAPI.getProperties(y.name() + ".block",
 						DIR + arena.getName() + "/" + arena.getName() + ".dcnf", "NULL").stream()
 						.map((z) -> z.split("-\\s*", 2)[1].split(",")).forEach((z) -> {
 							ls[0] = z[0];
@@ -723,9 +655,9 @@ public class ArenaManager {
 						Integer.parseInt(ls[1]), Integer.parseInt(ls[2]));
 
 				ArenaTeam team = team(arena,
-						Integer.parseInt(PropertiesAPI.getProperty_C(y.name() + ".min", null,
+						Integer.parseInt(PropertiesAPI.getProperty(y.name() + ".min", null,
 								DIR + arena.getName() + "/" + y.name() + ".dcnf")),
-						Integer.parseInt(PropertiesAPI.getProperty_C(y.name() + ".max", null,
+						Integer.parseInt(PropertiesAPI.getProperty(y.name() + ".max", null,
 								DIR + arena.getName() + "/" + y.name() + ".dcnf")),
 						y, blockSpawn, getNPCLocation(x, y), getWaitingSpawn(arena));
 				arena.getTeams().add(team);
@@ -755,29 +687,29 @@ public class ArenaManager {
 
 			String arenaFile = DIR + dir + "/" + dir + ".dcnf";
 
-			String min = PropertiesAPI.getProperty_C("min", "2", arenaFile);
-			String max = PropertiesAPI.getProperty_C("max", "8", arenaFile);
-			String time = PropertiesAPI.getProperty_C("arenaTime", "1800", arenaFile);
+			String min = PropertiesAPI.getProperty("min", "2", arenaFile);
+			String max = PropertiesAPI.getProperty("max", "8", arenaFile);
+			String time = PropertiesAPI.getProperty("arenaTime", "1800", arenaFile);
 
-			String locationCoordinates[] = PropertiesAPI.getProperty_C("waitingSpawn", null, arenaFile).split(",");
+			String locationCoordinates[] = PropertiesAPI.getProperty("waitingSpawn", null, arenaFile).split(",");
 
-			Location location = new Location(Bukkit.getWorld(PropertiesAPI.getProperty_C("world", null, arenaFile)),
+			Location location = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", null, arenaFile)),
 					Double.parseDouble(locationCoordinates[0]), Double.parseDouble(locationCoordinates[1]),
 					Double.parseDouble(locationCoordinates[2]));
 
-			String nlocationCoordinates[] = PropertiesAPI.getProperty_C("pos1", null, arenaFile).split(",");
+			String nlocationCoordinates[] = PropertiesAPI.getProperty("pos1", null, arenaFile).split(",");
 
-			Location pos1 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty_C("world", arenaFile, null)),
+			Location pos1 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", arenaFile, null)),
 					Double.parseDouble(nlocationCoordinates[0]), Double.parseDouble(nlocationCoordinates[1]),
 					Double.parseDouble(nlocationCoordinates[2]));
 
-			String nnlocationCoordinates[] = PropertiesAPI.getProperty_C("pos2", null, arenaFile).split(",");
+			String nnlocationCoordinates[] = PropertiesAPI.getProperty("pos2", null, arenaFile).split(",");
 
-			Location pos2 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty_C("world", null, arenaFile)),
+			Location pos2 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", null, arenaFile)),
 					Double.parseDouble(nnlocationCoordinates[0]), Double.parseDouble(nnlocationCoordinates[1]),
 					Double.parseDouble(nnlocationCoordinates[2]));
 
-			String world = PropertiesAPI.getProperty_C("world", null, arenaFile);
+			String world = PropertiesAPI.getProperty("world", null, arenaFile);
 
 			try {
 				loadGenerators(arenaName.get());
@@ -801,7 +733,7 @@ public class ArenaManager {
 
 			tm.stream().forEach((y) -> {
 				String ls[] = new String[3];
-				PropertiesAPI.getProperties_C(y.name() + ".block",
+				PropertiesAPI.getProperties(y.name() + ".block",
 						DIR + arena.getName() + "/" + arena.getName() + ".dcnf", "NULL").stream()
 						.map((z) -> z.split("-\\s*", 2)[1].split(",")).forEach((z) -> {
 							ls[0] = z[0];
@@ -812,9 +744,9 @@ public class ArenaManager {
 						Integer.parseInt(ls[1]), Integer.parseInt(ls[2]));
 
 				ArenaTeam team = team(arena,
-						Integer.parseInt(PropertiesAPI.getProperty_C(y.name() + ".min", null,
+						Integer.parseInt(PropertiesAPI.getProperty(y.name() + ".min", null,
 								DIR + arena.getName() + "/" + y.name() + ".dcnf")),
-						Integer.parseInt(PropertiesAPI.getProperty_C(y.name() + ".max", null,
+						Integer.parseInt(PropertiesAPI.getProperty(y.name() + ".max", null,
 								DIR + arena.getName() + "/" + y.name() + ".dcnf")),
 						y, blockSpawn, getNPCLocation(arenaName.get(), y), getWaitingSpawn(arena));
 				arena.getTeams().add(team);
@@ -845,29 +777,29 @@ public class ArenaManager {
 
 			String arenaFile = DIR + dir + "/" + dir + ".dcnf";
 
-			String min = PropertiesAPI.getProperty_C("min", "2", arenaFile);
-			String max = PropertiesAPI.getProperty_C("max", "8", arenaFile);
-			String time = PropertiesAPI.getProperty_C("arenaTime", "1800", arenaFile);
+			String min = PropertiesAPI.getProperty("min", "2", arenaFile);
+			String max = PropertiesAPI.getProperty("max", "8", arenaFile);
+			String time = PropertiesAPI.getProperty("arenaTime", "1800", arenaFile);
 
-			String locationCoordinates[] = PropertiesAPI.getProperty_C("waitingSpawn", null, arenaFile).split(",");
+			String locationCoordinates[] = PropertiesAPI.getProperty("waitingSpawn", null, arenaFile).split(",");
 
-			Location location = new Location(Bukkit.getWorld(PropertiesAPI.getProperty_C("world", null, arenaFile)),
+			Location location = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", null, arenaFile)),
 					Double.parseDouble(locationCoordinates[0]), Double.parseDouble(locationCoordinates[1]),
 					Double.parseDouble(locationCoordinates[2]));
 
-			String nlocationCoordinates[] = PropertiesAPI.getProperty_C("pos1", null, arenaFile).split(",");
+			String nlocationCoordinates[] = PropertiesAPI.getProperty("pos1", null, arenaFile).split(",");
 
-			Location pos1 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty_C("world", arenaFile, null)),
+			Location pos1 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", arenaFile, null)),
 					Double.parseDouble(nlocationCoordinates[0]), Double.parseDouble(nlocationCoordinates[1]),
 					Double.parseDouble(nlocationCoordinates[2]));
 
-			String nnlocationCoordinates[] = PropertiesAPI.getProperty_C("pos2", null, arenaFile).split(",");
+			String nnlocationCoordinates[] = PropertiesAPI.getProperty("pos2", null, arenaFile).split(",");
 
-			Location pos2 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty_C("world", null, arenaFile)),
+			Location pos2 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", null, arenaFile)),
 					Double.parseDouble(nnlocationCoordinates[0]), Double.parseDouble(nnlocationCoordinates[1]),
 					Double.parseDouble(nnlocationCoordinates[2]));
 
-			String world = PropertiesAPI.getProperty_C("world", null, arenaFile);
+			String world = PropertiesAPI.getProperty("world", null, arenaFile);
 
 			try {
 				loadGenerators(arenaName.get());
@@ -890,7 +822,7 @@ public class ArenaManager {
 
 			tm.stream().forEach((y) -> {
 				String ls[] = new String[3];
-				PropertiesAPI.getProperties_C(y.name() + ".block",
+				PropertiesAPI.getProperties(y.name() + ".block",
 						DIR + arena.getName() + "/" + arena.getName() + ".dcnf", "NULL").stream()
 						.map((z) -> z.split("-\\s*", 2)[1].split(",")).forEach((z) -> {
 							ls[0] = z[0];
@@ -901,9 +833,9 @@ public class ArenaManager {
 						Integer.parseInt(ls[1]), Integer.parseInt(ls[2]));
 
 				ArenaTeam team = team(arena,
-						Integer.parseInt(PropertiesAPI.getProperty_C(y.name() + ".min", null,
+						Integer.parseInt(PropertiesAPI.getProperty(y.name() + ".min", null,
 								DIR + arena.getName() + "/" + y.name() + ".dcnf")),
-						Integer.parseInt(PropertiesAPI.getProperty_C(y.name() + ".max", null,
+						Integer.parseInt(PropertiesAPI.getProperty(y.name() + ".max", null,
 								DIR + arena.getName() + "/" + y.name() + ".dcnf")),
 						y, blockSpawn, getNPCLocation(arenaName.get(), y), getWaitingSpawn(arena));
 				arena.getTeams().add(team);
@@ -989,14 +921,14 @@ public class ArenaManager {
 					arena.getPlayersNames().add(playerName);
 				} else {
 					Bukkit.getPlayer(playerName).sendMessage(Chati.translate(PropertiesAPI
-							.getProperty_C("playerAlreadyInIt", "&c{PLAYER} is already in arena", DIR + "messages.dcnf")
+							.getProperty("playerAlreadyInIt", "&c{PLAYER} is already in arena", DIR + "messages.dcnf")
 							.replaceAll("{PLAYER}", playerName)));
 					Bukkit.getLogger().severe("Player is already exist!");
 				}
 				if (locationToSpawn != null && player != null)
 					player.teleport(locationToSpawn);
 				if (check == true) {
-					String property = PropertiesAPI.getProperty_C("selectTeamItem", "COMPASS",
+					String property = PropertiesAPI.getProperty("selectTeamItem", "COMPASS",
 							DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 					ItemStack item = new ItemStack(Material.valueOf(property), 1);
 					player.getInventory().setItem(40, item);
@@ -1026,7 +958,7 @@ public class ArenaManager {
 					arena.getPlayersNames().add(playerName);
 				} else {
 					Bukkit.getPlayer(playerName).sendMessage(Chati.translate(PropertiesAPI
-							.getProperty_C("playerAlreadyInIt", "&c{PLAYER} is already in arena", DIR + "messages.dcnf")
+							.getProperty("playerAlreadyInIt", "&c{PLAYER} is already in arena", DIR + "messages.dcnf")
 							.replaceAll("{PLAYER}", playerName)));
 					Bukkit.getLogger().severe("Player is already exist!");
 				}
@@ -1170,18 +1102,8 @@ public class ArenaManager {
 		if (arena.getWorld() != null) {
 			return arena.getWorld();
 		} else {
-			return PropertiesAPI.getProperty_C("world", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+			return PropertiesAPI.getProperty("world", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 		}
-	}
-
-	/**
-	 * 
-	 * @param arena
-	 * @param world
-	 */
-	public static void setArenaWorld(Arena arena, String world) {
-		arena.setWorld(world);
-		PropertiesAPI.setProperty_NS("world", world, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
 
 	/**
@@ -1214,18 +1136,6 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param arena
-	 * @param location
-	 */
-	public static void setPos1(Arena arena, Location location) {
-		arena.setPos1(location);
-		PropertiesAPI.setProperty_NS("pos1",
-				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
-				DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
-	}
-
-	/**
-	 * 
 	 * @param instance
 	 * @param arena
 	 * @param location
@@ -1239,18 +1149,6 @@ public class ArenaManager {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	/**
-	 * 
-	 * @param arena
-	 * @param location
-	 */
-	public static void setPos2(Arena arena, Location location) {
-		arena.setPos2(location);
-		PropertiesAPI.setProperty_NS("pos2",
-				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
-				DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
 
 	/**
@@ -1280,7 +1178,7 @@ public class ArenaManager {
 			return arena.getPos1();
 		} else {
 			String values[] = PropertiesAPI
-					.getProperty_C("pos1", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf").split(",");
+					.getProperty("pos1", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf").split(",");
 			return new Location(Bukkit.getWorld(arena.getWorld()), Integer.parseInt(values[0]),
 					Integer.parseInt(values[1]), Integer.parseInt(values[2]));
 		}
@@ -1293,7 +1191,7 @@ public class ArenaManager {
 	 * @return
 	 */
 	public static Location getPos1(String arenaName, String worldName) {
-		String values[] = PropertiesAPI.getProperty_C("pos1", null, DIR + arenaName + "/" + arenaName + ".dcnf")
+		String values[] = PropertiesAPI.getProperty("pos1", null, DIR + arenaName + "/" + arenaName + ".dcnf")
 				.split(",");
 		return new Location(Bukkit.getWorld(worldName), Integer.parseInt(values[0]), Integer.parseInt(values[1]),
 				Integer.parseInt(values[2]));
@@ -1309,7 +1207,7 @@ public class ArenaManager {
 			return arena.getPos1();
 		} else {
 			String values[] = PropertiesAPI
-					.getProperty_C("pos2", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf").split(",");
+					.getProperty("pos2", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf").split(",");
 			return new Location(Bukkit.getWorld(arena.getWorld()), Integer.parseInt(values[0]),
 					Integer.parseInt(values[1]), Integer.parseInt(values[2]));
 		}
@@ -1322,7 +1220,7 @@ public class ArenaManager {
 	 * @return
 	 */
 	public static Location getPos2(String arenaName, String worldName) {
-		String values[] = PropertiesAPI.getProperty_C("pos2", null, DIR + arenaName + "/" + arenaName + ".dcnf")
+		String values[] = PropertiesAPI.getProperty("pos2", null, DIR + arenaName + "/" + arenaName + ".dcnf")
 				.split(",");
 		return new Location(Bukkit.getWorld(worldName), Integer.parseInt(values[0]), Integer.parseInt(values[1]),
 				Integer.parseInt(values[2]));
@@ -1346,22 +1244,6 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param location
-	 * @param arenaName
-	 * @param generatorName
-	 * @param itemName
-	 * @param seconds
-	 * @param amount
-	 */
-	public static void setGenerator(Location location, String arenaName, String generatorName, String itemName,
-			String seconds, String amount) {
-		PropertiesAPI.setProperties_NS(true, generatorName + "." + itemName,
-				DIR + arenaName + "/" + arenaName + ".dcnf",
-				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), seconds, amount);
-	}
-
-	/**
-	 * 
 	 * @param arenaName
 	 * @param generatorName
 	 * @param itemName
@@ -1369,8 +1251,7 @@ public class ArenaManager {
 	 */
 	public static Location getGeneratorLocation(String arenaName, String generatorName, String itemName) {
 		String values[] = new String[3];
-		PropertiesAPI
-				.getProperties_C(generatorName + "." + itemName, DIR + arenaName + "/" + arenaName + ".dcnf", "NULL")
+		PropertiesAPI.getProperties(generatorName + "." + itemName, DIR + arenaName + "/" + arenaName + ".dcnf", "NULL")
 				.stream().filter((x) -> x.contains(",")).map((x) -> x.split("-\\s*", 2)[1].split(",")).forEach((x) -> {
 					values[0] = x[0];
 					values[1] = x[1];
@@ -1393,18 +1274,6 @@ public class ArenaManager {
 			return getPlayersTeam(playerName);
 		}
 		return null;
-	}
-
-	/**
-	 * 
-	 * @param team
-	 * @param location
-	 */
-	public static void setTeamSpawn(ArenaTeam team, Location location) {
-		team.setTeamSpawn(location);
-		PropertiesAPI.setProperty_NS(team.getTeam().name() + ".teamspawn",
-				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
-				DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf");
 	}
 
 	/**
@@ -1434,22 +1303,10 @@ public class ArenaManager {
 		if (team.getTeamSpawn() != null) {
 			return team.getTeamSpawn();
 		}
-		String values[] = PropertiesAPI.getProperty_C(team.getTeam().name() + ".spawn", null,
+		String values[] = PropertiesAPI.getProperty(team.getTeam().name() + ".spawn", null,
 				DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf").split(",");
 		return new Location(Bukkit.getWorld(world), Double.parseDouble(values[0]), Double.parseDouble(values[1]),
 				Double.parseDouble(values[2]));
-	}
-
-	/**
-	 * 
-	 * @param team
-	 * @param location
-	 */
-	public static void setBlockSpawn(ArenaTeam team, Location location) {
-		team.setBlockSpawn(location);
-		PropertiesAPI.setProperty_NS(team.getTeam().name() + ".block",
-				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
-				DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf");
 	}
 
 	/**
@@ -1480,7 +1337,7 @@ public class ArenaManager {
 		} else {
 			String ls[] = new String[3];
 			PropertiesAPI
-					.getProperties_C(team.getTeam().name() + ".block",
+					.getProperties(team.getTeam().name() + ".block",
 							DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf", "NULL")
 					.stream().map((x) -> x.split("-\\s*", 2)[1].split(",")).forEach((x) -> {
 						ls[0] = x[0];
@@ -1502,7 +1359,7 @@ public class ArenaManager {
 			return arena.getWaitingSpawn();
 		} else {
 			String ls[] = new String[3];
-			PropertiesAPI.getProperties_C("waiting", DIR + arena.getName() + "/" + arena.getName() + ".dcnf", "NULL")
+			PropertiesAPI.getProperties("waiting", DIR + arena.getName() + "/" + arena.getName() + ".dcnf", "NULL")
 					.stream().map((x) -> x.split("-\\s*", 2)[1].split(",")).forEach((x) -> {
 						ls[0] = x[0];
 						ls[1] = x[1];
@@ -1522,7 +1379,7 @@ public class ArenaManager {
 	public static Location getWaitingSpawn(String arenaName, String worldName) {
 
 		String ls[] = new String[3];
-		PropertiesAPI.getProperties_C("waiting", DIR + arenaName + "/" + arenaName + ".dcnf", "NULL").stream()
+		PropertiesAPI.getProperties("waiting", DIR + arenaName + "/" + arenaName + ".dcnf", "NULL").stream()
 				.map((x) -> x.split("-\\s*", 2)[1].split(",")).forEach((x) -> {
 					ls[0] = x[0];
 					ls[1] = x[1];
@@ -1530,16 +1387,6 @@ public class ArenaManager {
 				});
 		return new Location(Bukkit.getWorld(worldName), Integer.parseInt(ls[0]), Integer.parseInt(ls[1]),
 				Integer.parseInt(ls[2]));
-	}
-
-	/**
-	 * 
-	 * @param arena
-	 * @param number
-	 */
-	public static void setMaxArena(Arena arena, String number) {
-		arena.setMaxPlayers(Integer.parseInt(number));
-		PropertiesAPI.setProperty_NS("max", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
 
 	/**
@@ -1564,18 +1411,8 @@ public class ArenaManager {
 	 */
 	public static Integer getMaxArena(Arena arena) {
 		return arena.getMaxPlayer() != null ? arena.getMaxPlayer()
-				: Integer.parseInt(PropertiesAPI.getProperty_C("max", null,
+				: Integer.parseInt(PropertiesAPI.getProperty("max", null,
 						DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
-	}
-
-	/**
-	 * 
-	 * @param arena
-	 * @param number
-	 */
-	public static void setMinArena(Arena arena, String number) {
-		arena.setMinPlayers(Integer.parseInt(number));
-		PropertiesAPI.setProperty_NS("min", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 	}
 
 	/**
@@ -1600,19 +1437,8 @@ public class ArenaManager {
 	 */
 	public static Integer getMinArena(Arena arena) {
 		return arena.getMinPlayer() != null ? arena.getMinPlayer()
-				: Integer.parseInt(PropertiesAPI.getProperty_C("min", null,
+				: Integer.parseInt(PropertiesAPI.getProperty("min", null,
 						DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
-	}
-
-	/**
-	 * 
-	 * @param team
-	 * @param number
-	 */
-	public static void setTeamMax(ArenaTeam team, String number) {
-		team.setMaxNumber(Integer.parseInt(number));
-		PropertiesAPI.setProperty_NS(team.getTeam().name() + ".min", number,
-				DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
 	}
 
 	/**
@@ -1638,19 +1464,8 @@ public class ArenaManager {
 	 */
 	public static Integer getTeamMax(ArenaTeam team) {
 		return team.getMaxNumber() != null ? team.getMaxNumber()
-				: Integer.parseInt(PropertiesAPI.getProperty_C(team.getTeam().name() + ".max", null,
+				: Integer.parseInt(PropertiesAPI.getProperty(team.getTeam().name() + ".max", null,
 						DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf"));
-	}
-
-	/**
-	 * 
-	 * @param team
-	 * @param number
-	 */
-	public static void setTeamMin(ArenaTeam team, String number) {
-		team.setMinNumber(Integer.parseInt(number));
-		PropertiesAPI.setProperty_NS(team.getTeam().name() + ".max", number,
-				DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
 	}
 
 	/**
@@ -1676,7 +1491,7 @@ public class ArenaManager {
 	 */
 	public static Integer getTeamMin(ArenaTeam team) {
 		return team.getMinNumber() != null ? team.getMinNumber()
-				: Integer.parseInt(PropertiesAPI.getProperty_C(team.getTeam().name() + ".min", null,
+				: Integer.parseInt(PropertiesAPI.getProperty(team.getTeam().name() + ".min", null,
 						DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf"));
 	}
 

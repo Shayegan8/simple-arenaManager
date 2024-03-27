@@ -26,7 +26,7 @@ public class EndedTimer extends BukkitRunnable {
 		this.status = status;
 		this.arena = arena;
 		this.sender = sender;
-		msg.replaceAll("{TIME}", PropertiesAPI.getProperty_C("endedTimer", "3",
+		msg.replaceAll("{TIME}", PropertiesAPI.getProperty("endedTimer", "3",
 				ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
 		this.msg = Chati.translate(msg);
 	}

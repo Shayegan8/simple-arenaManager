@@ -20,7 +20,7 @@ public class Scoresex {
 		Bukkit.getOnlinePlayers().stream().filter((x) -> ArenaManager.getPlayersArena(x.getName()).equals(arena))
 				.forEach((x) -> {
 					FastBoard board = new FastBoard(x);
-					ImmutableList<String> im = ImmutableList.copyOf(PropertiesAPI.getProperties_C("waitScores",
+					ImmutableList<String> im = ImmutableList.copyOf(PropertiesAPI.getProperties("waitScores",
 							ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf", "&c&lSEXWARS", "&r",
 							"{PLAYER}, the match will be started in {TIME}secs"));
 					ConcurrentSkipListSet<String> data = new ConcurrentSkipListSet<>();
@@ -43,7 +43,7 @@ public class Scoresex {
 		Bukkit.getOnlinePlayers().stream().filter((x) -> ArenaManager.getPlayersArena(x.getName()).equals(arena))
 				.forEach((x) -> {
 					FastBoard board = new FastBoard(x);
-					ImmutableList<String> im = ImmutableList.copyOf(PropertiesAPI.getProperties_C("gameScores",
+					ImmutableList<String> im = ImmutableList.copyOf(PropertiesAPI.getProperties("gameScores",
 							ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf", "&c&lSEXWARS", "&r",
 							"RED {RED}", "BLUE {BLUE}"));
 					ConcurrentSkipListSet<String> data = new ConcurrentSkipListSet<>();
@@ -66,7 +66,7 @@ public class Scoresex {
 		Bukkit.getOnlinePlayers().stream().filter((x) -> ArenaManager.getPlayerStatus(x.getName()) == STATES.NONE)
 				.forEach((x) -> {
 					FastBoard board = new FastBoard(x);
-					ImmutableList<String> im = ImmutableList.copyOf(PropertiesAPI.getProperties_C("lobbyScores",
+					ImmutableList<String> im = ImmutableList.copyOf(PropertiesAPI.getProperties("lobbyScores",
 							ArenaManager.DIR + "messages.dcnf", "&c&lSEXWARS", "&r",
 							"Get the fuck in plugins/messages.dcnf", "and set the lobbyScores"));
 					ConcurrentSkipListSet<String> data = new ConcurrentSkipListSet<>();

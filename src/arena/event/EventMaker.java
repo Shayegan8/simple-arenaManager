@@ -129,9 +129,9 @@ public class EventMaker implements Listener {
 					Arena arena = e.getArena();
 					Scoresex.gameScores(arena);
 					new ArenaTimer(player,
-							PropertiesAPI.getProperty_C("endedEventHalf", "&cGAME ENDED",
+							PropertiesAPI.getProperty("endedEventHalf", "&cGAME ENDED",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
-							Integer.parseInt(PropertiesAPI.getProperty_C("arenaTime", "1800",
+							Integer.parseInt(PropertiesAPI.getProperty("arenaTime", "1800",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")));
 					if (!ArenaManager.isEntityOnRegion(arena, player.getLocation())) {
 						Location location = player.getLocation();
@@ -141,9 +141,9 @@ public class EventMaker implements Listener {
 					if (player.getLocation().getBlockY() < 0) {
 						if (!ArenaManager.isBlockGone(ArenaManager.getPlayersTeam(player.getName()))) {
 							new DeathTimer(player, arena, STATES.DEAD,
-									PropertiesAPI.getProperty_C("deathEvent", "Respawn in {TIME}",
+									PropertiesAPI.getProperty("deathEvent", "Respawn in {TIME}",
 											ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
-									Integer.parseInt(PropertiesAPI.getProperty_C("deathTimer", "5",
+									Integer.parseInt(PropertiesAPI.getProperty("deathTimer", "5",
 											ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")));
 						} else {
 							player.setGameMode(GameMode.SPECTATOR);
@@ -172,7 +172,7 @@ public class EventMaker implements Listener {
 					e.getArena().getPlayersNames().stream().forEach((x) -> {
 						Bukkit.getPlayer(x)
 								.sendMessage(Chati
-										.translate(PropertiesAPI.getProperty_C("joinEvent",
+										.translate(PropertiesAPI.getProperty("joinEvent",
 												"{PLAYER} joined to the arena", ArenaManager.DIR + "messages.dcnf"))
 										.replaceAll("{PLAYER}", e.getPlayer().getName()));
 						ArenaManager.setPlayerStatus(x, STATES.WAITING);
@@ -197,7 +197,7 @@ public class EventMaker implements Listener {
 							.forEach((x) -> {
 								e.getPlayer()
 										.sendMessage(Chati
-												.translate(PropertiesAPI.getProperty_C("leftEvent",
+												.translate(PropertiesAPI.getProperty("leftEvent",
 														"{PLAYER} left the arena", ArenaManager.DIR + "messages.dcnf"))
 												.replaceAll("{PLAYER}", e.getPlayer().getName()));
 								ArenaManager.setPlayerStatus(x, STATES.NONE);
@@ -220,9 +220,9 @@ public class EventMaker implements Listener {
 					ArenaEnded e = (ArenaEnded) event;
 					Arena arena = e.getArena();
 					new EndedTimer(e.getPlayer(), arena, STATES.BEFOREENDED,
-							PropertiesAPI.getProperty_C("endedEvent", "&cGAME ENDED",
+							PropertiesAPI.getProperty("endedEvent", "&cGAME ENDED",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
-							Integer.parseInt(PropertiesAPI.getProperty_C("endedTimer", "3",
+							Integer.parseInt(PropertiesAPI.getProperty("endedTimer", "3",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
 							.runTaskAsynchronously(innerInstance);
 				}
@@ -266,11 +266,11 @@ public class EventMaker implements Listener {
 					ArenaWait e = (ArenaWait) event;
 					Arena arena = e.getArena();
 					new WaitingTimer(e.getPlayer(), arena, status,
-							PropertiesAPI.getProperty_C("waitEvent", "Arena will be started in {TIME}",
+							PropertiesAPI.getProperty("waitEvent", "Arena will be started in {TIME}",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
-							Integer.parseInt(PropertiesAPI.getProperty_C("waitCounterTimer", "10",
+							Integer.parseInt(PropertiesAPI.getProperty("waitCounterTimer", "10",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")),
-							Integer.parseInt(PropertiesAPI.getProperty_C("waitTimer", "60",
+							Integer.parseInt(PropertiesAPI.getProperty("waitTimer", "60",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
 							.runTaskTimer(innerInstance, 0, 20);
 					ArenaManager.getPlayersArena(e.getPlayer().getName());
@@ -298,9 +298,9 @@ public class EventMaker implements Listener {
 					Arena arena = e.getArena();
 
 					StartedTimer timer = new StartedTimer(player, arena, status,
-							PropertiesAPI.getProperty_C("joinEvent", "&cSTARTED",
+							PropertiesAPI.getProperty("joinEvent", "&cSTARTED",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
-							Integer.parseInt(PropertiesAPI.getProperty_C("joinTImer", "3",
+							Integer.parseInt(PropertiesAPI.getProperty("joinTImer", "3",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")));
 					timer.runTaskTimer(innerInstance, 0, 20);
 

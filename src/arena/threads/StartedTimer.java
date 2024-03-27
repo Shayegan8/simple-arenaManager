@@ -25,7 +25,7 @@ public class StartedTimer extends BukkitRunnable {
 		this.status = status;
 		this.arena = arena;
 		this.sender = sender;
-		msg.replaceAll("{TIMER}", PropertiesAPI.getProperty_C("waitTimer", "10",
+		msg.replaceAll("{TIMER}", PropertiesAPI.getProperty("waitTimer", "10",
 				ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
 		this.msg = Chati.translate(msg);
 	}
