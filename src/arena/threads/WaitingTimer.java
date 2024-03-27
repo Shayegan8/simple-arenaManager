@@ -2,6 +2,7 @@ package arena.threads;
 
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import arena.Arena;
@@ -43,6 +44,11 @@ public class WaitingTimer extends BukkitRunnable {
 				this.cancel();
 			} else {
 				if (time == max) {
+
+					Player player = (Player) sender;
+					if (ArenaManager.getPlayersTeam(player.getName()) == null)
+						ArenaManager.randomSelectTeam(arena, player.getName(), status);
+
 					while (counter < max) {
 						operation();
 					}

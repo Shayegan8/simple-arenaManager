@@ -170,7 +170,7 @@ public class EventMaker implements Listener {
 				if (event instanceof ArenaJoin) {
 					ArenaJoin e = (ArenaJoin) event;
 					e.getArena().getPlayersNames().stream().forEach((x) -> {
-						e.getPlayer()
+						Bukkit.getPlayer(x)
 								.sendMessage(Chati
 										.translate(PropertiesAPI.getProperty_C("joinEvent",
 												"{PLAYER} joined to the arena", ArenaManager.DIR + "messages.dcnf"))
@@ -273,7 +273,7 @@ public class EventMaker implements Listener {
 							Integer.parseInt(PropertiesAPI.getProperty_C("waitTimer", "60",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
 							.runTaskTimer(innerInstance, 0, 20);
-					ArenaManager.getPlayersArena(pluginName);
+					ArenaManager.getPlayersArena(e.getPlayer().getName());
 				}
 			}
 		};

@@ -978,30 +978,60 @@ public class ArenaManager {
 	 * @param locationToSpawn
 	 * @param check
 	 */
-	public static void addPlayer(String playerName, Arena arena, STATES status, ArenaTeam team,
+	public static void addAndSelectTeamPlayer(String playerName, Arena arena, STATES status, ArenaTeam team,
 			Location locationToSpawn, boolean check) {
 		Player player = Bukkit.getPlayer(playerName);
 		if (player != null) {
-			if (!isPlayerSettedOnce(playerName)) {
-				PlayerData data = new PlayerData(team, playerName, status);
-				putInPLAYERS(playerName, data);
-				arena.getPlayersNames().add(playerName);
-			} else {
-				Bukkit.getPlayer(playerName).sendMessage(Chati.translate(PropertiesAPI
-						.getProperty_C("playerAlreadyInIt", "&c{PLAYER} is already in arena", DIR + "messages.dcnf")
-						.replaceAll("{PLAYER}", playerName)));
-				Bukkit.getLogger().severe("Player is already exist!");
-			}
-			if (locationToSpawn != null && player != null)
-				player.teleport(locationToSpawn);
-			if (check == true) {
-				String property = PropertiesAPI.getProperty_C("selectTeamItem", "COMPASS",
-						DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
-				ItemStack item = new ItemStack(Material.valueOf(property), 1);
-				player.getInventory().setItem(40, item);
+			if (ARENALIST.contains(arena)) {
+				if (!isPlayerSettedOnce(playerName)) {
+					PlayerData data = new PlayerData(team, playerName, status);
+					putInPLAYERS(playerName, data);
+					arena.getPlayersNames().add(playerName);
+				} else {
+					Bukkit.getPlayer(playerName).sendMessage(Chati.translate(PropertiesAPI
+							.getProperty_C("playerAlreadyInIt", "&c{PLAYER} is already in arena", DIR + "messages.dcnf")
+							.replaceAll("{PLAYER}", playerName)));
+					Bukkit.getLogger().severe("Player is already exist!");
+				}
+				if (locationToSpawn != null && player != null)
+					player.teleport(locationToSpawn);
+				if (check == true) {
+					String property = PropertiesAPI.getProperty_C("selectTeamItem", "COMPASS",
+							DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+					ItemStack item = new ItemStack(Material.valueOf(property), 1);
+					player.getInventory().setItem(40, item);
+				}
 			}
 		}
+	}
 
+	public static void randomSelectTeam(Arena arena, String playerName, STATES status) {
+		if (Bukkit.getPlayer(playerName) != null) {
+			if (ARENALIST.contains(arena)) {
+				Random rand = new Random();
+				TEAMS team = TEAMS.values()[rand.nextInt(TEAMS.values().length)];
+				ArenaTeam teamm = getTeamByArenaAndName(arena, team);
+				Player player = Bukkit.getPlayer(playerName);
+				setAndgetPlayersData(player, teamm);
+			}
+		}
+	}
+
+	public static void addPlayer(String playerName, Arena arena, STATES status) {
+		if (Bukkit.getPlayer(playerName) != null) {
+			if (ARENALIST.contains(arena)) {
+				if (!isPlayerSettedOnce(playerName)) {
+					PlayerData data = new PlayerData(null, playerName, status);
+					putInPLAYERS(playerName, data);
+					arena.getPlayersNames().add(playerName);
+				} else {
+					Bukkit.getPlayer(playerName).sendMessage(Chati.translate(PropertiesAPI
+							.getProperty_C("playerAlreadyInIt", "&c{PLAYER} is already in arena", DIR + "messages.dcnf")
+							.replaceAll("{PLAYER}", playerName)));
+					Bukkit.getLogger().severe("Player is already exist!");
+				}
+			}
+		}
 	}
 
 	/**
@@ -1030,34 +1060,21 @@ public class ArenaManager {
 	 * @param status
 	 * @param locationToSpawn
 	 */
-	public static void randomAddPlayer(String playerName, Arena arena, STATES status, Location locationToSpawn) {
-		Random rand = new Random();
-		int random = rand.nextInt(TEAMS.values().length);
-		TEAMS teamm = TEAMS.values()[random];
+	public static void randomAddAndSelectPlayer(String playerName, Arena arena, STATES status,
+			Location locationToSpawn) {
+		if (Bukkit.getPlayer(playerName) != null) {
+			if (ARENALIST.contains(arena)) {
+				Random rand = new Random();
+				int random = rand.nextInt(TEAMS.values().length);
+				TEAMS teamm = TEAMS.values()[random];
+				ArenaTeam team = getTeamByArenaAndName(arena, teamm);
+				Player player = Bukkit.getPlayer(playerName);
+				setAndgetPlayersData(player, team);
 
-		String coordinates[] = PropertiesAPI
-				.getProperty_C(teamm.name() + ".block", null, DIR + arena.getName() + "/" + arena.getName() + ".dcnf")
-				.split(",");
-		Location bed = new Location(Bukkit.getWorld(arena.getWorld()), Double.parseDouble(coordinates[0]),
-				Double.parseDouble(coordinates[1]), Double.parseDouble(coordinates[2]));
-		String ncoordinates[] = PropertiesAPI.getProperty_C(teamm.name() + ".teamspawn", null,
-				DIR + arena.getName() + "/" + arena.getName() + ".dcnf").split(",");
-		Location spawn = new Location(Bukkit.getWorld(arena.getWorld()), Double.parseDouble(ncoordinates[0]),
-				Double.parseDouble(ncoordinates[1]), Double.parseDouble(ncoordinates[2]));
-		ArenaTeam team = new ArenaTeam(arena,
-				Integer.parseInt(
-						PropertiesAPI.getProperty_C(teamm.name() + ".min", "1", DIR + "/" + arena.getName() + ".dcnf")),
-				Integer.parseInt(
-						PropertiesAPI.getProperty_C(teamm.name() + ".max", "2", DIR + "/" + arena.getName() + ".dcnf")),
-				teamm, bed, null, spawn);
-		Player player = Bukkit.getPlayer(playerName);
-		if (player != null && ARENALIST.contains(arena)) {
-			arena.getPlayersNames().add(playerName);
-			PlayerData data = new PlayerData(team, playerName, status);
-			putInPLAYERS(playerName, data);
+				if (locationToSpawn != null && player != null)
+					player.teleport(locationToSpawn);
+			}
 		}
-		if (locationToSpawn != null && player != null)
-			player.teleport(locationToSpawn);
 	}
 
 	/**
@@ -1094,6 +1111,7 @@ public class ArenaManager {
 				});
 	}
 
+	@Deprecated
 	public static void setPlayerData(String playerName, PlayerData data) {
 		PLAYERS.entrySet().stream().filter((x) -> x.getKey().equals(playerName) && x.getValue() instanceof PlayerData)
 				.forEach((x) -> {
@@ -1771,6 +1789,21 @@ public class ArenaManager {
 	 * @return
 	 */
 	public static PlayerData getPlayersData(Player player) {
+		Optional<Entry<String, PlayerData>> opt = ArenaManager.PLAYERS.entrySet().stream()
+				.filter((x) -> x.getKey().equals(player.getName())).findFirst();
+		if (opt.isPresent()) {
+			return opt.get().getValue();
+		}
+		return null;
+	}
+
+	public static PlayerData setAndgetPlayersData(Player player, ArenaTeam team) {
+		PLAYERS.entrySet().stream().filter((x) -> x.getValue().getTeam() == null && x.getKey().equals(player.getName()))
+				.forEach((x) -> {
+					PlayerData data = getPlayersData(player);
+					data.setTeam(team);
+					putInPLAYERS(player.getName(), data);
+				});
 		Optional<Entry<String, PlayerData>> opt = ArenaManager.PLAYERS.entrySet().stream()
 				.filter((x) -> x.getKey().equals(player.getName())).findFirst();
 		if (opt.isPresent()) {
