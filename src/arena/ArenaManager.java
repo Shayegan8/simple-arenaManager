@@ -1069,8 +1069,8 @@ public class ArenaManager {
 	 * @param team
 	 * @return
 	 */
-	public static ConcurrentSkipListSet<String> getTeamsPlayers(Arena arena, TEAMS team) {
-		ConcurrentSkipListSet<String> fls = new ConcurrentSkipListSet<>();
+	public static ConcurrentLinkedQueue<String> getTeamsPlayers(Arena arena, TEAMS team) {
+		ConcurrentLinkedQueue<String> fls = new ConcurrentLinkedQueue<>();
 		arena.getPlayersNames().stream().filter((x) -> getPlayersTeam(x).getTeam() == team).forEach((x) -> {
 			fls.add(x);
 		});
