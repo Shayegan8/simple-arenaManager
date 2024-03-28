@@ -12,7 +12,6 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -145,7 +144,7 @@ public class ArenaManager {
 	/**
 	 * @apiNote this saves arenas
 	 */
-	public final static ConcurrentSkipListSet<Arena> ARENALIST = new ConcurrentSkipListSet<>();
+	public final static ConcurrentLinkedQueue<Arena> ARENALIST = new ConcurrentLinkedQueue<>();
 
 	/**
 	 * 
@@ -544,7 +543,7 @@ public class ArenaManager {
 	 * @param clazz
 	 * @return
 	 */
-	public static ConcurrentSkipListSet<Arena> loadArenasByAnnotation(Class<?> clazz) {
+	public static ConcurrentLinkedQueue<Arena> loadArenasByAnnotation(Class<?> clazz) {
 		ArenaMaker maker = clazz.getAnnotation(ArenaMaker.class);
 		List<String> files = Arrays.asList(maker.arenas());
 		files.stream().forEach((x) -> {
@@ -608,9 +607,9 @@ public class ArenaManager {
 	 * @param class
 	 * @return
 	 */
-	public static ConcurrentSkipListSet<Arena> concurrentLoadArenasByAnnotation(Class<?> clazz) {
+	public static ConcurrentLinkedQueue<Arena> concurrentLoadArenasByAnnotation(Class<?> clazz) {
 		ArenaMaker maker = clazz.getAnnotation(ArenaMaker.class);
-		ConcurrentSkipListSet<Arena> lsk = new ConcurrentSkipListSet<>();
+		ConcurrentLinkedQueue<Arena> lsk = new ConcurrentLinkedQueue<>();
 		List<String> files = Arrays.asList(maker.arenas());
 		files.stream().forEach((x) -> {
 			String arenaFile = DIR + x + "/" + x + ".dcnf";
