@@ -1,7 +1,7 @@
 package scoreboard;
 
 import java.util.Iterator;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
@@ -23,7 +23,7 @@ public class Scoresex {
 					ImmutableList<String> im = ImmutableList.copyOf(PropertiesAPI.getProperties("waitScores",
 							ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf", "&c&lSEXWARS", "&r",
 							"{PLAYER}, the match will be started in {TIME}secs"));
-					ConcurrentSkipListSet<String> data = new ConcurrentSkipListSet<>();
+					ConcurrentLinkedQueue<String> data = new ConcurrentLinkedQueue<>();
 					Iterator<String> iterate = im.iterator();
 					while (iterate.hasNext()) {
 						String nstr = Chati.translate(iterate.next());
@@ -34,7 +34,7 @@ public class Scoresex {
 
 					}
 
-					board.updateTitle(data.first());
+					board.updateTitle(data.peek());
 					board.updateLines(data.stream().skip(0).collect(Collectors.toList()));
 				});
 	}
@@ -46,7 +46,7 @@ public class Scoresex {
 					ImmutableList<String> im = ImmutableList.copyOf(PropertiesAPI.getProperties("gameScores",
 							ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf", "&c&lSEXWARS", "&r",
 							"RED {RED}", "BLUE {BLUE}"));
-					ConcurrentSkipListSet<String> data = new ConcurrentSkipListSet<>();
+					ConcurrentLinkedQueue<String> data = new ConcurrentLinkedQueue<>();
 					Iterator<String> iterate = im.iterator();
 					while (iterate.hasNext()) {
 						String nstr = Chati.translate(iterate.next());
@@ -57,7 +57,7 @@ public class Scoresex {
 
 					}
 
-					board.updateTitle(data.first());
+					board.updateTitle(data.peek());
 					board.updateLines(data.stream().skip(0).collect(Collectors.toList()));
 				});
 	}
@@ -69,7 +69,7 @@ public class Scoresex {
 					ImmutableList<String> im = ImmutableList.copyOf(PropertiesAPI.getProperties("lobbyScores",
 							ArenaManager.DIR + "messages.dcnf", "&c&lSEXWARS", "&r",
 							"Get the fuck in plugins/messages.dcnf", "and set the lobbyScores"));
-					ConcurrentSkipListSet<String> data = new ConcurrentSkipListSet<>();
+					ConcurrentLinkedQueue<String> data = new ConcurrentLinkedQueue<>();
 					Iterator<String> iterate = im.iterator();
 					while (iterate.hasNext()) {
 						String nstr = Chati.translate(iterate.next());
@@ -80,7 +80,7 @@ public class Scoresex {
 
 					}
 
-					board.updateTitle(data.first());
+					board.updateTitle(data.peek());
 					board.updateLines(data.stream().skip(0).collect(Collectors.toList()));
 				});
 	}
