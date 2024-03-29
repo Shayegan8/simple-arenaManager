@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>SimpleArenaManager</groupId>
 	<artifactId>simplearenamanager</artifactId>
-	<version>0.0.9-ALPHA</version>
+	<version>0.0.9-ALPHA-SNAPSHOT1</version>
 	<distributionManagement>
 		<repository>
 			<id>github</id>
