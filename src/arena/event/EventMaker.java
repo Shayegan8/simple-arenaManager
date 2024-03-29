@@ -16,6 +16,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
 
@@ -31,6 +32,8 @@ import arena.threads.DeathTimer;
 import arena.threads.EndedTimer;
 import arena.threads.StartedTimer;
 import arena.threads.WaitingTimer;
+import inventory.Armory;
+import inventory.EMaterial;
 import npc.NPC;
 import scoreboard.Scoresex;
 
@@ -60,7 +63,7 @@ public class EventMaker implements Listener {
 	}
 
 	@EventHandler
-	public void onNPC(ArenaEvent e, EntityDamageEvent e1) {
+	public void registerNPC(ArenaEvent e, EntityDamageEvent e1, PlayerInteractEntityEvent e2) {
 		Player player = e.getPlayer();
 		ArenaTeam team = ArenaManager.getPlayersTeam(player.getName());
 		Arena arena = team.getArena();
@@ -72,9 +75,26 @@ public class EventMaker implements Listener {
 						&& npcE.getWorld().equals(Bukkit.getWorld(arena.getWorld())))
 				.findFirst();
 
-		if (opt.isPresent())
+		if (opt.isPresent()) {
 			e1.setCancelled(true);
+			if (e2.getRightClicked().getType().equals(opt.get().getValue().getType())) {
+				Player nPlayer = e2.getPlayer();
+				Optional<EMaterial> mat = ArenaManager.ITEMS.stream()
+						.filter((x) -> x.getArenaName().equals(arena.getName())).findFirst();
+				if (mat.isPresent()) {
+					switch (mat.get().getPage()) {
 
+					case "armory.dcnf":
+						nPlayer.openInventory(new Armory().getInventory());
+						break;
+
+					default:
+						Bukkit.getLogger().severe(mat.get().getPage() + " not found in " + arena.getName());
+						nPlayer.getOpenInventory().close();
+					}
+				}
+			}
+		}
 	}
 
 	public static void registerBreak() {
@@ -152,6 +172,7 @@ public class EventMaker implements Listener {
 											+ " \",\"fadeIn\":20,\"stay\":60,\"fadeOut\":20}");
 						}
 					}
+					Bukkit.getPluginManager().callEvent(e); // well...
 				}
 			}
 		};
