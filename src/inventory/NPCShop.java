@@ -39,7 +39,7 @@ public class NPCShop {
 						String name = Chati.translate(splite[1]);
 						String page = splite[2];
 						int index = Integer.parseInt(PropertiesAPI.getProperty(splited[0], "0", fileName));
-						mat = new EMaterial(index, Material.valueOf(item));
+						mat = new EMaterial(index, arenaName, Material.valueOf(item));
 						if (!page.equals("NULL")) {
 							mat.setOpenable(true);
 							mat.setPage(page);
@@ -72,7 +72,7 @@ public class NPCShop {
 			Files.createFile(Paths.get(fileName));
 
 		ConcurrentLinkedQueue<String> lnk = new ConcurrentLinkedQueue<>(Files.readAllLines(Paths.get(arenaName)));
-		if (lnk.isEmpty() || lnk.peek().equals("")) {
+		if (lnk == null || lnk.isEmpty() || lnk.peek().equals("")) {
 			PropertiesAPI.setProperty(instance, "ANVIL:&c&lARMORY:armory.dcnf", "10", arenaName);
 		}
 

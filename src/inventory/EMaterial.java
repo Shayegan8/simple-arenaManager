@@ -1,7 +1,5 @@
 package inventory;
 
-import java.util.List;
-
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -13,11 +11,13 @@ public class EMaterial {
 	private boolean openable;
 	private Material material;
 	private String name;
+	private String arenaName;
 	private ItemStack item;
 
-	public EMaterial(int index, Material material) {
+	public EMaterial(int index, String arenaName, Material material) {
 		this.index = index;
 		this.material = material;
+		this.arenaName = arenaName;
 	}
 
 	public ItemStack item() {
@@ -61,6 +61,10 @@ public class EMaterial {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public String getArenaName() {
+		return arenaName;
 	}
 
 }
