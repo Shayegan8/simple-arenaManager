@@ -1,0 +1,66 @@
+package inventory;
+
+import java.util.List;
+
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+
+public class EMaterial {
+
+	private String page;
+	private int index;
+	private boolean openable;
+	private Material material;
+	private String name;
+	private ItemStack item;
+
+	public EMaterial(int index, Material material) {
+		this.index = index;
+		this.material = material;
+	}
+
+	public ItemStack item() {
+		if (item == null) {
+			ItemStack item = new ItemStack(material, index);
+			ItemMeta meta = item.getItemMeta();
+			meta.setDisplayName(name);
+			this.item = item;
+		}
+
+		return item;
+	}
+
+	public Material getMaterial() {
+		return material;
+	}
+
+	public boolean isOpenable() {
+		return openable;
+	}
+
+	public void setOpenable(boolean openable) {
+		this.openable = openable;
+	}
+
+	public int getIndex() {
+		return index;
+	}
+
+	public String getPage() {
+		return page;
+	}
+
+	public void setPage(String page) {
+		this.page = page;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+}

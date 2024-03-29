@@ -27,6 +27,7 @@ import org.bukkit.plugin.Plugin;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder.ListMultimapBuilder;
 
+import inventory.EMaterial;
 import net.minecraft.server.v1_8_R3.EntityPlayer;
 import npc.NPC;
 
@@ -35,7 +36,25 @@ import npc.NPC;
  */
 public class ArenaManager {
 
-	public final static ConcurrentHashMap<ArenaTeam, NPC> SNPCS = new ConcurrentHashMap<>();
+	public static final ConcurrentLinkedQueue<EMaterial> ITEMS = new ConcurrentLinkedQueue<>();
+
+	/**
+	 * 
+	 * @param material
+	 */
+	public static void addInITEMS(EMaterial material) {
+		ITEMS.add(material);
+	}
+
+	/**
+	 * 
+	 * @param material
+	 */
+	public static void removeFromITEMS(EMaterial material) {
+		ITEMS.remove(material);
+	}
+
+	public static final ConcurrentHashMap<ArenaTeam, NPC> SNPCS = new ConcurrentHashMap<>();
 
 	/**
 	 * 

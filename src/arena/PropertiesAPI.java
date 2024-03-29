@@ -10,6 +10,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -74,6 +75,12 @@ public class PropertiesAPI {
 			}
 		});
 
+	}
+	
+	public static Stream<String> reader(char[] fileName) throws IOException {
+		ConcurrentLinkedQueue<String> lnk = new ConcurrentLinkedQueue<>(
+				Files.readAllLines(Paths.get(new String(fileName))));
+		return lnk.stream();
 	}
 
 	private static void setPropertyProcess(String key, String value, String fileName) {
