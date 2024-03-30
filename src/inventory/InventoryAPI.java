@@ -2,8 +2,6 @@ package inventory;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.Inventory;
@@ -18,6 +16,15 @@ public class InventoryAPI {
 	private ItemStack defaultItem;
 	private ItemMeta defaultMeta;
 	private int length;
+	private String name;
+
+	public Inventory getInv() {
+		return inv;
+	}
+
+	public void setInv(Inventory inv) {
+		this.inv = inv;
+	}
 
 	public void setDefaultItem(ItemStack defaultItem) {
 		this.defaultItem = defaultItem;
@@ -29,6 +36,7 @@ public class InventoryAPI {
 
 	public InventoryAPI(int length, String name) {
 		this.length = length;
+		this.name = name;
 		inv = Bukkit.createInventory(null, length, name);
 		defaultItem = new ItemStack(Material.STAINED_GLASS_PANE, (short) 1, (byte) 4);
 		defaultMeta = defaultItem.getItemMeta();
@@ -39,50 +47,41 @@ public class InventoryAPI {
 
 	}
 
-	public Inventory getInventory() {
-		return inv;
-	}
-
-	public void setItem(int slot, @Nullable ItemStack item, @Nullable ItemMeta meta, @Nullable int exceptValue) {
+	public void setItem(int slot, ItemStack item, ItemMeta meta) {
 		ItemStack itm = item != null ? item : defaultItem;
 		itm.setItemMeta(meta != null ? meta : defaultMeta);
-		if (exceptValue == 0) {
-			inv.setItem(slot, item != null ? item : itm);
-		} else if (exceptValue == 1) {
-			inv.clear(exceptValue);
-		}
+		inv.setItem(slot, item != null ? item : itm);
 
 	}
 
-	public void setItem(int slot, @Nullable ItemStack item, @Nullable int exceptValue) {
+	public void setItem(int slot, ItemStack item) {
 		ItemStack itm = item != null ? item : defaultItem;
-		if (exceptValue == 0) {
-			inv.setItem(slot, item != null ? item : itm);
-		} else if (exceptValue == 1) {
-			inv.clear(exceptValue);
-		}
-
+		inv.setItem(slot, item != null ? item : itm);
 	}
 
-	public void setItemDefaultRange(int start, @Nullable ItemStack item, @Nullable ItemMeta meta) {
+	public void removeItem(int slot) {
+		inv.clear(slot);
+	}
+
+	public void setItemDefaultRange(int start, ItemStack item, ItemMeta meta) {
 		for (int i = start; i < length; i++) {
 			if (!(i == 53)) {
-				setItem(i, item, meta, 0);
+				setItem(i, item, meta);
 			} else {
-				setItem(0, item, meta, 0);
-				setItem(52, item, meta, 0);
+				setItem(0, item, meta);
+				setItem(52, item, meta);
 			}
 		}
 
 	}
 
-	public void setItemDefaultRange(int start, @Nullable ItemStack item) {
+	public void setItemDefaultRange(int start, ItemStack item) {
 		for (int i = start; i < length; i++) {
 			if (!(i == 53)) {
-				setItem(i, item, 0);
+				setItem(i, item);
 			} else {
-				setItem(0, item, 0);
-				setItem(52, item, 0);
+				setItem(0, item);
+				setItem(52, item);
 			}
 		}
 
@@ -96,8 +95,12 @@ public class InventoryAPI {
 		item.getItemMeta().setLore(lore);
 	}
 
-	public void openInv(@Nullable String playerName) {
+	public void openInv(String playerName) {
 		Bukkit.getPlayer(playerName).openInventory(inv);
+	}
+
+	public String getName() {
+		return name;
 	}
 
 }

@@ -85,7 +85,10 @@ public class EventMaker implements Listener {
 					switch (mat.get().getPage()) {
 
 					case "armory.dcnf":
-						nPlayer.openInventory(new Armory().getInventory());
+						nPlayer.openInventory(new Armory(arena.getName()).getInv());
+						break;
+
+					case "potions.dcnf":
 						break;
 
 					default:

@@ -21,6 +21,7 @@ import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
@@ -35,6 +36,24 @@ import npc.NPC;
  * @author shayegan8
  */
 public class ArenaManager {
+
+	public static final ConcurrentLinkedQueue<Inventory> INVS = new ConcurrentLinkedQueue<>();
+
+	/**
+	 * 
+	 * @param inv
+	 */
+	public static void addInINVS(Inventory inv) {
+		INVS.add(inv);
+	}
+
+	/**
+	 * 
+	 * @param inv
+	 */
+	public static void removeFromINVS(Inventory inv) {
+		INVS.remove(inv);
+	}
 
 	public static final ConcurrentLinkedQueue<EMaterial> ITEMS = new ConcurrentLinkedQueue<>();
 
@@ -315,9 +334,8 @@ public class ArenaManager {
 
 			ArenaTeam teamm = getTeamByArenaAndName(getArenaByName(propertyy[0]), TEAMS.valueOf(propertyy[1]));
 
-			NPC npc = new NPC(teamm, EntityType.valueOf(
-					PropertiesAPI.getProperty(arenaName + "." + propertyy[1], null, DIR + arenaName + "/npcs.dcnf")),
-					loc);
+			NPC npc = new NPC(teamm, EntityType.valueOf(PropertiesAPI.getProperty(arenaName + "." + propertyy[1],
+					"VILLAGER", DIR + arenaName + "/npcs.dcnf")), loc);
 			putInSNPCS(teamm, npc);
 		}));
 	}

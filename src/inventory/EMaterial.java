@@ -8,14 +8,17 @@ public class EMaterial {
 
 	private String page;
 	private int index;
+	private int amount;
 	private boolean openable;
 	private Material material;
 	private String name;
 	private String arenaName;
 	private ItemStack item;
+	private InventoryAPI inv;
 
-	public EMaterial(int index, String arenaName, Material material) {
+	public EMaterial(int index, int amount, String arenaName, Material material) {
 		this.index = index;
+		this.amount = amount;
 		this.material = material;
 		this.arenaName = arenaName;
 	}
@@ -65,6 +68,14 @@ public class EMaterial {
 
 	public String getArenaName() {
 		return arenaName;
+	}
+
+	public InventoryAPI getInv() {
+		return inv;
+	}
+
+	public int getAmount() {
+		return amount;
 	}
 
 }

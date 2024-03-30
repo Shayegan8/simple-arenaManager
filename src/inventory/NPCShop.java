@@ -3,9 +3,12 @@ package inventory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
 import arena.ArenaManager;
@@ -38,17 +41,31 @@ public class NPCShop {
 						String item = splite[0];
 						String name = Chati.translate(splite[1]);
 						String page = splite[2];
+						int amount = Integer.parseInt(splite[3]);
 						int index = Integer.parseInt(PropertiesAPI.getProperty(splited[0], "0", fileName));
-						mat = new EMaterial(index, arenaName, Material.valueOf(item));
+						mat = new EMaterial(index, amount, arenaName, Material.valueOf(item));
 						if (!page.equals("NULL")) {
 							mat.setOpenable(true);
 							mat.setPage(page);
 						}
 						mat.setName(name);
 					}
+
 					ArenaManager.addInITEMS(mat);
 				}
 			});
+
+			ArenaManager.ITEMS.stream().filter((x) -> x.getArenaName().equals(arenaName)).forEach((x) -> {
+				InventoryAPI inv = new InventoryAPI(Integer.parseInt(PropertiesAPI.getProperty("size", "53", fileName)),
+						x.getInv().getName());
+				ItemStack item = new ItemStack(x.getMaterial(), x.getAmount());
+				ItemMeta meta = item.getItemMeta();
+				meta.setDisplayName(x.getName());
+				meta.setLore(Arrays.asList(""));
+				inv.setItem(x.getIndex(), item, meta);
+				ArenaManager.addInINVS(inv.getInv());
+			});
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -71,11 +88,15 @@ public class NPCShop {
 		if (Files.notExists(Paths.get(fileName)))
 			Files.createFile(Paths.get(fileName));
 
-		ConcurrentLinkedQueue<String> lnk = new ConcurrentLinkedQueue<>(Files.readAllLines(Paths.get(arenaName)));
-		if (lnk == null || lnk.isEmpty() || lnk.peek().equals("")) {
-			PropertiesAPI.setProperty(instance, "ANVIL:&c&lARMORY:armory.dcnf", "10", arenaName);
-		}
+		PropertiesAPI.setProperty(instance, "ANVIL:&c&lARMORY:armory.dcnf:1", "10", arenaName);
+		PropertiesAPI.setProperty(instance, "ANVIL:&6&lPOTIONS:potions.dcnf:1", "11", arenaName);
 
+	}
+
+	public void create() {
+		ArenaManager.ITEMS.stream().forEach((x) -> {
+
+		});
 	}
 
 }

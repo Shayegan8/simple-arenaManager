@@ -12,12 +12,12 @@ import arena.Arena;
 import arena.ArenaManager;
 import arena.PropertiesAPI;
 
-public class Armory extends InventoryAPI {
+public class Potions extends InventoryAPI {
 
-	public static String name = "armory.dcnf";
+	public static String name = "potions.dcnf";
 	private Arena arena;
 
-	public Armory(String arenaName) {
+	public Potions(String arenaName) {
 		setInv(new InventoryAPI(
 				Integer.parseInt(PropertiesAPI.getProperty("size", "54", ArenaManager.DIR + arenaName + "/" + name)),
 				name.split(".")[0]).getInv());
@@ -45,8 +45,8 @@ public class Armory extends InventoryAPI {
 		if (Files.notExists(Paths.get(fileName)))
 			Files.createFile(Paths.get(fileName));
 
-		PropertiesAPI.setProperty(instance, "ANVIL:&c&lARMORY:armory.dcnf", "10", arenaName);
-		PropertiesAPI.setProperty(instance, "ANVIL:&6&lPOTIONS:potions.dcnf", "10", arenaName);
+		PropertiesAPI.setProperty(instance, "PAPER:&c&lQuit:1", "63", arenaName);
+		PropertiesAPI.setProperty(instance, "ANVIL:&c&lHeal:1", "10", arenaName);
 
 	}
 
