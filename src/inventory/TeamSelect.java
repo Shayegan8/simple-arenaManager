@@ -3,7 +3,6 @@ package inventory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
@@ -12,12 +11,12 @@ import arena.Arena;
 import arena.ArenaManager;
 import arena.PropertiesAPI;
 
-public class Armory extends InventoryAPI {
-
+public class TeamSelect extends InventoryAPI {
+	
 	public static String name = "armory.dcnf";
 	private Arena arena;
 
-	public Armory(String arenaName) {
+	public TeamSelect(String arenaName) {
 		setInv(new InventoryAPI(
 				Integer.parseInt(PropertiesAPI.getProperty("size", "53", ArenaManager.DIR + arenaName + "/" + name)),
 				name.split(".")[0]).getInv());
@@ -49,5 +48,4 @@ public class Armory extends InventoryAPI {
 		PropertiesAPI.setProperty(instance, "ANVIL:&6&lPOTIONS:potions.dcnf", "10", arenaName);
 
 	}
-
 }

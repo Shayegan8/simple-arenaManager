@@ -1,11 +1,13 @@
 package arena.event;
 
+import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -16,7 +18,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.EventExecutor;
 import org.bukkit.plugin.Plugin;
 
@@ -63,7 +69,7 @@ public class EventMaker implements Listener {
 	}
 
 	@EventHandler
-	public void registerNPC(ArenaEvent e, EntityDamageEvent e1, PlayerInteractEntityEvent e2) {
+	public void registerNPC(ArenaEvent e, EntityDamageEvent e1, PlayerInteractEntityEvent e2, InventoryClickEvent e3) {
 		Player player = e.getPlayer();
 		ArenaTeam team = ArenaManager.getPlayersTeam(player.getName());
 		Arena arena = team.getArena();
@@ -79,10 +85,14 @@ public class EventMaker implements Listener {
 			e1.setCancelled(true);
 			if (e2.getRightClicked().getType().equals(opt.get().getValue().getType())) {
 				Player nPlayer = e2.getPlayer();
-				Optional<EMaterial> mat = ArenaManager.ITEMS.stream()
-						.filter((x) -> x.getArenaName().equals(arena.getName())).findFirst();
-				if (mat.isPresent()) {
-					switch (mat.get().getPage()) {
+				Optional<Inventory> op = ArenaManager.INVS.stream().filter((x) -> x.getName().equals(arena.getName()))
+						.findFirst();
+				if (opt.isPresent())
+					nPlayer.openInventory(op.get());
+				Optional<EMaterial> mot = ArenaManager.ITEMS.stream().filter((x) -> x.getIndex() == e3.getSlot())
+						.findFirst();
+				if (mot.isPresent()) {
+					switch (mot.get().getPage()) {
 
 					case "armory.dcnf":
 						nPlayer.openInventory(new Armory(arena.getName()).getInv());
@@ -92,7 +102,7 @@ public class EventMaker implements Listener {
 						break;
 
 					default:
-						Bukkit.getLogger().severe(mat.get().getPage() + " not found in " + arena.getName());
+						Bukkit.getLogger().severe(mot.get().getPage() + " not found in " + arena.getName());
 						nPlayer.getOpenInventory().close();
 					}
 				}
@@ -193,13 +203,35 @@ public class EventMaker implements Listener {
 			public void execute(Listener listener, Event event) throws EventException {
 				if (event instanceof ArenaJoin) {
 					ArenaJoin e = (ArenaJoin) event;
+					Player player = e.getPlayer();
 					e.getArena().getPlayersNames().stream().forEach((x) -> {
 						Bukkit.getPlayer(x)
 								.sendMessage(Chati
 										.translate(PropertiesAPI.getProperty("joinEvent",
 												"{PLAYER} joined to the arena", ArenaManager.DIR + "messages.dcnf"))
 										.replaceAll("{PLAYER}", e.getPlayer().getName()));
-						ArenaManager.setPlayerStatus(x, STATES.WAITING);
+						Arena arena = e.getArena();
+						if (arena.getStatus() == STATES.WAITING) {
+							if (PropertiesAPI
+									.getProperty("joinitem", "true",
+											ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")
+									.equals("true")) {
+								ItemStack item = new ItemStack(
+										Material.valueOf(PropertiesAPI.getProperty("item", "CHEST",
+												ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")),
+										1);
+								ItemMeta meta = item.getItemMeta();
+								meta.setDisplayName(
+										Chati.translate(PropertiesAPI.getProperty("itemname", "&c&LSELECT TEAM",
+												ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")));
+								meta.setLore(Arrays.asList(""));
+								player.getInventory().setItem(
+										Integer.parseInt(PropertiesAPI.getProperty("itemslot", "40",
+												ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")),
+										item);
+							}
+							ArenaManager.setPlayerStatus(x, STATES.WAITING);
+						}
 					});
 				}
 			}
@@ -296,7 +328,7 @@ public class EventMaker implements Listener {
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")),
 							Integer.parseInt(PropertiesAPI.getProperty("waitTimer", "60",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
-							.runTaskTimer(innerInstance, 0, 20);
+							.runTaskTimerAsynchronously(innerInstance, 0, 20);
 					ArenaManager.getPlayersArena(e.getPlayer().getName());
 				}
 			}
@@ -326,7 +358,7 @@ public class EventMaker implements Listener {
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
 							Integer.parseInt(PropertiesAPI.getProperty("joinTImer", "3",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")));
-					timer.runTaskTimer(innerInstance, 0, 20);
+					timer.runTaskTimerAsynchronously(innerInstance, 0, 20);
 
 					PlayerData data = ArenaManager.getPlayersData(player);
 					data.setStartedTimer(timer);
@@ -337,7 +369,6 @@ public class EventMaker implements Listener {
 
 		Bukkit.getPluginManager().registerEvent(ArenaJoin.class, instance, EventPriority.NORMAL, executor,
 				innerInstance);
-
 	}
 
 	public static void register(String pluginName, STATES status1, STATES status2) {

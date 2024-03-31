@@ -3,7 +3,6 @@ package inventory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
@@ -19,7 +18,7 @@ public class Potions extends InventoryAPI {
 
 	public Potions(String arenaName) {
 		setInv(new InventoryAPI(
-				Integer.parseInt(PropertiesAPI.getProperty("size", "54", ArenaManager.DIR + arenaName + "/" + name)),
+				Integer.parseInt(PropertiesAPI.getProperty("size", "53", ArenaManager.DIR + arenaName + "/" + name)),
 				name.split(".")[0]).getInv());
 		this.arena = ArenaManager.getArenaByName(arenaName);
 	}
