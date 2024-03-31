@@ -276,7 +276,8 @@ public class ArenaManager {
 					ArenaManager.addInITEMS(material);
 				});
 		InventoryAPI teamselectINV = new InventoryAPI(
-				Integer.parseInt(PropertiesAPI.getProperty("size", "53", DIR + arenaName + "/teamselect.dcnf")), arenaName);
+				Integer.parseInt(PropertiesAPI.getProperty("size", "53", DIR + arenaName + "/teamselect.dcnf")),
+				arenaName);
 		teamselect.stream().forEach((x) -> {
 			ItemStack item = new ItemStack(x.getMaterial(), x.getAmount());
 			ItemMeta meta = item.getItemMeta();
@@ -331,7 +332,8 @@ public class ArenaManager {
 				});
 
 		InventoryAPI potionsINV = new InventoryAPI(
-				Integer.parseInt(PropertiesAPI.getProperty("size", "53", DIR + arenaName + "/potions.dcnf")), arenaName);
+				Integer.parseInt(PropertiesAPI.getProperty("size", "53", DIR + arenaName + "/potions.dcnf")),
+				arenaName);
 		potions.stream().forEach((x) -> {
 			ItemStack item = new ItemStack(x.getMaterial(), x.getAmount());
 			ItemMeta meta = item.getItemMeta();
@@ -603,7 +605,6 @@ public class ArenaManager {
 		Arena arena = getPlayersArena(playerName);
 		ArenaTeam teamm = createTeam(arena, arena.getWorld(), null, team);
 		setPlayerTeam(playerName, teamm);
-
 	}
 
 	/**
@@ -696,6 +697,20 @@ public class ArenaManager {
 							DIR + arena.getName() + "/" + x.name() + ".dcnf")),
 					x, blockSpawn, getNPCLocation(arenaName, x), getWaitingSpawn(arena));
 			arena.getTeams().add(team);
+			try {
+				loadGenerators(arena.getName());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			try {
+				loadNPCS(arena.getName());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+			loadItems(arena.getName());
+
 		});
 		addInARENALIST(arena);
 		return arena;
@@ -758,6 +773,20 @@ public class ArenaManager {
 								DIR + arena.getName() + "/" + y.name() + ".dcnf")),
 						y, blockSpawn, getNPCLocation(x, y), getWaitingSpawn(arena));
 				arena.getTeams().add(team);
+				try {
+					loadGenerators(arena.getName());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				try {
+					loadNPCS(arena.getName());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				loadItems(arena.getName());
+
 			});
 
 			addInARENALIST(arena);
@@ -823,6 +852,21 @@ public class ArenaManager {
 								DIR + arena.getName() + "/" + y.name() + ".dcnf")),
 						y, blockSpawn, getNPCLocation(x, y), getWaitingSpawn(arena));
 				arena.getTeams().add(team);
+
+				try {
+					loadGenerators(arena.getName());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				try {
+					loadNPCS(arena.getName());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+				loadItems(arena.getName());
+
 			});
 
 			lsk.add(arena);
@@ -873,18 +917,21 @@ public class ArenaManager {
 
 			String world = PropertiesAPI.getProperty("world", null, arenaFile);
 
-			try {
-				loadGenerators(arenaName.get());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			if (arenaName.isPresent()) {
+				try {
+					loadGenerators(arenaName.get());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 
-			try {
-				loadNPCS(arenaName.get());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+				try {
+					loadNPCS(arenaName.get());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 
+				loadItems(arenaName.get());
+			}
 			if (pos2 == null || pos1 == null || location == null || world == null)
 				throw new IllegalStateException("Some of values or null for " + arenaName);
 
