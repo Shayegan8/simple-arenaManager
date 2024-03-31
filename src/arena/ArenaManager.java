@@ -276,7 +276,7 @@ public class ArenaManager {
 					ArenaManager.addInITEMS(material);
 				});
 		InventoryAPI teamselectINV = new InventoryAPI(
-				Integer.parseInt(PropertiesAPI.getProperty("size", "53", DIR + arenaName + "/shop.dcnf")), arenaName);
+				Integer.parseInt(PropertiesAPI.getProperty("size", "53", DIR + arenaName + "/teamselect.dcnf")), arenaName);
 		teamselect.stream().forEach((x) -> {
 			ItemStack item = new ItemStack(x.getMaterial(), x.getAmount());
 			ItemMeta meta = item.getItemMeta();
@@ -303,7 +303,7 @@ public class ArenaManager {
 					ArenaManager.addInITEMS(material);
 				});
 		InventoryAPI armoryINV = new InventoryAPI(
-				Integer.parseInt(PropertiesAPI.getProperty("size", "53", DIR + arenaName + "/shop.dcnf")), arenaName);
+				Integer.parseInt(PropertiesAPI.getProperty("size", "53", DIR + arenaName + "/armory.dcnf")), arenaName);
 		armory.stream().forEach((x) -> {
 			ItemStack item = new ItemStack(x.getMaterial(), x.getAmount());
 			ItemMeta meta = item.getItemMeta();
@@ -331,7 +331,7 @@ public class ArenaManager {
 				});
 
 		InventoryAPI potionsINV = new InventoryAPI(
-				Integer.parseInt(PropertiesAPI.getProperty("size", "53", DIR + arenaName + "/shop.dcnf")), arenaName);
+				Integer.parseInt(PropertiesAPI.getProperty("size", "53", DIR + arenaName + "/potions.dcnf")), arenaName);
 		potions.stream().forEach((x) -> {
 			ItemStack item = new ItemStack(x.getMaterial(), x.getAmount());
 			ItemMeta meta = item.getItemMeta();
