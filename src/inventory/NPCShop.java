@@ -85,12 +85,12 @@ public class NPCShop {
 	 */
 	public void defaultProperties(Plugin instance) throws IOException {
 		String fileName = ArenaManager.DIR + arenaName + "/shop.dcnf";
-		if (Files.notExists(Paths.get(fileName)))
+		if (Files.notExists(Paths.get(fileName))) {
 			Files.createFile(Paths.get(fileName));
 
 		PropertiesAPI.setProperty(instance, "ANVIL:&c&lARMORY:armory.dcnf:1", "10", arenaName);
 		PropertiesAPI.setProperty(instance, "ANVIL:&6&lPOTIONS:potions.dcnf:1", "11", arenaName);
-
+		}
 	}
 
 	public void create() {

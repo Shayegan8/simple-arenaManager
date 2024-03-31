@@ -42,11 +42,12 @@ public class Armory extends InventoryAPI {
 	public void defaultProperties(Plugin instance) throws IOException {
 		String arenaName = arena.getName();
 		String fileName = ArenaManager.DIR + arenaName + "/shop.dcnf";
-		if (Files.notExists(Paths.get(fileName)))
+		if (Files.notExists(Paths.get(fileName))) {
 			Files.createFile(Paths.get(fileName));
 
-		PropertiesAPI.setProperty(instance, "ANVIL:&c&lARMORY:armory.dcnf", "10", arenaName);
-		PropertiesAPI.setProperty(instance, "ANVIL:&6&lPOTIONS:potions.dcnf", "10", arenaName);
+			PropertiesAPI.setProperty(instance, "ANVIL:&c&lARMORY:armory.dcnf", "10", arenaName);
+			PropertiesAPI.setProperty(instance, "ANVIL:&6&lPOTIONS:potions.dcnf", "10", arenaName);
+		}
 
 	}
 

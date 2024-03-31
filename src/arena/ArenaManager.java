@@ -227,8 +227,8 @@ public class ArenaManager {
 		return new Arena(minPlayer, maxPlayer, time, waitingSpawn, status, arenaName, worldName);
 	}
 
-	public static void loadItemsAndInvs(String name) {
-
+	public static void loadItemsAndInvs(String arenaName) {
+		
 	}
 
 	/**

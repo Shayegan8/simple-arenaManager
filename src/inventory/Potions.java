@@ -41,11 +41,12 @@ public class Potions extends InventoryAPI {
 	public void defaultProperties(Plugin instance) throws IOException {
 		String arenaName = arena.getName();
 		String fileName = ArenaManager.DIR + arenaName + "/shop.dcnf";
-		if (Files.notExists(Paths.get(fileName)))
+		if (Files.notExists(Paths.get(fileName))) {
 			Files.createFile(Paths.get(fileName));
 
-		PropertiesAPI.setProperty(instance, "PAPER:&c&lQuit:1", "63", arenaName);
-		PropertiesAPI.setProperty(instance, "ANVIL:&c&lHeal:1", "10", arenaName);
+			PropertiesAPI.setProperty(instance, "PAPER:&c&lQuit:1", "63", arenaName);
+			PropertiesAPI.setProperty(instance, "ANVIL:&c&lHeal:1", "10", arenaName);
+		}
 
 	}
 
