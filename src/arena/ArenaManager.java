@@ -13,6 +13,7 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -227,8 +228,63 @@ public class ArenaManager {
 		return new Arena(minPlayer, maxPlayer, time, waitingSpawn, status, arenaName, worldName);
 	}
 
-	public static void loadItemsAndInvs(String arenaName) {
-		
+	public static void loadItems(String arenaName) {
+		try {
+			PropertiesAPI.reader(new String(DIR + arenaName + "/shop.dcnf").toCharArray())
+					.filter((x) -> x.contains(":")).forEach((x) -> {
+						String splite[] = x.split(":");
+						String item = splite[0];
+						String name = Chati.translate(splite[1]);
+						String page = splite[2];
+						int amount = Integer.parseInt(splite[3]);
+						EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
+						if (!page.equals("NULL"))
+							material.setPage(page);
+						material.setName(name);
+						ArenaManager.addInITEMS(material);
+					});
+			PropertiesAPI.reader(new String(DIR + arenaName + "/teamselect.dcnf").toCharArray())
+					.filter((x) -> x.contains(":")).forEach((x) -> {
+						String splite[] = x.split(":");
+						String item = splite[0];
+						String name = Chati.translate(splite[1]);
+						String page = splite[2];
+						int amount = Integer.parseInt(splite[3]);
+						EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
+						if (!page.equals("NULL"))
+							material.setPage(page);
+						material.setName(name);
+						ArenaManager.addInITEMS(material);
+					});
+			PropertiesAPI.reader(new String(DIR + arenaName + "/armory.dcnf").toCharArray())
+					.filter((x) -> x.contains(":")).forEach((x) -> {
+						String splite[] = x.split(":");
+						String item = splite[0];
+						String name = Chati.translate(splite[1]);
+						String page = splite[2];
+						int amount = Integer.parseInt(splite[3]);
+						EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
+						material.setName(name);
+						if (!page.equals("NULL"))
+							material.setPage(page);
+						ArenaManager.addInITEMS(material);
+					});
+			PropertiesAPI.reader(new String(DIR + arenaName + "/potions.dcnf").toCharArray())
+					.filter((x) -> x.contains(":")).forEach((x) -> {
+						String splite[] = x.split(":");
+						String item = splite[0];
+						String name = Chati.translate(splite[1]);
+						String page = splite[2];
+						int amount = Integer.parseInt(splite[3]);
+						EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
+						if (!page.equals("NULL"))
+							material.setPage(page);
+						material.setName(name);
+						ArenaManager.addInITEMS(material);
+					});
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**

@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -34,8 +32,6 @@ public class NPCShop {
 				String splited[] = x.split(PropertiesAPI.SPLITOR);
 				if (splited.length < 2) {
 
-					EMaterial mat = null;
-
 					if (x.contains(":")) {
 						String splite[] = x.split(":");
 						String item = splite[0];
@@ -43,15 +39,14 @@ public class NPCShop {
 						String page = splite[2];
 						int amount = Integer.parseInt(splite[3]);
 						int index = Integer.parseInt(PropertiesAPI.getProperty(splited[0], "0", fileName));
-						mat = new EMaterial(index, amount, arenaName, Material.valueOf(item));
+						EMaterial mat = new EMaterial(index, amount, arenaName, Material.valueOf(item));
 						if (!page.equals("NULL")) {
 							mat.setOpenable(true);
 							mat.setPage(page);
 						}
 						mat.setName(name);
+						ArenaManager.addInITEMS(mat);
 					}
-
-					ArenaManager.addInITEMS(mat);
 				}
 			});
 
@@ -88,8 +83,8 @@ public class NPCShop {
 		if (Files.notExists(Paths.get(fileName))) {
 			Files.createFile(Paths.get(fileName));
 
-		PropertiesAPI.setProperty(instance, "ANVIL:&c&lARMORY:armory.dcnf:1", "10", arenaName);
-		PropertiesAPI.setProperty(instance, "ANVIL:&6&lPOTIONS:potions.dcnf:1", "11", arenaName);
+			PropertiesAPI.setProperty(instance, "ANVIL:&c&lARMORY:armory.dcnf:1", "10", arenaName);
+			PropertiesAPI.setProperty(instance, "ANVIL:&6&lPOTIONS:potions.dcnf:1", "11", arenaName);
 		}
 	}
 
