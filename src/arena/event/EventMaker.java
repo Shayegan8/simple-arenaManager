@@ -1,7 +1,9 @@
 package arena.event;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import java.util.Optional;
 
 import org.bukkit.Bukkit;
@@ -348,7 +350,7 @@ public class EventMaker implements Listener {
 
 			@Override
 			public void execute(Listener listener, Event event) throws EventException {
-				if (event instanceof ArenaJoin) {
+				if (event instanceof ArenaStarted) {
 					ArenaStarted e = (ArenaStarted) event;
 					Player player = e.getPlayer();
 					Arena arena = e.getArena();
@@ -363,6 +365,20 @@ public class EventMaker implements Listener {
 					PlayerData data = ArenaManager.getPlayersData(player);
 					data.setStartedTimer(timer);
 					ArenaManager.putInPLAYERS(player.getName(), data);
+					if (PropertiesAPI
+							.getProperty("startitems", "true",
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")
+							.equals("true")) {
+						List<EMaterial> items = ArenaManager.ITEMS.stream()
+								.filter((x) -> x.isStartItem() && x.getArenaName().equals(arena.getName()))
+								.collect(Collectors.toList());
+						items.forEach((x) -> {
+							ItemStack item = new ItemStack(x.getMaterial(), x.getAmount());
+							ItemMeta meta = item.getItemMeta();
+							meta.setDisplayName(x.getName());
+							player.getInventory().setItem(x.getIndex(), item);
+						});
+					}
 				}
 			}
 		};

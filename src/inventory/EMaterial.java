@@ -10,6 +10,7 @@ public class EMaterial {
 	private int index;
 	private int amount;
 	private boolean openable;
+	private boolean startItem;
 	private Material material;
 	private String name;
 	private String arenaName;
@@ -76,6 +77,14 @@ public class EMaterial {
 
 	public int getAmount() {
 		return amount;
+	}
+
+	public boolean isStartItem() {
+		return startItem;
+	}
+
+	public void setStartItem(boolean startItem) {
+		this.startItem = startItem;
 	}
 
 }
