@@ -13,7 +13,6 @@ import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -24,12 +23,14 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder.ListMultimapBuilder;
 
 import inventory.EMaterial;
+import inventory.InventoryAPI;
 import net.minecraft.server.v1_8_R3.EntityPlayer;
 import npc.NPC;
 
@@ -228,60 +229,125 @@ public class ArenaManager {
 		return new Arena(minPlayer, maxPlayer, time, waitingSpawn, status, arenaName, worldName);
 	}
 
+	private static void doShopItems(String arenaName) throws IOException {
+
+		ConcurrentLinkedQueue<EMaterial> shopItems = new ConcurrentLinkedQueue<>();
+		PropertiesAPI.reader(new String(DIR + arenaName + "/shop.dcnf").toCharArray()).filter((x) -> x.contains(":"))
+				.forEach((x) -> {
+					String splite[] = x.split(":");
+					String item = splite[0];
+					String name = Chati.translate(splite[1]);
+					String page = splite[2];
+					int amount = Integer.parseInt(splite[3]);
+					EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
+					if (!page.equals("NULL"))
+						material.setPage(page);
+					material.setName(name);
+					ArenaManager.addInITEMS(material);
+					shopItems.add(material);
+
+				});
+		InventoryAPI shopINV = new InventoryAPI(
+				Integer.parseInt(PropertiesAPI.getProperty("size", "53", DIR + arenaName + "/shop.dcnf")), arenaName);
+		shopItems.stream().forEach((x) -> {
+			ItemStack item = new ItemStack(x.getMaterial(), x.getAmount());
+			ItemMeta meta = item.getItemMeta();
+			meta.setDisplayName(x.getName());
+			meta.setLore(Arrays.asList(""));
+			shopINV.setItem(x.getIndex(), item, meta);
+		});
+		addInINVS(shopINV.getInv());
+	}
+
+	private static void doTeam(String arenaName) throws IOException {
+
+		ConcurrentLinkedQueue<EMaterial> teamselect = new ConcurrentLinkedQueue<>();
+		PropertiesAPI.reader(new String(DIR + arenaName + "/teamselect.dcnf").toCharArray())
+				.filter((x) -> x.contains(":")).forEach((x) -> {
+					String splite[] = x.split(":");
+					String item = splite[0];
+					String name = Chati.translate(splite[1]);
+					String page = splite[2];
+					int amount = Integer.parseInt(splite[3]);
+					EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
+					if (!page.equals("NULL"))
+						material.setPage(page);
+					material.setName(name);
+					ArenaManager.addInITEMS(material);
+				});
+		InventoryAPI teamselectINV = new InventoryAPI(
+				Integer.parseInt(PropertiesAPI.getProperty("size", "53", DIR + arenaName + "/shop.dcnf")), arenaName);
+		teamselect.stream().forEach((x) -> {
+			ItemStack item = new ItemStack(x.getMaterial(), x.getAmount());
+			ItemMeta meta = item.getItemMeta();
+			meta.setDisplayName(x.getName());
+			meta.setLore(Arrays.asList(""));
+			teamselectINV.setItem(x.getIndex(), item, meta);
+		});
+		addInINVS(teamselectINV.getInv());
+	}
+
+	public static void doArmory(String arenaName) throws IOException {
+		ConcurrentLinkedQueue<EMaterial> armory = new ConcurrentLinkedQueue<>();
+		PropertiesAPI.reader(new String(DIR + arenaName + "/armory.dcnf").toCharArray()).filter((x) -> x.contains(":"))
+				.forEach((x) -> {
+					String splite[] = x.split(":");
+					String item = splite[0];
+					String name = Chati.translate(splite[1]);
+					String page = splite[2];
+					int amount = Integer.parseInt(splite[3]);
+					EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
+					material.setName(name);
+					if (!page.equals("NULL"))
+						material.setPage(page);
+					ArenaManager.addInITEMS(material);
+				});
+		InventoryAPI armoryINV = new InventoryAPI(
+				Integer.parseInt(PropertiesAPI.getProperty("size", "53", DIR + arenaName + "/shop.dcnf")), arenaName);
+		armory.stream().forEach((x) -> {
+			ItemStack item = new ItemStack(x.getMaterial(), x.getAmount());
+			ItemMeta meta = item.getItemMeta();
+			meta.setDisplayName(x.getName());
+			meta.setLore(Arrays.asList(""));
+			armoryINV.setItem(x.getIndex(), item, meta);
+		});
+		addInINVS(armoryINV.getInv());
+	}
+
+	public static void doPotions(String arenaName) throws IOException {
+		ConcurrentLinkedQueue<EMaterial> potions = new ConcurrentLinkedQueue<>();
+		PropertiesAPI.reader(new String(DIR + arenaName + "/potions.dcnf").toCharArray()).filter((x) -> x.contains(":"))
+				.forEach((x) -> {
+					String splite[] = x.split(":");
+					String item = splite[0];
+					String name = Chati.translate(splite[1]);
+					String page = splite[2];
+					int amount = Integer.parseInt(splite[3]);
+					EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
+					if (!page.equals("NULL"))
+						material.setPage(page);
+					material.setName(name);
+					ArenaManager.addInITEMS(material);
+				});
+
+		InventoryAPI potionsINV = new InventoryAPI(
+				Integer.parseInt(PropertiesAPI.getProperty("size", "53", DIR + arenaName + "/shop.dcnf")), arenaName);
+		potions.stream().forEach((x) -> {
+			ItemStack item = new ItemStack(x.getMaterial(), x.getAmount());
+			ItemMeta meta = item.getItemMeta();
+			meta.setDisplayName(x.getName());
+			meta.setLore(Arrays.asList(""));
+			potionsINV.setItem(x.getIndex(), item, meta);
+		});
+		addInINVS(potionsINV.getInv());
+	}
+
 	public static void loadItems(String arenaName) {
 		try {
-			PropertiesAPI.reader(new String(DIR + arenaName + "/shop.dcnf").toCharArray())
-					.filter((x) -> x.contains(":")).forEach((x) -> {
-						String splite[] = x.split(":");
-						String item = splite[0];
-						String name = Chati.translate(splite[1]);
-						String page = splite[2];
-						int amount = Integer.parseInt(splite[3]);
-						EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
-						if (!page.equals("NULL"))
-							material.setPage(page);
-						material.setName(name);
-						ArenaManager.addInITEMS(material);
-					});
-			PropertiesAPI.reader(new String(DIR + arenaName + "/teamselect.dcnf").toCharArray())
-					.filter((x) -> x.contains(":")).forEach((x) -> {
-						String splite[] = x.split(":");
-						String item = splite[0];
-						String name = Chati.translate(splite[1]);
-						String page = splite[2];
-						int amount = Integer.parseInt(splite[3]);
-						EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
-						if (!page.equals("NULL"))
-							material.setPage(page);
-						material.setName(name);
-						ArenaManager.addInITEMS(material);
-					});
-			PropertiesAPI.reader(new String(DIR + arenaName + "/armory.dcnf").toCharArray())
-					.filter((x) -> x.contains(":")).forEach((x) -> {
-						String splite[] = x.split(":");
-						String item = splite[0];
-						String name = Chati.translate(splite[1]);
-						String page = splite[2];
-						int amount = Integer.parseInt(splite[3]);
-						EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
-						material.setName(name);
-						if (!page.equals("NULL"))
-							material.setPage(page);
-						ArenaManager.addInITEMS(material);
-					});
-			PropertiesAPI.reader(new String(DIR + arenaName + "/potions.dcnf").toCharArray())
-					.filter((x) -> x.contains(":")).forEach((x) -> {
-						String splite[] = x.split(":");
-						String item = splite[0];
-						String name = Chati.translate(splite[1]);
-						String page = splite[2];
-						int amount = Integer.parseInt(splite[3]);
-						EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
-						if (!page.equals("NULL"))
-							material.setPage(page);
-						material.setName(name);
-						ArenaManager.addInITEMS(material);
-					});
+			doShopItems(arenaName);
+			doTeam(arenaName);
+			doArmory(arenaName);
+			doPotions(arenaName);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
