@@ -212,12 +212,12 @@ public class PropertiesAPI {
 		return null;
 	}
 
-	public static ConcurrentLinkedQueue<String> getProperties(String splitor, String key, String fileName,
+	public static ConcurrentLinkedQueue<String> getProperties(final char splitor[], String key, String fileName,
 			String... defaultValues) {
 		try {
 			ConcurrentLinkedQueue<String> lsls = new ConcurrentLinkedQueue<>(Files.readAllLines(Paths.get(fileName)));
 
-			return bgetListPropertiesProcess(splitor, key, fileName, lsls, defaultValues);
+			return bgetListPropertiesProcess(new String(splitor), key, fileName, lsls, defaultValues);
 
 		} catch (IOException e) {
 			e.printStackTrace();

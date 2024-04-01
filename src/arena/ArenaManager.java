@@ -483,6 +483,7 @@ public class ArenaManager {
 				}
 			}
 			String property[] = next.split(".");
+			PropertiesAPI.getProperties("", arenaName, property);
 			ConcurrentLinkedQueue<String> ls = PropertiesAPI.getProperties(property[0] + "." + property[1],
 					DIR + arenaName + "/generators.dcnf", "NULL");
 			if (!ls.peek().equals("NULL")) {
