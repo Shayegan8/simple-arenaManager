@@ -32,6 +32,5 @@
 			<attribute name="m2e-apt" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="/arenaManager"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

@@ -4,9 +4,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
@@ -76,7 +76,7 @@ public class PropertiesAPI {
 		});
 
 	}
-	
+
 	public static Stream<String> reader(char[] fileName) throws IOException {
 		ConcurrentLinkedQueue<String> lnk = new ConcurrentLinkedQueue<>(
 				Files.readAllLines(Paths.get(new String(fileName))));
@@ -205,18 +205,30 @@ public class PropertiesAPI {
 
 		return null;
 	}
-
+	
 	public static ConcurrentLinkedQueue<String> bgetListPropertiesProcess(String key, String fileName,
 			ConcurrentLinkedQueue<String> allLines, String... defaultValues) throws IOException {
 		final CopyOnWriteArrayList<String> ls = new CopyOnWriteArrayList<>(allLines);
 		ConcurrentLinkedQueue<String> lsi = new ConcurrentLinkedQueue<>();
-		int startKey = Collections.synchronizedList(ls).indexOf("* " + key) + 1;
-		int endKey = Collections.synchronizedList(ls).indexOf("* endif " + key) - 1;
 
-		while (startKey <= endKey) {
-			lsi.add(ls.get(startKey));
-			startKey++;
-		}
+		CompletableFuture<Integer> startFuture = CompletableFuture.supplyAsync(() -> {
+			return ls.indexOf("* " + key) + 1;
+		});
+
+		CompletableFuture<Integer> endFuture = CompletableFuture.supplyAsync(() -> {
+			return ls.indexOf("* endif " + key) - 1;
+		});
+
+		CompletableFuture<Void> allFutures = CompletableFuture.allOf(startFuture, endFuture);
+
+		allFutures.thenAcceptAsync((x) -> {
+			int start = startFuture.join();
+			int end = endFuture.join();
+			while (start <= end) {
+				lsi.add(ls.get(start));
+				start++;
+			}
+		});
 
 		return new ConcurrentLinkedQueue<>(lsi.stream().map((x) -> x.split(" - ")[1]).collect(Collectors.toList()));
 	}
