@@ -397,6 +397,7 @@ public class EventMaker implements Listener {
 		registerPlaced();
 		registerStarted(status1);
 		registerWait(status2);
+		Bukkit.getPluginManager().registerEvents(instance, Bukkit.getPluginManager().getPlugin(pluginName));
 	}
 
 	@Deprecated
