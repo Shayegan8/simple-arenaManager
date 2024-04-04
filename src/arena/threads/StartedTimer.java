@@ -15,17 +15,15 @@ public class StartedTimer extends BukkitRunnable {
 
 	private int counter;
 	private int max;
-	private STATES status;
 	private Arena arena;
 	private CommandSender sender;
 	private String msg;
 
-	public StartedTimer(CommandSender sender, Arena arena, STATES status, String msg, int max) {
+	public StartedTimer(CommandSender sender, Arena arena, String msg, int max) {
 		this.max = max;
-		this.status = status;
 		this.arena = arena;
 		this.sender = sender;
-		msg.replaceAll("{TIMER}", PropertiesAPI.getProperty("waitTimer", "10",
+		msg.replaceAll("{TIMER}", PropertiesAPI.getProperty("startTimer", "3",
 				ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
 		this.msg = Chati.translate(msg);
 	}
@@ -37,7 +35,7 @@ public class StartedTimer extends BukkitRunnable {
 					+ " \",\"fadeIn\":20,\"stay\":40,\"fadeOut\":20}");
 			while (counter <= max) {
 				if (counter == max) {
-					arena.setStatus(status);
+					arena.setStatus(STATES.RUNNING);
 					this.cancel();
 				}
 				counter++;

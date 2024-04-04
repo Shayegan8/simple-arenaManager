@@ -339,7 +339,7 @@ public class EventMaker implements Listener {
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")),
 							Integer.parseInt(PropertiesAPI.getProperty("waitTimer", "60",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")))
-							.runTaskTimerAsynchronously(innerInstance, 0, 20);
+							.runTaskTimerAsynchronously(innerInstance, 20, 20);
 					ArenaManager.getPlayersArena(e.getPlayer().getName());
 				}
 			}
@@ -364,10 +364,10 @@ public class EventMaker implements Listener {
 					Player player = e.getPlayer();
 					Arena arena = e.getArena();
 
-					StartedTimer timer = new StartedTimer(player, arena, STATES.STARTED,
+					StartedTimer timer = new StartedTimer(player, arena,
 							PropertiesAPI.getProperty("joinEvent", "&cSTARTED",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
-							Integer.parseInt(PropertiesAPI.getProperty("joinTImer", "3",
+							Integer.parseInt(PropertiesAPI.getProperty("startTImer", "3",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")));
 					timer.runTaskTimerAsynchronously(innerInstance, 0, 20);
 
