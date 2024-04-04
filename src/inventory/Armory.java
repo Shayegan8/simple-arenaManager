@@ -3,7 +3,6 @@ package inventory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;

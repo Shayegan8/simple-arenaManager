@@ -44,7 +44,6 @@ import arena.threads.WaitingTimer;
 import inventory.Armory;
 import inventory.EMaterial;
 import npc.NPC;
-import scoreboard.Scoresex;
 
 public class EventMaker implements Listener {
 
@@ -163,7 +162,6 @@ public class EventMaker implements Listener {
 					ArenaEvent e = (ArenaEvent) event;
 					Player player = e.getPlayer();
 					Arena arena = e.getArena();
-					Scoresex.gameScores(arena);
 					ArenaManager.SNPCS.entrySet().stream()
 							.filter((x) -> x.getKey().getArena().equals(arena)
 									&& x.getValue().getLocation().getWorld().equals(Bukkit.getWorld(arena.getWorld())))
