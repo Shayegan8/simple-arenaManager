@@ -10,6 +10,7 @@ import arena.ArenaManager;
 import arena.Chati;
 import arena.PropertiesAPI;
 import arena.STATES;
+import arena.event.ArenaStarted;
 
 public class WaitingTimer extends BukkitRunnable {
 
@@ -42,13 +43,12 @@ public class WaitingTimer extends BukkitRunnable {
 				this.cancel();
 			} else {
 				arena.setStatus(STATES.BEFOREWAITING);
-				while (counter < max) {
-					operation();
-				}
+
 				if (time == max) {
-					Player player = (Player) sender;
-					if (ArenaManager.getPlayersTeam(player.getName()) == null)
-						ArenaManager.randomSelectTeam(arena, player.getName());					
+					while (counter <= max) {
+						operation();
+						counter++;
+					}
 				}
 			}
 			i++;
@@ -58,8 +58,14 @@ public class WaitingTimer extends BukkitRunnable {
 	private void operation() {
 		Bukkit.dispatchCommand(sender, "title " + sender.getName() + " title {\"text\":\""
 				+ msg.replaceAll("{TIME}", String.valueOf(counter)) + " \",\"fadeIn\":20,\"stay\":20,\"fadeOut\":20}");
-		if (counter == max)
+		if (counter == max) {
+			Player player = (Player) sender;
+			if (ArenaManager.getPlayersTeam(player.getName()) == null)
+				ArenaManager.randomSelectTeam(arena, player.getName());
+			Bukkit.getPluginManager()
+					.callEvent(new ArenaStarted(player, ArenaManager.getPlayersTeam(player.getName())));
 			this.cancel();
+		}
 
 		counter++;
 	}
