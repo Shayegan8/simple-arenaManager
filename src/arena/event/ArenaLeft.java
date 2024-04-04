@@ -12,7 +12,7 @@ import arena.STATES;
 
 public class ArenaLeft extends Event implements Cancellable {
 
-	private HandlerList handlers = new HandlerList();
+	private static HandlerList handlers = new HandlerList();
 	private boolean cancelled = false;
 	private Player player;
 	private Arena arena;
@@ -87,6 +87,10 @@ public class ArenaLeft extends Event implements Cancellable {
 
 	public String getPluginName() {
 		return pluginName;
+	}
+	
+	public static HandlerList getHandlerList() {
+		return handlers;
 	}
 
 }

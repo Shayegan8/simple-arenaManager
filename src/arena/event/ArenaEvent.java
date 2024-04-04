@@ -11,7 +11,7 @@ import arena.ArenaTeam;
 
 public class ArenaEvent extends Event implements Cancellable {
 
-	private HandlerList handlers = new HandlerList();
+	private static HandlerList handlers = new HandlerList();
 	private boolean cancelled = false;
 	private Player player;
 	private Arena arena;
@@ -61,6 +61,10 @@ public class ArenaEvent extends Event implements Cancellable {
 	@Override
 	public void setCancelled(boolean cancelled) {
 		this.cancelled = cancelled;
+	}
+	
+	public static HandlerList getHandlerList() {
+		return handlers;
 	}
 
 }

@@ -11,7 +11,7 @@ import arena.ArenaTeam;
 
 public class ArenaEnded extends Event implements Cancellable {
 
-	private HandlerList handlers = new HandlerList();
+	private static HandlerList handlers = new HandlerList();
 	private boolean cancelled = false;
 	private String pluginName;
 	private Player player;
@@ -73,6 +73,10 @@ public class ArenaEnded extends Event implements Cancellable {
 
 	public String getPluginName() {
 		return pluginName;
+	}
+	
+	public static HandlerList getHandlerList() {
+		return handlers;
 	}
 
 }

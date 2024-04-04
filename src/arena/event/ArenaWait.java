@@ -12,7 +12,7 @@ import arena.STATES;
 
 public class ArenaWait extends Event implements Cancellable {
 
-	private HandlerList handlers = new HandlerList();
+	private static HandlerList handlers = new HandlerList();
 	private boolean cancelled = false;
 	private Player player;
 	private Arena arena;
@@ -85,6 +85,10 @@ public class ArenaWait extends Event implements Cancellable {
 
 	public STATES getStatus() {
 		return status;
+	}
+
+	public static HandlerList getHandlerList() {
+		return handlers;
 	}
 
 }
