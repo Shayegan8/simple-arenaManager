@@ -11,6 +11,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventException;
@@ -71,8 +72,8 @@ public class EventMaker implements Listener {
 	}
 
 	@EventHandler
-	public void registerNPC(ArenaEvent e, EntityDamageEvent e1, PlayerInteractEntityEvent e2, InventoryClickEvent e3) {
-		Player player = e.getPlayer();
+	public void registerNPC(EntityDamageEvent e1, PlayerInteractEntityEvent e2, InventoryClickEvent e3) {
+		Player player = e2.getPlayer();
 		ArenaTeam team = ArenaManager.getPlayersTeam(player.getName());
 		Arena arena = team.getArena();
 		Entity npcE = e1.getEntity();
@@ -163,6 +164,13 @@ public class EventMaker implements Listener {
 					Player player = e.getPlayer();
 					Arena arena = e.getArena();
 					Scoresex.gameScores(arena);
+					ArenaManager.SNPCS.entrySet().stream()
+							.filter((x) -> x.getKey().getArena().equals(arena)
+									&& x.getValue().getLocation().getWorld().equals(Bukkit.getWorld(arena.getWorld())))
+							.forEach((x) -> {
+								EntityType entity = x.getValue().getType();
+								Bukkit.getWorld(arena.getWorld()).spawnEntity(x.getValue().getLocation(), entity);
+							});
 					new ArenaTimer(player,
 							PropertiesAPI.getProperty("endedEventHalf", "&cGAME ENDED",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
@@ -187,7 +195,6 @@ public class EventMaker implements Listener {
 											+ " \",\"fadeIn\":20,\"stay\":60,\"fadeOut\":20}");
 						}
 					}
-					Bukkit.getPluginManager().callEvent(e); // well...
 				}
 			}
 		};
@@ -213,7 +220,9 @@ public class EventMaker implements Listener {
 												"{PLAYER} joined to the arena", ArenaManager.DIR + "messages.dcnf"))
 										.replaceAll("{PLAYER}", e.getPlayer().getName()));
 						Arena arena = e.getArena();
-						if (arena.getStatus() == STATES.WAITING) {
+						if (arena.getMinPlayer() <= arena.getPlayersNames().size())
+							arena.setStatus(STATES.BEFOREWAITING);
+						if (arena.getStatus() == STATES.WAITING || arena.getStatus() == STATES.BEFOREWAITING) {
 							if (PropertiesAPI
 									.getProperty("joinitem", "true",
 											ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")
@@ -232,7 +241,6 @@ public class EventMaker implements Listener {
 												ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")),
 										item);
 							}
-							ArenaManager.setPlayerStatus(x, STATES.WAITING);
 						}
 					});
 				}
@@ -302,6 +310,7 @@ public class EventMaker implements Listener {
 					Arena arena = e.getArena();
 					ArenaManager.regenerateBreakedBlocks(arena);
 					ArenaManager.deletePlacedBlocks(arena);
+					arena.setStatus(STATES.WAITING);
 				}
 			}
 		};
@@ -314,7 +323,7 @@ public class EventMaker implements Listener {
 	 * @apiNote state is better to be BEFOREWAITING
 	 * @param status
 	 */
-	public static void registerWait(STATES status) {
+	public static void registerWait() {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
 		EventExecutor executor = new EventExecutor() {
 
@@ -323,7 +332,7 @@ public class EventMaker implements Listener {
 				if (event instanceof ArenaWait) {
 					ArenaWait e = (ArenaWait) event;
 					Arena arena = e.getArena();
-					new WaitingTimer(e.getPlayer(), arena, status,
+					new WaitingTimer(e.getPlayer(), arena, STATES.BEFOREWAITING,
 							PropertiesAPI.getProperty("waitEvent", "Arena will be started in {TIME}",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
 							Integer.parseInt(PropertiesAPI.getProperty("waitCounterTimer", "10",
@@ -344,7 +353,7 @@ public class EventMaker implements Listener {
 	 * 
 	 * @param status
 	 */
-	public static void registerStarted(STATES status) {
+	public static void registerStarted() {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
 		EventExecutor executor = new EventExecutor() {
 
@@ -355,7 +364,7 @@ public class EventMaker implements Listener {
 					Player player = e.getPlayer();
 					Arena arena = e.getArena();
 
-					StartedTimer timer = new StartedTimer(player, arena, status,
+					StartedTimer timer = new StartedTimer(player, arena, STATES.STARTED,
 							PropertiesAPI.getProperty("joinEvent", "&cSTARTED",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
 							Integer.parseInt(PropertiesAPI.getProperty("joinTImer", "3",
@@ -387,7 +396,7 @@ public class EventMaker implements Listener {
 				innerInstance);
 	}
 
-	public static void register(String pluginName, STATES status1, STATES status2) {
+	public static void register(String pluginName) {
 		registerArena();
 		registerBEnd();
 		registerBreak();
@@ -395,13 +404,13 @@ public class EventMaker implements Listener {
 		registerJoin();
 		registerLeft();
 		registerPlaced();
-		registerStarted(status1);
-		registerWait(status2);
+		registerStarted();
+		registerWait();
 		Bukkit.getPluginManager().registerEvents(instance, Bukkit.getPluginManager().getPlugin(pluginName));
 	}
 
 	@Deprecated
-	public static void register(String pluginName) {
+	public static void register_s(String pluginName) {
 		Bukkit.getPluginManager().registerEvents(new EventListener(), Bukkit.getPluginManager().getPlugin(pluginName));
 
 	}

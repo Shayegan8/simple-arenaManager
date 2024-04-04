@@ -44,7 +44,6 @@ public class WaitingTimer extends BukkitRunnable {
 				this.cancel();
 			} else {
 				if (time == max) {
-
 					Player player = (Player) sender;
 					if (ArenaManager.getPlayersTeam(player.getName()) == null)
 						ArenaManager.randomSelectTeam(arena, player.getName(), status);
