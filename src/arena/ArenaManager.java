@@ -1147,7 +1147,7 @@ public class ArenaManager {
 		}
 	}
 
-	public static void randomSelectTeam(Arena arena, String playerName, STATES status) {
+	public static void randomSelectTeam(Arena arena, String playerName) {
 		if (Bukkit.getPlayer(playerName) != null) {
 			if (ARENALIST.contains(arena)) {
 				Random rand = new Random();

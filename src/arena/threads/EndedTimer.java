@@ -16,14 +16,12 @@ public class EndedTimer extends BukkitRunnable {
 
 	private int counter;
 	private int max;
-	private STATES status;
 	private Arena arena;
 	private CommandSender sender;
 	private String msg;
 
-	public EndedTimer(CommandSender sender, Arena arena, STATES status, String msg, int max) {
+	public EndedTimer(CommandSender sender, Arena arena, String msg, int max) {
 		this.max = max;
-		this.status = status;
 		this.arena = arena;
 		this.sender = sender;
 		msg.replaceAll("{TIME}", PropertiesAPI.getProperty("endedTimer", "3",
@@ -40,9 +38,8 @@ public class EndedTimer extends BukkitRunnable {
 				arena.getPlayersNames().stream().forEach((x) -> {
 					ArenaManager.removePlayer(x, arena);
 				});
-				arena.setStatus(status);
-				if (status == STATES.BEFOREENDED)
-					Bukkit.getPluginManager().callEvent(new ArenaBEnded(((Player) sender), arena));
+				arena.setStatus(STATES.BEFOREENDED);
+				Bukkit.getPluginManager().callEvent(new ArenaBEnded(((Player) sender), arena));
 				this.cancel();
 			}
 			counter++;

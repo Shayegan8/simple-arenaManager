@@ -285,7 +285,7 @@ public class EventMaker implements Listener {
 				if (event instanceof ArenaEnded) {
 					ArenaEnded e = (ArenaEnded) event;
 					Arena arena = e.getArena();
-					new EndedTimer(e.getPlayer(), arena, STATES.BEFOREENDED,
+					new EndedTimer(e.getPlayer(), arena,
 							PropertiesAPI.getProperty("endedEvent", "&cGAME ENDED",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
 							Integer.parseInt(PropertiesAPI.getProperty("endedTimer", "3",
@@ -332,7 +332,7 @@ public class EventMaker implements Listener {
 				if (event instanceof ArenaWait) {
 					ArenaWait e = (ArenaWait) event;
 					Arena arena = e.getArena();
-					new WaitingTimer(e.getPlayer(), arena, STATES.BEFOREWAITING,
+					new WaitingTimer(e.getPlayer(), arena,
 							PropertiesAPI.getProperty("waitEvent", "Arena will be started in {TIME}",
 									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
 							Integer.parseInt(PropertiesAPI.getProperty("waitCounterTimer", "10",
@@ -407,12 +407,6 @@ public class EventMaker implements Listener {
 		registerStarted();
 		registerWait();
 		Bukkit.getPluginManager().registerEvents(instance, Bukkit.getPluginManager().getPlugin(pluginName));
-	}
-
-	@Deprecated
-	public static void register_s(String pluginName) {
-		Bukkit.getPluginManager().registerEvents(new EventListener(), Bukkit.getPluginManager().getPlugin(pluginName));
-
 	}
 
 }

@@ -16,15 +16,13 @@ public class WaitingTimer extends BukkitRunnable {
 	private int counter;
 	private int max;
 	private int time;
-	private STATES status;
 	private Arena arena;
 	private CommandSender sender;
 	private String msg;
 
-	public WaitingTimer(CommandSender sender, Arena arena, STATES status, String msg, int max, int time) {
+	public WaitingTimer(CommandSender sender, Arena arena, String msg, int max, int time) {
 		this.max = max;
 		this.time = time;
-		this.status = status;
 		this.arena = arena;
 		this.sender = sender;
 		msg.replaceAll("{TIME}", PropertiesAPI.getProperty("waitCounterTimer", "10",
@@ -43,14 +41,14 @@ public class WaitingTimer extends BukkitRunnable {
 				arena.setStatus(STATES.WAITING);
 				this.cancel();
 			} else {
+				arena.setStatus(STATES.BEFOREWAITING);
+				while (counter < max) {
+					operation();
+				}
 				if (time == max) {
 					Player player = (Player) sender;
 					if (ArenaManager.getPlayersTeam(player.getName()) == null)
-						ArenaManager.randomSelectTeam(arena, player.getName(), status);
-
-					while (counter < max) {
-						operation();
-					}
+						ArenaManager.randomSelectTeam(arena, player.getName());					
 				}
 			}
 			i++;
@@ -60,7 +58,6 @@ public class WaitingTimer extends BukkitRunnable {
 	private void operation() {
 		Bukkit.dispatchCommand(sender, "title " + sender.getName() + " title {\"text\":\""
 				+ msg.replaceAll("{TIME}", String.valueOf(counter)) + " \",\"fadeIn\":20,\"stay\":20,\"fadeOut\":20}");
-		arena.setStatus(status);
 		if (counter == max)
 			this.cancel();
 
