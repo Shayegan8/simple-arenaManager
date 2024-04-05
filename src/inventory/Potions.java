@@ -31,13 +31,6 @@ public class Potions extends InventoryAPI {
 		return arena;
 	}
 
-	/**
-	 * <p>
-	 * This is work for empty files
-	 * </p>
-	 * 
-	 * @throws IOException
-	 */
 	public void defaultProperties(Plugin instance) throws IOException {
 		String arenaName = arena.getName();
 		String fileName = ArenaManager.DIR + arenaName + "/shop.dcnf";

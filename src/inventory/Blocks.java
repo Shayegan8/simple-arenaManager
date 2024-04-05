@@ -7,16 +7,12 @@ import java.nio.file.Paths;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
 
-import arena.Arena;
-import arena.ArenaManager;
-import arena.PropertiesAPI;
-
-public class Armory extends InventoryAPI {
-
-	public static String name = "armory.dcnf";
+public class Blocks {
+	
+	public static String name = "blocks.dcnf";
 	private Arena arena;
 
-	public Armory(String arenaName) {
+	public Blocks(String arenaName) {
 		setInv(new InventoryAPI(
 				Integer.parseInt(PropertiesAPI.getProperty("size", "53", ArenaManager.DIR + arenaName + "/" + name)),
 				name.split(".")[0]).getInv());
@@ -37,9 +33,8 @@ public class Armory extends InventoryAPI {
 		if (Files.notExists(Paths.get(fileName))) {
 			Files.createFile(Paths.get(fileName));
 
-			PropertiesAPI.setProperty(instance, "ANVIL:&c&lCHEST_PLATE?:NULL", "10", arenaName);
+			PropertiesAPI.setProperty(instance, "ANVIL:&c&lDIRT:armory.dcnf", "10", arenaName);
 		}
 
 	}
-
 }

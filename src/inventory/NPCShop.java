@@ -71,13 +71,6 @@ public class NPCShop {
 		return inv;
 	}
 
-	/**
-	 * <p>
-	 * This is work for empty files
-	 * </p>
-	 * 
-	 * @throws IOException
-	 */
 	public void defaultProperties(Plugin instance) throws IOException {
 		String fileName = ArenaManager.DIR + arenaName + "/shop.dcnf";
 		if (Files.notExists(Paths.get(fileName))) {
@@ -90,7 +83,8 @@ public class NPCShop {
 
 	public void create() {
 		ArenaManager.ITEMS.stream().forEach((x) -> {
-
+			int slot = x.getIndex();
+			
 		});
 	}
 
