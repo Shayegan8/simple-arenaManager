@@ -83,8 +83,11 @@ public class NPCShop {
 
 	public void create() {
 		ArenaManager.ITEMS.stream().forEach((x) -> {
-			int slot = x.getIndex();
-			
+			ItemStack item = new ItemStack(x.getMaterial(), x.getIndex());
+			ItemMeta meta = item.getItemMeta();
+			meta.setDisplayName(x.getName());
+			meta.setLore(Arrays.asList(""));
+			x.getInv().setItem(x.getIndex(), item, meta);
 		});
 	}
 
