@@ -6,3 +6,4 @@ bin/
 ./idea/*
 .classpath
 .project
+simplearenamanager.impl

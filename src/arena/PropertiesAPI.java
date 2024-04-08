@@ -6,9 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -18,6 +16,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
 import me.clip.placeholderapi.PlaceholderAPI;
+import org.bukkit.scheduler.BukkitRunnable;
 
 /* 
  * @author shayegan8
@@ -29,28 +28,18 @@ public class PropertiesAPI {
 			"q", "r", "s", "t", "u", "v", "w", "x", "y", "z" };
 	public static final String SPLITOR = "@";
 	public static final String LIST_SPLITOR = " - ";
+	public static Plugin instance = null;
 
-	public static int getByID_NS(String str, String fileName) {
-		int n = 0;
-
-		try {
-			while (n < Files.readAllLines(Paths.get(fileName)).size()) {
-				if (Files.readAllLines(Paths.get(fileName)).get(n).equalsIgnoreCase(str)) {
-					return n;
-				}
-				n++;
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		return -1;
+	public static void init_plugin(String pluginName) {
+		instance = Bukkit.getPluginManager().getPlugin(pluginName);
 	}
+
 
 	public static String[] getAlphabets() {
 		return PropertiesAPI.alphabets;
 	}
 
-	public static void setProperties(Plugin instance, boolean check, String key, String fileName, String... args) {
+	public static void setProperties(boolean check, String key, String fileName, String... args) {
 		if (check) {
 			if (Files.notExists(Paths.get(fileName))) {
 				try {
@@ -80,9 +69,9 @@ public class PropertiesAPI {
 	}
 
 	public static Stream<String> reader(char[] fileName) throws IOException {
-		ConcurrentLinkedQueue<String> lnk = new ConcurrentLinkedQueue<>(
-				Files.readAllLines(Paths.get(new String(fileName))));
-		return lnk.stream();
+		FReader reader = new FReader(new String(fileName));
+		reader.runTaskAsynchronously(instance);
+		return reader.getCompletedLNK().stream();
 	}
 
 	private static void setPropertyProcess(String key, String value, String fileName) {
@@ -95,12 +84,14 @@ public class PropertiesAPI {
 		}
 	}
 
-	public static void setProperty(Plugin instance, String key, String value, String fileName) throws IOException {
-		ConcurrentLinkedQueue<String> allLines = new ConcurrentLinkedQueue<>(Files.readAllLines(Paths.get(fileName)));
+	public static void setProperty(String key, String value, String fileName) throws IOException {
+		FReader reader = new FReader(fileName);
+		reader.runTaskAsynchronously(instance);
+		ConcurrentLinkedQueue<String> lnk = reader.getCompletedLNK();
 
-		if (!allLines.isEmpty()) {
-			if (allLines.contains(key + SPLITOR + value)) {
-				Iterator<String> iterate = allLines.iterator();
+		if (!lnk.isEmpty()) {
+			if (lnk.contains(key + SPLITOR + value)) {
+				Iterator<String> iterate = lnk.iterator();
 				while (iterate.hasNext()) {
 					String nexti = iterate.next();
 					if (nexti.equals(key + SPLITOR + value)) {
@@ -123,14 +114,16 @@ public class PropertiesAPI {
 	}
 
 	private static void removePropertyProcess(String key, String fileName) throws IOException {
-		ConcurrentLinkedQueue<String> allLines = new ConcurrentLinkedQueue<>(Files.readAllLines(Paths.get(fileName)));
+		FReader reader = new FReader(fileName);
+		reader.runTaskAsynchronously(instance);
+		ConcurrentLinkedQueue<String> lnk = reader.getCompletedLNK();
 
 		if (Files.exists(Paths.get(fileName))) {
-			Iterator<String> iterate = allLines.iterator();
+			Iterator<String> iterate = lnk.iterator();
 			while (iterate.hasNext()) {
 				String nexti = iterate.next();
 				if (nexti.contains(key)) {
-					allLines.remove(nexti);
+					lnk.remove(nexti);
 					break;
 				}
 			}
@@ -139,7 +132,7 @@ public class PropertiesAPI {
 			Files.delete(Paths.get(fileName));
 			Files.createFile(Paths.get(fileName));
 			try (FileWriter writer = new FileWriter(fileName)) {
-				for (String line : allLines) {
+				for (String line : lnk) {
 					writer.write(line);
 					writer.flush();
 				}
@@ -149,61 +142,51 @@ public class PropertiesAPI {
 		}
 	}
 
-	public static void showProperty(Player player, Plugin instance, String key, String defaultValue, String fileName) {
-		String property = PlaceholderAPI.setPlaceholders(player,
-				ChatColor.translateAlternateColorCodes('&', getProperty(key, defaultValue, fileName)));
-		player.sendMessage(property);
+	public static void showProperty(Player player, String key, String defaultValue, String fileName) {
+		player.sendMessage(PlaceholderAPI.setPlaceholders(player,
+				ChatColor.translateAlternateColorCodes('&', getProperty(key, defaultValue, fileName))));
 	}
 
-	public static void showProperties(Player player, Plugin instance, String key, String fileName,
+	public static void showProperties(Player player, String key, String fileName,
 			String... defaultValues) throws IOException {
-
-		ConcurrentLinkedQueue<String> lsk = new ConcurrentLinkedQueue<>(Files.readAllLines(Paths.get(fileName)));
-		bgetListPropertiesProcess(null, key, fileName, lsk, defaultValues).stream().forEach((x) -> {
-			String property = PlaceholderAPI.setPlaceholders(player,
-					ChatColor.translateAlternateColorCodes('&', getProperty(key, x, fileName)));
-			player.sendMessage(property);
+		FReader producer = new FReader(fileName);
+		producer.runTaskAsynchronously(instance);
+		bgetListPropertiesProcess(null, key, fileName, producer.getCompletedLNK(), defaultValues).stream().forEach((x) -> {
+			player.sendMessage(PlaceholderAPI.setPlaceholders(player,
+					ChatColor.translateAlternateColorCodes('&', getProperty(key, x, fileName))));
 		});
 
 	}
 
 	public static String getProperty(String key, String defaultValue, String fileName) {
-		try {
-			ConcurrentLinkedQueue<String> cLines = new ConcurrentLinkedQueue<>(Files.readAllLines(Paths.get(fileName)));
-
-			Optional<String> retrn = cLines.stream()
-					.filter(x -> x.contains(key + SPLITOR) && x.split(SPLITOR).length == 2).findFirst();
-			if (retrn.isPresent()) {
-				return retrn.get().split(SPLITOR)[1];
-			} else {
-				return defaultValue;
-			}
-		} catch (IOException e) {
+		FReader producer = new FReader(fileName);
+		producer.runTaskAsynchronously(instance);
+		Optional<String> retrn = producer.getCompletedLNK().stream()
+				.filter(x -> x.contains(key + SPLITOR) && x.split(SPLITOR).length == 2).findFirst();
+		if (retrn.isPresent()) {
+			return retrn.get().split(SPLITOR)[1];
+		} else {
 			return defaultValue;
 		}
-	}
+    }
 
 	public static String getProperty(final String SPLITOR, String key, String defaultValue, String fileName) {
-		try {
-			ConcurrentLinkedQueue<String> cLines = new ConcurrentLinkedQueue<>(Files.readAllLines(Paths.get(fileName)));
-
-			Optional<String> retrn = cLines.stream()
+			FReader reader = new FReader(fileName);
+			reader.runTaskAsynchronously(instance);
+			Optional<String> retrn = reader.getCompletedLNK().stream()
 					.filter(x -> x.contains(key + SPLITOR) && x.split(SPLITOR).length == 2).findFirst();
 			if (retrn.isPresent()) {
 				return retrn.get().split(SPLITOR)[1];
 			} else {
 				return defaultValue;
 			}
-		} catch (IOException e) {
-			return defaultValue;
-		}
 	}
 
 	public static ConcurrentLinkedQueue<String> getProperties(String key, String fileName, String... defaultValues) {
 		try {
-			ConcurrentLinkedQueue<String> lsls = new ConcurrentLinkedQueue<>(Files.readAllLines(Paths.get(fileName)));
-
-			return bgetListPropertiesProcess(null, key, fileName, lsls, defaultValues);
+			FReader reader = new FReader(fileName);
+			reader.runTask(instance);
+			return bgetListPropertiesProcess(null, key, fileName, reader.getCompletedLNK(), defaultValues);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -215,9 +198,10 @@ public class PropertiesAPI {
 	public static ConcurrentLinkedQueue<String> getProperties(final char splitor[], String key, String fileName,
 			String... defaultValues) {
 		try {
-			ConcurrentLinkedQueue<String> lsls = new ConcurrentLinkedQueue<>(Files.readAllLines(Paths.get(fileName)));
+			FReader reader = new FReader(fileName);
+			reader.runTaskAsynchronously(instance);
 
-			return bgetListPropertiesProcess(new String(splitor), key, fileName, lsls, defaultValues);
+			return bgetListPropertiesProcess(new String(splitor), key, fileName, reader.getCompletedLNK(), defaultValues);
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -226,32 +210,62 @@ public class PropertiesAPI {
 		return null;
 	}
 
+	public static int indexOf(ConcurrentLinkedQueue<String> lnk, String str) {
+		int index = 0;
+		Iterator<String> iterate = lnk.iterator();
+		while (iterate.hasNext()) {
+			String next = iterate.next();
+			index += 1;
+			if(next.equals(str))
+				break;
+		}
+		return index;
+	}
+
 	public static ConcurrentLinkedQueue<String> bgetListPropertiesProcess(String splitor, String key, String fileName,
 			ConcurrentLinkedQueue<String> allLines, String... defaultValues) throws IOException {
-		final CopyOnWriteArrayList<String> ls = new CopyOnWriteArrayList<>(allLines);
+
+		FReader reader = new FReader(fileName);
+		reader.runTask(instance);
 		ConcurrentLinkedQueue<String> lsi = new ConcurrentLinkedQueue<>();
 
-		CompletableFuture<Integer> startFuture = CompletableFuture.supplyAsync(() -> {
-			return ls.indexOf("* " + key) + 1;
-		});
+		int start = indexOf(reader.getCompletedLNK(), "* " + key) + 1;
 
-		CompletableFuture<Integer> endFuture = CompletableFuture.supplyAsync(() -> {
-			return ls.indexOf("* endif " + key) - 1;
-		});
+		int end = indexOf(reader.getCompletedLNK(), "* endif " + key) - 1;
 
-		CompletableFuture<Void> allFutures = CompletableFuture.allOf(startFuture, endFuture);
-
-		allFutures.thenAcceptAsync((x) -> {
-			int start = startFuture.join();
-			int end = endFuture.join();
 			while (start <= end) {
-				lsi.add(ls.get(start));
+				int finalStart = start;
+				reader.getCompletedLNK().stream().filter((x) -> indexOf(reader.getCompletedLNK(), x) == finalStart).forEach(lsi::add);
 				start++;
 			}
-		});
 
 		return new ConcurrentLinkedQueue<>(
 				lsi.stream().map((x) -> x.split(splitor != null ? splitor : " - ")[1]).collect(Collectors.toList()));
 	}
 
+}
+
+class FReader extends BukkitRunnable {
+
+	private ConcurrentLinkedQueue<String> lnk = new ConcurrentLinkedQueue<>();
+	private String fileName;
+
+	public FReader(String fileName) {
+		this.fileName = fileName;
+	}
+
+	@Override
+	public void run() {
+        try {
+            for(String line : Files.readAllLines(Paths.get(fileName))) {
+				lnk.add(line);
+            }
+        } catch (IOException e) {
+			e.printStackTrace();
+        }
+    }
+
+	public ConcurrentLinkedQueue<String> getCompletedLNK() {
+		return lnk;
+	}
 }

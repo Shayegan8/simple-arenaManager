@@ -412,9 +412,9 @@ public class ArenaManager {
 				Integer.parseInt(lsk[1]), Integer.parseInt(lsk[2]));
 	}
 
-	public static ArenaTeam setNPCLocation(Plugin instance, String arenaName, TEAMS team, Location location) {
+	public static ArenaTeam setNPCLocation(String arenaName, TEAMS team, Location location) {
 		try {
-			PropertiesAPI.setProperty(instance, arenaName + "." + team.name() != null ? team.name() : null,
+			PropertiesAPI.setProperty(arenaName + "." + team.name() != null ? team.name() : null,
 					location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
 					DIR + arenaName + "/npcs.dcnf");
 			ArenaTeam teamm = getTeamByArenaAndName(getArenaByName(arenaName), team);
@@ -425,9 +425,9 @@ public class ArenaManager {
 		return null;
 	}
 
-	public static EntityType setNPCType(Plugin instance, String arenaName, TEAMS team, EntityType type) {
+	public static EntityType setNPCType( String arenaName, TEAMS team, EntityType type) {
 		try {
-			PropertiesAPI.setProperty(instance, arenaName + "." + team.name() != null ? team.name() : null, type.name(),
+			PropertiesAPI.setProperty(arenaName + "." + team.name() != null ? team.name() : null, type.name(),
 					DIR + arenaName + "/npcs.dcnf");
 			return type;
 		} catch (IOException e) {
@@ -437,16 +437,16 @@ public class ArenaManager {
 	}
 
 	public static void addNPC(Plugin instance, String arenaName, Location location, TEAMS team, EntityType type) {
-		ArenaTeam teamm = setNPCLocation(instance, arenaName, team, location);
-		EntityType typee = setNPCType(instance, arenaName, team, type);
+		ArenaTeam teamm = setNPCLocation(arenaName, team, location);
+		EntityType typee = setNPCType(arenaName, team, type);
 		putInSNPCS(teamm, new NPC(teamm, typee, location));
 	}
 
-	public static void loadNPCS(String arenaName) throws IOException {
-		final ConcurrentLinkedQueue<String> lnk = new ConcurrentLinkedQueue<>(
-				Files.readAllLines(Paths.get(DIR + arenaName + "/npcs.dcnf")));
-		Iterator<String> iterate = lnk.iterator();
-		lnk.stream().forEach((x -> {
+	public static void loadNPCS(Plugin instance, String arenaName) throws IOException {
+		FReader reader = new FReader(DIR + arenaName + "/npcs.dcnf");
+		reader.runTaskAsynchronously(instance);
+		Iterator<String> iterate = reader.getCompletedLNK().iterator();
+		reader.getCompletedLNK().stream().forEach((x -> {
 			String next = null;
 			if (x.contains(arenaName)) {
 				while (iterate.hasNext()) {
@@ -468,11 +468,11 @@ public class ArenaManager {
 		}));
 	}
 
-	public static void loadGenerators(String arenaName) throws IOException {
-		final ConcurrentLinkedQueue<String> lnk = new ConcurrentLinkedQueue<>(
-				Files.readAllLines(Paths.get(DIR + arenaName + "/generators.dcnf")));
-		Iterator<String> iterate = lnk.iterator();
-		lnk.stream().forEach((x) -> {
+	public static void loadGenerators(Plugin instance, String arenaName) throws IOException {
+		FReader reader = new FReader(DIR + arenaName + "/generators.dcnf");
+		reader.runTaskAsynchronously(instance);
+		Iterator<String> iterate = reader.getCompletedLNK().iterator();
+		reader.getCompletedLNK().stream().forEach((x) -> {
 			String next = null;
 			if (x.contains("* ")) {
 				while (iterate.hasNext()) {
@@ -506,7 +506,6 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param sender
 	 * @param instance
 	 * @param arenaName
 	 * @param minPlayer
@@ -537,7 +536,7 @@ public class ArenaManager {
 		});
 		if (minPlayer != null) {
 			try {
-				PropertiesAPI.setProperty(instance, "minPlayers", String.valueOf(minPlayer), arenaFile);
+				PropertiesAPI.setProperty("minPlayers", String.valueOf(minPlayer), arenaFile);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -546,7 +545,7 @@ public class ArenaManager {
 
 		if (maxPlayer != null) {
 			try {
-				PropertiesAPI.setProperty(instance, "maxPlayers", String.valueOf(maxPlayer), arenaFile);
+				PropertiesAPI.setProperty("maxPlayers", String.valueOf(maxPlayer), arenaFile);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -555,7 +554,7 @@ public class ArenaManager {
 
 		if (arenaTime != null) {
 			try {
-				PropertiesAPI.setProperty(instance, "arenaTime", String.valueOf(arenaTime), arenaFile);
+				PropertiesAPI.setProperty("arenaTime", String.valueOf(arenaTime), arenaFile);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -564,7 +563,7 @@ public class ArenaManager {
 
 		ConcurrentLinkedQueue<String> waitingC = PropertiesAPI.getProperties("waitingSpawn", arenaFile, "0", "0", "0");
 		if (waitingSpawn != null) {
-			PropertiesAPI.setProperties(instance, true, "waitingSpawn", String.valueOf(waitingSpawn.getBlockX()),
+			PropertiesAPI.setProperties(true, "waitingSpawn", String.valueOf(waitingSpawn.getBlockX()),
 					String.valueOf(waitingSpawn.getBlockY()), String.valueOf(waitingSpawn.getBlockZ()));
 		}
 		Iterator<String> iterator = waitingC.iterator();
@@ -596,9 +595,7 @@ public class ArenaManager {
 	}
 
 	/**
-	 * 
-	 * @param sender
-	 * @param instance
+	 *
 	 * @param playerName
 	 * @param team
 	 */
@@ -652,7 +649,7 @@ public class ArenaManager {
 	 * @param arenaFile
 	 * @return
 	 */
-	public static Arena loadArena(String arenaName, String arenaFile) {
+	public static Arena loadArena(Plugin instance, String arenaName, String arenaFile) {
 		int min = Integer.parseInt(PropertiesAPI.getProperty("min", "2", arenaFile));
 		int max = Integer.parseInt(PropertiesAPI.getProperty("max", "8", arenaFile));
 		int time = Integer.parseInt(PropertiesAPI.getProperty("arenaTime", "1800", arenaFile));
@@ -699,13 +696,8 @@ public class ArenaManager {
 					x, blockSpawn, getNPCLocation(arenaName, x), getWaitingSpawn(arena));
 			arena.getTeams().add(team);
 			try {
-				loadGenerators(arena.getName());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			try {
-				loadNPCS(arena.getName());
+				loadGenerators(instance, arena.getName());
+				loadNPCS(instance, arena.getName());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -722,7 +714,7 @@ public class ArenaManager {
 	 * @param clazz
 	 * @return
 	 */
-	public static ConcurrentLinkedQueue<Arena> loadArenasByAnnotation(Class<?> clazz) {
+	public static ConcurrentLinkedQueue<Arena> loadArenasByAnnotation(Plugin instance, Class<?> clazz) {
 		ArenaMaker maker = clazz.getAnnotation(ArenaMaker.class);
 		List<String> files = Arrays.asList(maker.arenas());
 		files.stream().forEach((x) -> {
@@ -775,13 +767,13 @@ public class ArenaManager {
 						y, blockSpawn, getNPCLocation(x, y), getWaitingSpawn(arena));
 				arena.getTeams().add(team);
 				try {
-					loadGenerators(arena.getName());
+					loadGenerators(instance, arena.getName());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 
 				try {
-					loadNPCS(arena.getName());
+					loadNPCS(instance, arena.getName());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -797,10 +789,9 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param class
 	 * @return
 	 */
-	public static ConcurrentLinkedQueue<Arena> concurrentLoadArenasByAnnotation(Class<?> clazz) {
+	public static ConcurrentLinkedQueue<Arena> concurrentLoadArenasByAnnotation(Plugin instance, Class<?> clazz) {
 		ArenaMaker maker = clazz.getAnnotation(ArenaMaker.class);
 		ConcurrentLinkedQueue<Arena> lsk = new ConcurrentLinkedQueue<>();
 		List<String> files = Arrays.asList(maker.arenas());
@@ -855,13 +846,13 @@ public class ArenaManager {
 				arena.getTeams().add(team);
 
 				try {
-					loadGenerators(arena.getName());
+					loadGenerators(instance, arena.getName());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
 
 				try {
-					loadNPCS(arena.getName());
+					loadNPCS(instance, arena.getName());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -873,97 +864,6 @@ public class ArenaManager {
 			lsk.add(arena);
 		});
 		return lsk;
-	}
-
-	public static void loadArenas() {
-		List<Path> dirs = null;
-		try {
-			dirs = Files.walk(Paths.get(DIR)).filter(Files::isDirectory).collect(Collectors.toList());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		dirs.remove(0);
-
-		for (Path dir : dirs) {
-			Optional<String> arenaName = dirs.stream().filter((x) -> x.equals(dir))
-					.filter((x) -> x.toString().split("//")[1].contains(".dcnf"))
-					.map((x) -> x.toString().split("//")[1]).findFirst();
-			if (arenaName.isPresent()) {
-				return;
-			}
-
-			String arenaFile = DIR + dir + "/" + dir + ".dcnf";
-
-			String min = PropertiesAPI.getProperty("min", "2", arenaFile);
-			String max = PropertiesAPI.getProperty("max", "8", arenaFile);
-			String time = PropertiesAPI.getProperty("arenaTime", "1800", arenaFile);
-
-			String locationCoordinates[] = PropertiesAPI.getProperty("waitingSpawn", null, arenaFile).split(",");
-
-			Location location = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", null, arenaFile)),
-					Double.parseDouble(locationCoordinates[0]), Double.parseDouble(locationCoordinates[1]),
-					Double.parseDouble(locationCoordinates[2]));
-
-			String nlocationCoordinates[] = PropertiesAPI.getProperty("pos1", null, arenaFile).split(",");
-
-			Location pos1 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", arenaFile, null)),
-					Double.parseDouble(nlocationCoordinates[0]), Double.parseDouble(nlocationCoordinates[1]),
-					Double.parseDouble(nlocationCoordinates[2]));
-
-			String nnlocationCoordinates[] = PropertiesAPI.getProperty("pos2", null, arenaFile).split(",");
-
-			Location pos2 = new Location(Bukkit.getWorld(PropertiesAPI.getProperty("world", null, arenaFile)),
-					Double.parseDouble(nnlocationCoordinates[0]), Double.parseDouble(nnlocationCoordinates[1]),
-					Double.parseDouble(nnlocationCoordinates[2]));
-
-			String world = PropertiesAPI.getProperty("world", null, arenaFile);
-
-			if (arenaName.isPresent()) {
-				try {
-					loadGenerators(arenaName.get());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
-				try {
-					loadNPCS(arenaName.get());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-
-				loadItems(arenaName.get());
-			}
-			if (pos2 == null || pos1 == null || location == null || world == null)
-				throw new IllegalStateException("Some of values or null for " + arenaName);
-
-			Arena arena = new Arena(Integer.parseInt(min), Integer.parseInt(max), Integer.parseInt(time), location,
-					STATES.WAITING, arenaName.get(), world, pos1, pos2);
-
-			final List<TEAMS> tm = arena.getTeams().stream().map((y) -> y.getTeam()).collect(Collectors.toList());
-
-			tm.stream().forEach((y) -> {
-				String ls[] = new String[3];
-				PropertiesAPI.getProperties(y.name() + ".block",
-						DIR + arena.getName() + "/" + arena.getName() + ".dcnf", "NULL").stream()
-						.map((z) -> z.split("-\\s*", 2)[1].split(",")).forEach((z) -> {
-							ls[0] = z[0];
-							ls[1] = z[1];
-							ls[2] = z[2];
-						});
-				Location blockSpawn = new Location(Bukkit.getWorld(arena.getWorld()), Integer.parseInt(ls[0]),
-						Integer.parseInt(ls[1]), Integer.parseInt(ls[2]));
-
-				ArenaTeam team = team(arena,
-						Integer.parseInt(PropertiesAPI.getProperty(y.name() + ".min", null,
-								DIR + arena.getName() + "/" + y.name() + ".dcnf")),
-						Integer.parseInt(PropertiesAPI.getProperty(y.name() + ".max", null,
-								DIR + arena.getName() + "/" + y.name() + ".dcnf")),
-						y, blockSpawn, getNPCLocation(arenaName.get(), y), getWaitingSpawn(arena));
-				arena.getTeams().add(team);
-			});
-
-			addInARENALIST(arena);
-		}
 	}
 
 	/**
@@ -1012,13 +912,8 @@ public class ArenaManager {
 			String world = PropertiesAPI.getProperty("world", null, arenaFile);
 
 			try {
-				loadGenerators(arenaName.get());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-
-			try {
-				loadNPCS(arenaName.get());
+				loadGenerators(instance, arenaName.get());
+				loadNPCS(instance, arenaName.get());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -1077,7 +972,6 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param instance
 	 * @param playerName
 	 * @return
 	 */
@@ -1092,7 +986,6 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param instance
 	 * @param playerName
 	 * @return
 	 */
@@ -1318,14 +1211,13 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param instance
 	 * @param arena
 	 * @param world
 	 */
-	public static void setArenaWorld(Plugin instance, Arena arena, String world) {
+	public static void setArenaWorld(Arena arena, String world) {
 		arena.setWorld(world);
 		try {
-			PropertiesAPI.setProperty(instance, "world", world,
+			PropertiesAPI.setProperty("world", world,
 					DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -1333,9 +1225,7 @@ public class ArenaManager {
 	}
 
 	/**
-	 * 
-	 * @param sender
-	 * @param instance
+	 *
 	 * @param playerName
 	 * @param team
 	 */
@@ -1346,14 +1236,13 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param instance
 	 * @param arena
 	 * @param location
 	 */
-	public static void setPos1(Plugin instance, Arena arena, Location location) {
+	public static void setPos1(Arena arena, Location location) {
 		arena.setPos1(location);
 		try {
-			PropertiesAPI.setProperty(instance, "pos1",
+			PropertiesAPI.setProperty("pos1",
 					location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
 					DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 		} catch (IOException e) {
@@ -1363,14 +1252,13 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param instance
 	 * @param arena
 	 * @param location
 	 */
-	public static void setPos2(Plugin instance, Arena arena, Location location) {
+	public static void setPos2(Arena arena, Location location) {
 		arena.setPos2(location);
 		try {
-			PropertiesAPI.setProperty(instance, "pos2",
+			PropertiesAPI.setProperty("pos2",
 					location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
 					DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 		} catch (IOException e) {
@@ -1445,9 +1333,9 @@ public class ArenaManager {
 	 * @param seconds
 	 * @param amount
 	 */
-	public static void setGenerator(Plugin instance, Location location, String arenaName, String generatorName,
+	public static void setGenerator(Location location, String arenaName, String generatorName,
 			String itemName, String seconds, String amount) {
-		PropertiesAPI.setProperties(instance, true, generatorName + "." + itemName,
+		PropertiesAPI.setProperties(true, generatorName + "." + itemName,
 				DIR + arenaName + "/" + arenaName + ".dcnf",
 				location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(), seconds, amount);
 	}
@@ -1473,7 +1361,6 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param sender
 	 * @param playerName
 	 * @param arena
 	 * @return
@@ -1488,14 +1375,13 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param instance
 	 * @param team
 	 * @param location
 	 */
-	public static void setTeamSpawn(Plugin instance, ArenaTeam team, Location location) {
+	public static void setTeamSpawn( ArenaTeam team, Location location) {
 		team.setTeamSpawn(location);
 		try {
-			PropertiesAPI.setProperty(instance, team.getTeam().name() + ".teamspawn",
+			PropertiesAPI.setProperty( team.getTeam().name() + ".teamspawn",
 					location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
 					DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf");
 		} catch (IOException e) {
@@ -1521,14 +1407,13 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param instance
 	 * @param team
 	 * @param location
 	 */
-	public static void setBlockSpawn(Plugin instance, ArenaTeam team, Location location) {
+	public static void setBlockSpawn( ArenaTeam team, Location location) {
 		team.setBlockSpawn(location);
 		try {
-			PropertiesAPI.setProperty(instance, team.getTeam().name() + ".block",
+			PropertiesAPI.setProperty( team.getTeam().name() + ".block",
 					location.getBlockX() + "," + location.getBlockY() + "," + location.getBlockZ(),
 					DIR + team.getArena().getName() + "/" + team.getArena().getName() + ".dcnf");
 		} catch (IOException e) {
@@ -1601,14 +1486,13 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param instance
 	 * @param arena
 	 * @param number
 	 */
-	public static void setMaxArena(Plugin instance, Arena arena, String number) {
+	public static void setMaxArena(Arena arena, String number) {
 		arena.setMaxPlayers(Integer.parseInt(number));
 		try {
-			PropertiesAPI.setProperty(instance, "max", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+			PropertiesAPI.setProperty( "max", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -1627,14 +1511,13 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param instance
 	 * @param arena
 	 * @param number
 	 */
-	public static void setMinArena(Plugin instance, Arena arena, String number) {
+	public static void setMinArena(Arena arena, String number) {
 		arena.setMinPlayers(Integer.parseInt(number));
 		try {
-			PropertiesAPI.setProperty(instance, "min", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
+			PropertiesAPI.setProperty( "min", number, DIR + arena.getName() + "/" + arena.getName() + ".dcnf");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -1653,14 +1536,13 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param instance
 	 * @param team
 	 * @param number
 	 */
-	public static void setTeamMax(Plugin instance, ArenaTeam team, String number) {
+	public static void setTeamMax(ArenaTeam team, String number) {
 		team.setMaxNumber(Integer.parseInt(number));
 		try {
-			PropertiesAPI.setProperty(instance, team.getTeam().name() + ".min", number,
+			PropertiesAPI.setProperty(team.getTeam().name() + ".min", number,
 					DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -1680,14 +1562,13 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param instance
 	 * @param team
 	 * @param number
 	 */
-	public static void setTeamMin(Plugin instance, ArenaTeam team, String number) {
+	public static void setTeamMin(ArenaTeam team, String number) {
 		team.setMinNumber(Integer.parseInt(number));
 		try {
-			PropertiesAPI.setProperty(instance, team.getTeam().name() + ".max", number,
+			PropertiesAPI.setProperty(team.getTeam().name() + ".max", number,
 					DIR + team.getTeam().name() + "/" + team.getTeam().name() + ".dcnf");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -1839,13 +1720,11 @@ public class ArenaManager {
 
 	/**
 	 * 
-	 * @param instance
 	 * @param location
 	 */
-	public static void setLobbySpawn(Plugin instance, Location location) {
+	public static void setLobbySpawn(Location location) {
 		try {
-			PropertiesAPI.setProperty(
-					instance, "lobbySpawn", String.valueOf(location.getBlockX()) + ","
+			PropertiesAPI.setProperty("lobbySpawn", String.valueOf(location.getBlockX()) + ","
 							+ String.valueOf(location.getBlockY()) + "," + String.valueOf(location.getBlockZ()),
 					DIR + "messages.dcnf");
 		} catch (IOException e) {
