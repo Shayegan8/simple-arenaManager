@@ -4,12 +4,16 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import arena.Arena;
+import arena.ArenaManager;
+import arena.PropertiesAPI;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.plugin.Plugin;
 
-public class Blocks {
+public class Blocks extends InventoryAPI {
 	
 	public static String name = "blocks.dcnf";
+
 	private Arena arena;
 
 	public Blocks(String arenaName) {
@@ -33,7 +37,7 @@ public class Blocks {
 		if (Files.notExists(Paths.get(fileName))) {
 			Files.createFile(Paths.get(fileName));
 
-			PropertiesAPI.setProperty(instance, "ANVIL:&c&lDIRT:armory.dcnf", "10", arenaName);
+			PropertiesAPI.setProperty("ANVIL:&c&lDIRT:armory.dcnf", "10", arenaName);
 		}
 
 	}
