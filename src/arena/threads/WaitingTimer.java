@@ -26,7 +26,7 @@ public class WaitingTimer extends BukkitRunnable {
 		this.time = time;
 		this.arena = arena;
 		this.sender = sender;
-		msg.replaceAll("{TIME}", PropertiesAPI.getProperty("waitCounterTimer", "10",
+		msg.replaceAll("\\{TIME\\}", PropertiesAPI.getProperty("waitCounterTimer", "10",
 				ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
 		this.msg = Chati.translate(msg);
 	}
@@ -57,7 +57,7 @@ public class WaitingTimer extends BukkitRunnable {
 
 	private void operation() {
 		Bukkit.dispatchCommand(sender, "title " + sender.getName() + " title {\"text\":\""
-				+ msg.replaceAll("{TIME}", String.valueOf(counter)) + " \",\"fadeIn\":20,\"stay\":20,\"fadeOut\":20}");
+				+ msg.replaceAll("\\{TIME\\}", String.valueOf(counter)) + " \",\"fadeIn\":20,\"stay\":20,\"fadeOut\":20}");
 		if (counter == max) {
 			Player player = (Player) sender;
 			if (ArenaManager.getPlayersTeam(player.getName()) == null)

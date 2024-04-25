@@ -24,7 +24,7 @@ public class EndedTimer extends BukkitRunnable {
 		this.max = max;
 		this.arena = arena;
 		this.sender = sender;
-		msg.replaceAll("{TIME}", PropertiesAPI.getProperty("endedTimer", "3",
+		msg.replaceAll("\\{TIME\\}", PropertiesAPI.getProperty("endedTimer", "3",
 				ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
 		this.msg = Chati.translate(msg);
 	}
@@ -32,7 +32,7 @@ public class EndedTimer extends BukkitRunnable {
 	@Override
 	public void run() {
 		Bukkit.dispatchCommand(sender, "title " + sender.getName() + " title {\"text\":\""
-				+ msg.replaceAll("{TIME}", String.valueOf(counter)) + " \",\"fadeIn\":20,\"stay\":60,\"fadeOut\":20}");
+				+ msg.replaceAll("\\{TIME\\}", String.valueOf(counter)) + " \",\"fadeIn\":20,\"stay\":60,\"fadeOut\":20}");
 		while (counter <= max) {
 			if (counter == max) {
 				arena.getPlayersNames().stream().forEach((x) -> {

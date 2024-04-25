@@ -17,7 +17,7 @@ public class ArenaTimer extends BukkitRunnable {
 
 	public ArenaTimer(Player player, String msg, int time) {
 		this.player = player;
-		msg.replaceAll("{TIME}", String.valueOf(counter));
+		msg.replaceAll("\\{TIME\\}", String.valueOf(counter));
 		this.msg = Chati.translate(msg);
 	}
 

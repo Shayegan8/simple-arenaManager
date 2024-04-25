@@ -1025,7 +1025,7 @@ public class ArenaManager {
 				} else {
 					Bukkit.getPlayer(playerName).sendMessage(Chati.translate(PropertiesAPI
 							.getProperty("playerAlreadyInIt", "&c{PLAYER} is already in arena", DIR + "messages.dcnf")
-							.replaceAll("{PLAYER}", playerName)));
+							.replaceAll("\\{PLAYER\\}", playerName)));
 					Bukkit.getLogger().severe("Player is already exist!");
 				}
 				if (locationToSpawn != null && player != null)
@@ -1062,7 +1062,7 @@ public class ArenaManager {
 				} else {
 					Bukkit.getPlayer(playerName).sendMessage(Chati.translate(PropertiesAPI
 							.getProperty("playerAlreadyInIt", "&c{PLAYER} is already in arena", DIR + "messages.dcnf")
-							.replaceAll("{PLAYER}", playerName)));
+							.replaceAll("\\{PLAYER\\}", playerName)));
 					Bukkit.getLogger().severe("Player is already exist!");
 				}
 			}

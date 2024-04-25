@@ -216,7 +216,7 @@ public class EventMaker implements Listener {
 								.sendMessage(Chati
 										.translate(PropertiesAPI.getProperty("joinEvent",
 												"{PLAYER} joined to the arena", ArenaManager.DIR + "messages.dcnf"))
-										.replaceAll("{PLAYER}", e.getPlayer().getName()));
+										.replaceAll("\\{PLAYER\\}", e.getPlayer().getName()));
 						Arena arena = e.getArena();
 						if (arena.getMinPlayer() <= arena.getPlayersNames().size())
 							arena.setStatus(STATES.BEFOREWAITING);
@@ -263,7 +263,7 @@ public class EventMaker implements Listener {
 										.sendMessage(Chati
 												.translate(PropertiesAPI.getProperty("leftEvent",
 														"{PLAYER} left the arena", ArenaManager.DIR + "messages.dcnf"))
-												.replaceAll("{PLAYER}", e.getPlayer().getName()));
+												.replaceAll("\\{PLAYER\\}", e.getPlayer().getName()));
 								ArenaManager.setPlayerStatus(x, STATES.NONE);
 							});
 				}
@@ -319,7 +319,6 @@ public class EventMaker implements Listener {
 
 	/**
 	 * @apiNote state is better to be BEFOREWAITING
-	 * @param status
 	 */
 	public static void registerWait() {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
@@ -347,10 +346,6 @@ public class EventMaker implements Listener {
 				innerInstance);
 	}
 
-	/**
-	 * 
-	 * @param status
-	 */
 	public static void registerStarted() {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
 		EventExecutor executor = new EventExecutor() {

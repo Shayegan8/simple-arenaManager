@@ -26,7 +26,7 @@ public class DeathTimer extends BukkitRunnable {
 		this.status = status;
 		this.arena = arena;
 		this.sender = sender;
-		msg.replaceAll("{TIME}", PropertiesAPI.getProperty("deathTimer", "5",
+		msg.replaceAll("\\{TIME\\}", PropertiesAPI.getProperty("deathTimer", "5",
 				ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
 		this.msg = Chati.translate(msg);
 	}

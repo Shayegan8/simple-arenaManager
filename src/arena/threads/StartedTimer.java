@@ -23,7 +23,7 @@ public class StartedTimer extends BukkitRunnable {
 		this.max = max;
 		this.arena = arena;
 		this.sender = sender;
-		msg.replaceAll("{TIMER}", PropertiesAPI.getProperty("startTimer", "3",
+		msg.replaceAll("\\{TIME\\}", PropertiesAPI.getProperty("startTimer", "3",
 				ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"));
 		this.msg = Chati.translate(msg);
 	}
