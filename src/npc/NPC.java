@@ -2,6 +2,7 @@ package npc;
 
 import java.util.Objects;
 
+import arena.PropertiesAPI;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
@@ -26,7 +27,8 @@ public class NPC {
 			name = team.getTeam().name();
 			Entity entity = location.getWorld().spawnEntity(location, type);
 			entity.setVelocity(new Vector(0, 0, 0));
-			entity.setCustomName(Chati.translate(team.getArena().getName() + " &lSHOPKEEPER"));
+			entity.setCustomName(Chati.translate(PropertiesAPI.getProperty("shopiname", team.getArena().getName() + " &lSHOPKEEPER",
+					ArenaManager.DIR + team.getArena().getName() + ".dcnf")));
 			entity.setCustomNameVisible(true);
 			ArenaManager.putInSNPCS(team, this);
 		}

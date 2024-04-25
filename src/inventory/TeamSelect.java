@@ -19,7 +19,7 @@ public class TeamSelect extends InventoryAPI {
 	public TeamSelect(String arenaName) {
 		setInv(new InventoryAPI(
 				Integer.parseInt(PropertiesAPI.getProperty("size", "53", ArenaManager.DIR + arenaName + "/" + name)),
-				name.split(".")[0]).getInv());
+				name.split("//.")[0]).getInv());
 		this.arena = ArenaManager.getArenaByName(arenaName);
 	}
 
@@ -37,8 +37,8 @@ public class TeamSelect extends InventoryAPI {
 		if (Files.notExists(Paths.get(fileName))) {
 			Files.createFile(Paths.get(fileName));
 
-			PropertiesAPI.setProperty(instance, "ANVIL:&c&lARMORY:armory.dcnf", "10", arenaName);
-			PropertiesAPI.setProperty(instance, "ANVIL:&6&lPOTIONS:potions.dcnf", "10", arenaName);
+			PropertiesAPI.setProperty("ANVIL:&c&lARMORY:armory.dcnf", "10", arenaName);
+			PropertiesAPI.setProperty("ANVIL:&6&lPOTIONS:potions.dcnf", "10", arenaName);
 		}
 	}
 }

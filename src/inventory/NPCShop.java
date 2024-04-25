@@ -76,8 +76,8 @@ public class NPCShop {
 		if (Files.notExists(Paths.get(fileName))) {
 			Files.createFile(Paths.get(fileName));
 
-			PropertiesAPI.setProperty(instance, "ANVIL:&c&lARMORY:armory.dcnf:1", "10", arenaName);
-			PropertiesAPI.setProperty(instance, "ANVIL:&6&lPOTIONS:potions.dcnf:1", "11", arenaName);
+			PropertiesAPI.setProperty("ANVIL:&c&lARMORY:armory.dcnf:1", "10", arenaName);
+			PropertiesAPI.setProperty("ANVIL:&6&lPOTIONS:potions.dcnf:1", "11", arenaName);
 		}
 	}
 

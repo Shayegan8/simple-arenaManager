@@ -19,7 +19,7 @@ public class Armory extends InventoryAPI {
 	public Armory(String arenaName) {
 		setInv(new InventoryAPI(
 				Integer.parseInt(PropertiesAPI.getProperty("size", "53", ArenaManager.DIR + arenaName + "/" + name)),
-				name.split(".")[0]).getInv());
+				name.split("\\.")[0]).getInv());
 		this.arena = ArenaManager.getArenaByName(arenaName);
 	}
 
@@ -37,7 +37,7 @@ public class Armory extends InventoryAPI {
 		if (Files.notExists(Paths.get(fileName))) {
 			Files.createFile(Paths.get(fileName));
 
-			PropertiesAPI.setProperty(instance, "ANVIL:&c&lCHEST_PLATE?:NULL", "10", arenaName);
+			PropertiesAPI.setProperty("ANVIL:&c&lCHEST_PLATE?:NULL", "10", arenaName);
 		}
 
 	}

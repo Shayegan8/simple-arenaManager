@@ -50,7 +50,7 @@ public class ZombieSpawner implements Listener {
 				Optional<LivingEntity> living = Bukkit.getWorld(file).getLivingEntities().stream()
 						.filter((x) -> x.getType() == EntityType.ZOMBIE
 								&& x.getLocation().getWorld().getName().equals(arena.getWorld())
-								&& zombie.getLocation().equals(e1.getEntity().getLocation()))
+								&& zombie.getCustomName().equals(Chati.translate(PropertiesAPI.getProperty("name", "&c&lFUCKER &e&lMAN", file))))
 						.findFirst();
 				if (living.isPresent()) {
 					LivingEntity lv = living.get();
@@ -61,6 +61,7 @@ public class ZombieSpawner implements Listener {
 					armory.stream().forEach((x) -> {
 						if (!x.equals("NULL")) {
 							ItemStack item = new ItemStack(Material.valueOf(x), 1);
+
 							if (x.contains("HELMET")) {
 								eq.setHelmet(item);
 							} else if (x.contains("CHESTPLATE")) {

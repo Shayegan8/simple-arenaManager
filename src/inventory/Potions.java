@@ -18,7 +18,7 @@ public class Potions extends InventoryAPI {
 
 	public Potions(String arenaName) {
 		setInv(new InventoryAPI(
-				Integer.parseInt(PropertiesAPI.getProperty("size", "53", ArenaManager.DIR + arenaName + "/" + name)),
+				Integer.parseInt(PropertiesAPI.getProperty("size", "53", ArenaManager.DIR + arenaName + "/shop.dcnf")),
 				name.split(".")[0]).getInv());
 		this.arena = ArenaManager.getArenaByName(arenaName);
 	}
@@ -31,14 +31,14 @@ public class Potions extends InventoryAPI {
 		return arena;
 	}
 
-	public void defaultProperties(Plugin instance) throws IOException {
+	public void defaultProperties() throws IOException {
 		String arenaName = arena.getName();
 		String fileName = ArenaManager.DIR + arenaName + "/shop.dcnf";
 		if (Files.notExists(Paths.get(fileName))) {
 			Files.createFile(Paths.get(fileName));
 
-			PropertiesAPI.setProperty(instance, "PAPER:&c&lQuit:1", "63", arenaName);
-			PropertiesAPI.setProperty(instance, "ANVIL:&c&lHeal:1", "10", arenaName);
+			PropertiesAPI.setProperty("PAPER:&c&lQuit:1", "63", arenaName);
+			PropertiesAPI.setProperty("ANVIL:&c&lHeal:1", "10", arenaName);
 		}
 
 	}
