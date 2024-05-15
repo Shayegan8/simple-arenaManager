@@ -70,12 +70,6 @@ public class EventMaker implements Listener {
 		EventMaker.pluginName = pluginName;
 	}
 
-	/**
-	 *
-	 * @param e1
-	 * @param e2
-	 * @param e3
-	 */
 	@EventHandler
 	public static void registerNPC() {
 
@@ -86,7 +80,7 @@ public class EventMaker implements Listener {
 				Player player = npci.getPlayer();
 				ArenaTeam team = ArenaManager.getPlayersTeam(player.getName());
 				Arena arena = team.getArena();
-				Entity npcE = e1.getEntity();
+				Entity npcE = npci.getE1().getEntity();
 				Optional<Entry<ArenaTeam, NPC>> opt = ArenaManager.SNPCS.entrySet().stream()
 						.filter((x) -> x.getKey().equals(ArenaManager.getPlayersTeam(player.getName()))
 								&& x.getValue().getName().equals(npcE.getCustomName())
@@ -94,14 +88,14 @@ public class EventMaker implements Listener {
 						.findFirst();
 
 				if (opt.isPresent()) {
-					e1.setCancelled(true);
-					if (e2.getRightClicked().getType().equals(opt.get().getValue().getType())) {
-						Player nPlayer = e2.getPlayer();
+					npci.getE1().setCancelled(true);
+					if (npci.getE2().getRightClicked().getType().equals(opt.get().getValue().getType())) {
+						Player nPlayer = npci.getE2().getPlayer();
 						Optional<Inventory> op = ArenaManager.INVS.stream().filter((x) -> x.getName().equals(arena.getName()))
 								.findFirst();
 						if (opt.isPresent())
 							nPlayer.openInventory(op.get());
-						Optional<EMaterial> mot = ArenaManager.ITEMS.stream().filter((x) -> x.getAmount() == e3.getSlot())
+						Optional<EMaterial> mot = ArenaManager.ITEMS.stream().filter((x) -> x.getAmount() == npci.getE3().getSlot())
 								.findFirst();
 						if (mot.isPresent()) {
 							switch (mot.get().getPage()) {
@@ -431,6 +425,7 @@ public class EventMaker implements Listener {
 		registerWait();
 		registerKilled();
 		registerDrop();
+		registerNPC();
 		Bukkit.getPluginManager().registerEvents(instance, Bukkit.getPluginManager().getPlugin(pluginName));
 	}
 
