@@ -71,14 +71,13 @@ public class EventMaker implements Listener {
 	}
 
 	/**
-	 * @apiNote you need to register this in another listener class
 	 *
 	 * @param e1
 	 * @param e2
 	 * @param e3
 	 */
 	@EventHandler
-	public static void registerNPC(EntityDamageEvent e1, PlayerInteractEntityEvent e2, InventoryClickEvent e3) {
+	public static void registerNPC() {
 
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
 		Bukkit.getPluginManager().registerEvent(ArenaNPC.class, instance, EventPriority.NORMAL, (listener, event) -> {
