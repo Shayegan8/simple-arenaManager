@@ -7,7 +7,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 public class EMaterial {
 
 	private String page;
-	private int index;
 	private int amount;
 	private boolean openable;
 	private boolean startItem;
@@ -17,8 +16,7 @@ public class EMaterial {
 	private ItemStack item;
 	private InventoryAPI inv;
 
-	public EMaterial(int index, int amount, String arenaName, Material material) {
-		this.index = index;
+	public EMaterial(int amount, String arenaName, Material material) {
 		this.amount = amount;
 		this.material = material;
 		this.arenaName = arenaName;
@@ -26,7 +24,7 @@ public class EMaterial {
 
 	public ItemStack item() {
 		if (item == null) {
-			ItemStack item = new ItemStack(material, index);
+			ItemStack item = new ItemStack(material, amount);
 			ItemMeta meta = item.getItemMeta();
 			meta.setDisplayName(name);
 			this.item = item;
@@ -45,10 +43,6 @@ public class EMaterial {
 
 	public void setOpenable(boolean openable) {
 		this.openable = openable;
-	}
-
-	public int getIndex() {
-		return index;
 	}
 
 	public String getPage() {

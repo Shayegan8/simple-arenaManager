@@ -239,7 +239,7 @@ public class ArenaManager {
 					String name = Chati.translate(splite[1]);
 					String page = splite[2];
 					int amount = Integer.parseInt(splite[3]);
-					EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
+					EMaterial material = new EMaterial(amount, arenaName, Material.valueOf(item));
 					if (!page.equals("NULL"))
 						material.setPage(page);
 					material.setName(name);
@@ -254,7 +254,7 @@ public class ArenaManager {
 			ItemMeta meta = item.getItemMeta();
 			meta.setDisplayName(x.getName());
 			meta.setLore(Arrays.asList(""));
-			shopINV.setItem(x.getIndex(), item, meta);
+			shopINV.setItem(x.getAmount(), item, meta);
 		});
 		addInINVS(shopINV.getInv());
 	}
@@ -269,7 +269,7 @@ public class ArenaManager {
 					String name = Chati.translate(splite[1]);
 					String page = splite[2];
 					int amount = Integer.parseInt(splite[3]);
-					EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
+					EMaterial material = new EMaterial(amount, arenaName, Material.valueOf(item));
 					if (!page.equals("NULL"))
 						material.setPage(page);
 					material.setName(name);
@@ -283,7 +283,7 @@ public class ArenaManager {
 			ItemMeta meta = item.getItemMeta();
 			meta.setDisplayName(x.getName());
 			meta.setLore(Arrays.asList(""));
-			teamselectINV.setItem(x.getIndex(), item, meta);
+			teamselectINV.setItem(x.getAmount(), item, meta);
 		});
 		addInINVS(teamselectINV.getInv());
 	}
@@ -297,7 +297,7 @@ public class ArenaManager {
 					String name = Chati.translate(splite[1]);
 					String page = splite[2];
 					int amount = Integer.parseInt(splite[3]);
-					EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
+					EMaterial material = new EMaterial(amount, arenaName, Material.valueOf(item));
 					material.setName(name);
 					if (!page.equals("NULL"))
 						material.setPage(page);
@@ -310,7 +310,7 @@ public class ArenaManager {
 			ItemMeta meta = item.getItemMeta();
 			meta.setDisplayName(x.getName());
 			meta.setLore(Arrays.asList(""));
-			armoryINV.setItem(x.getIndex(), item, meta);
+			armoryINV.setItem(x.getAmount(), item, meta);
 		});
 		addInINVS(armoryINV.getInv());
 	}
@@ -324,7 +324,7 @@ public class ArenaManager {
 					String name = Chati.translate(splite[1]);
 					String page = splite[2];
 					int amount = Integer.parseInt(splite[3]);
-					EMaterial material = new EMaterial(amount, amount, arenaName, Material.valueOf(item));
+					EMaterial material = new EMaterial(amount, arenaName, Material.valueOf(item));
 					if (!page.equals("NULL"))
 						material.setPage(page);
 					material.setName(name);
@@ -339,7 +339,7 @@ public class ArenaManager {
 			ItemMeta meta = item.getItemMeta();
 			meta.setDisplayName(x.getName());
 			meta.setLore(Arrays.asList(""));
-			potionsINV.setItem(x.getIndex(), item, meta);
+			potionsINV.setItem(x.getAmount(), item, meta);
 		});
 		addInINVS(potionsINV.getInv());
 	}
@@ -356,12 +356,13 @@ public class ArenaManager {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param team
 	 * @param playerName
 	 * @param status
 	 * @return
 	 */
+    @Deprecated
 	public static PlayerData data(ArenaTeam team, String playerName, STATES status) {
 		return new PlayerData(team, playerName, status);
 	}
@@ -460,7 +461,7 @@ public class ArenaManager {
 					Integer.parseInt(property[0]), Integer.parseInt(property[1]), Integer.parseInt(property[2]));
 			String propertyy[] = next.split(".");
 
-			ArenaTeam teamm = getTeamByArenaAndName(getArenaByName(propertyy[0]), TEAMS.valueOf(propertyy[1]));
+			ArenaTeam teamm = getTeamByArenaAndName(getArenaByName(propertyy[0]), TEAMS.valueOf(propertyy[1].split(PropertiesAPI.SPLITOR)[0]));
 
 			NPC npc = new NPC(teamm, EntityType.valueOf(PropertiesAPI.getProperty(arenaName + "." + propertyy[1],
 					"VILLAGER", DIR + arenaName + "/npcs.dcnf")), loc);

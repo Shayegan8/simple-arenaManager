@@ -70,46 +70,59 @@ public class EventMaker implements Listener {
 		EventMaker.pluginName = pluginName;
 	}
 
+	/**
+	 * @apiNote you need to register this in another listener class
+	 *
+	 * @param e1
+	 * @param e2
+	 * @param e3
+	 */
 	@EventHandler
-	public void registerNPC(EntityDamageEvent e1, PlayerInteractEntityEvent e2, InventoryClickEvent e3) {
-		Player player = e2.getPlayer();
-		ArenaTeam team = ArenaManager.getPlayersTeam(player.getName());
-		Arena arena = team.getArena();
-		Entity npcE = e1.getEntity();
+	public static void registerNPC(EntityDamageEvent e1, PlayerInteractEntityEvent e2, InventoryClickEvent e3) {
 
-		Optional<Entry<ArenaTeam, NPC>> opt = ArenaManager.SNPCS.entrySet().stream()
-				.filter((x) -> x.getKey().equals(ArenaManager.getPlayersTeam(player.getName()))
-						&& x.getValue().getName().equals(npcE.getCustomName())
-						&& npcE.getWorld().equals(Bukkit.getWorld(arena.getWorld())))
-				.findFirst();
-
-		if (opt.isPresent()) {
-			e1.setCancelled(true);
-			if (e2.getRightClicked().getType().equals(opt.get().getValue().getType())) {
-				Player nPlayer = e2.getPlayer();
-				Optional<Inventory> op = ArenaManager.INVS.stream().filter((x) -> x.getName().equals(arena.getName()))
+		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
+		Bukkit.getPluginManager().registerEvent(ArenaNPC.class, instance, EventPriority.NORMAL, (listener, event) -> {
+			if(event instanceof ArenaNPC) {
+				ArenaNPC npci = (ArenaNPC) event;
+				Player player = npci.getPlayer();
+				ArenaTeam team = ArenaManager.getPlayersTeam(player.getName());
+				Arena arena = team.getArena();
+				Entity npcE = e1.getEntity();
+				Optional<Entry<ArenaTeam, NPC>> opt = ArenaManager.SNPCS.entrySet().stream()
+						.filter((x) -> x.getKey().equals(ArenaManager.getPlayersTeam(player.getName()))
+								&& x.getValue().getName().equals(npcE.getCustomName())
+								&& npcE.getWorld().equals(Bukkit.getWorld(arena.getWorld())))
 						.findFirst();
-				if (opt.isPresent())
-					nPlayer.openInventory(op.get());
-				Optional<EMaterial> mot = ArenaManager.ITEMS.stream().filter((x) -> x.getIndex() == e3.getSlot())
-						.findFirst();
-				if (mot.isPresent()) {
-					switch (mot.get().getPage()) {
 
-					case "armory.dcnf":
-						nPlayer.openInventory(new Armory(arena.getName()).getInv());
-						break;
+				if (opt.isPresent()) {
+					e1.setCancelled(true);
+					if (e2.getRightClicked().getType().equals(opt.get().getValue().getType())) {
+						Player nPlayer = e2.getPlayer();
+						Optional<Inventory> op = ArenaManager.INVS.stream().filter((x) -> x.getName().equals(arena.getName()))
+								.findFirst();
+						if (opt.isPresent())
+							nPlayer.openInventory(op.get());
+						Optional<EMaterial> mot = ArenaManager.ITEMS.stream().filter((x) -> x.getAmount() == e3.getSlot())
+								.findFirst();
+						if (mot.isPresent()) {
+							switch (mot.get().getPage()) {
 
-					case "potions.dcnf":
-						break;
+								case "armory.dcnf":
+									nPlayer.openInventory(new Armory(arena.getName()).getInv());
+									break;
 
-					default:
-						Bukkit.getLogger().severe(mot.get().getPage() + " not found in " + arena.getName());
-						nPlayer.getOpenInventory().close();
+								case "potions.dcnf":
+									break;
+
+								default:
+									Bukkit.getLogger().severe(mot.get().getPage() + " not found in " + arena.getName());
+									nPlayer.getOpenInventory().close();
+							}
+						}
 					}
 				}
 			}
-		}
+		}, innerInstance);
 	}
 
 	public static void registerBreak() {
@@ -152,6 +165,38 @@ public class EventMaker implements Listener {
 				innerInstance);
 	}
 
+	public static void registerKilled() {
+		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
+		EventExecutor executor = (listener, event) -> {
+			PlayerKilled killed = (PlayerKilled) event;
+			Player player = killed.getPlayer();
+			Arena arena = ArenaManager.getPlayersArena(player.getName());
+			if (player.getLocation().getBlockY() < 0) {
+				if (!ArenaManager.isBlockGone(ArenaManager.getPlayersTeam(player.getName()))) {
+					new DeathTimer(player, arena, STATES.DEAD,
+							PropertiesAPI.getProperty("deathEvent", "Respawn in {TIME}",
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
+							Integer.parseInt(PropertiesAPI.getProperty("deathTimer", "5",
+									ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")));
+				} else {
+					player.setGameMode(GameMode.SPECTATOR);
+					Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
+							"title " + player.getName() + " title {\"text\":\"" + Chati.translate("&cYou lost")
+									+ " \",\"fadeIn\":20,\"stay\":60,\"fadeOut\":20}");
+				}
+			}
+		};
+		Bukkit.getPluginManager().registerEvent(PlayerKilled.class, instance, EventPriority.NORMAL, executor, innerInstance);
+	}
+
+	public static void registerDrop() {
+		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
+		EventExecutor executor = (listener, event) -> {
+
+		};
+		Bukkit.getPluginManager().registerEvent(ItemDrop.class, instance, EventPriority.NORMAL, executor, innerInstance);
+	}
+
 	public static void registerArena() {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
 		EventExecutor executor = new EventExecutor() {
@@ -179,20 +224,6 @@ public class EventMaker implements Listener {
 						player.teleport(
 								location.clone().subtract(player.getLocation().getDirection().normalize().multiply(5)));
 					}
-					if (player.getLocation().getBlockY() < 0) {
-						if (!ArenaManager.isBlockGone(ArenaManager.getPlayersTeam(player.getName()))) {
-							new DeathTimer(player, arena, STATES.DEAD,
-									PropertiesAPI.getProperty("deathEvent", "Respawn in {TIME}",
-											ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf"),
-									Integer.parseInt(PropertiesAPI.getProperty("deathTimer", "5",
-											ArenaManager.DIR + arena.getName() + "/" + arena.getName() + ".dcnf")));
-						} else {
-							player.setGameMode(GameMode.SPECTATOR);
-							Bukkit.dispatchCommand(Bukkit.getConsoleSender(),
-									"title " + player.getName() + " title {\"text\":\"" + Chati.translate("&cYou lost")
-											+ " \",\"fadeIn\":20,\"stay\":60,\"fadeOut\":20}");
-						}
-					}
 				}
 			}
 		};
@@ -211,13 +242,13 @@ public class EventMaker implements Listener {
 				if (event instanceof ArenaJoin) {
 					ArenaJoin e = (ArenaJoin) event;
 					Player player = e.getPlayer();
+					Arena arena = ArenaManager.getPlayersArena(player.getName());
 					e.getArena().getPlayersNames().stream().forEach((x) -> {
 						Bukkit.getPlayer(x)
 								.sendMessage(Chati
 										.translate(PropertiesAPI.getProperty("joinEvent",
 												"{PLAYER} joined to the arena", ArenaManager.DIR + "messages.dcnf"))
 										.replaceAll("\\{PLAYER\\}", e.getPlayer().getName()));
-						Arena arena = e.getArena();
 						if (arena.getMinPlayer() <= arena.getPlayersNames().size())
 							arena.setStatus(STATES.BEFOREWAITING);
 						if (arena.getStatus() == STATES.WAITING || arena.getStatus() == STATES.BEFOREWAITING) {
@@ -313,7 +344,7 @@ public class EventMaker implements Listener {
 			}
 		};
 
-		Bukkit.getPluginManager().registerEvent(ArenaEnded.class, instance, EventPriority.NORMAL, executor,
+		Bukkit.getPluginManager().registerEvent(ArenaBEnded.class, instance, EventPriority.NORMAL, executor,
 				innerInstance);
 	}
 
@@ -378,7 +409,7 @@ public class EventMaker implements Listener {
 							ItemStack item = new ItemStack(x.getMaterial(), x.getAmount());
 							ItemMeta meta = item.getItemMeta();
 							meta.setDisplayName(x.getName());
-							player.getInventory().setItem(x.getIndex(), item);
+							player.getInventory().setItem(x.getAmount(), item);
 						});
 					}
 				}
@@ -399,6 +430,8 @@ public class EventMaker implements Listener {
 		registerPlaced();
 		registerStarted();
 		registerWait();
+		registerKilled();
+		registerDrop();
 		Bukkit.getPluginManager().registerEvents(instance, Bukkit.getPluginManager().getPlugin(pluginName));
 	}
 

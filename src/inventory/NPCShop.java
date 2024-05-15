@@ -38,8 +38,7 @@ public class NPCShop {
 						String name = Chati.translate(splite[1]);
 						String page = splite[2];
 						int amount = Integer.parseInt(splite[3]);
-						int index = Integer.parseInt(PropertiesAPI.getProperty(splited[0], "0", fileName));
-						EMaterial mat = new EMaterial(index, amount, arenaName, Material.valueOf(item));
+						EMaterial mat = new EMaterial(amount, arenaName, Material.valueOf(item));
 						if (!page.equals("NULL")) {
 							mat.setOpenable(true);
 							mat.setPage(page);
