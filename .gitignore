@@ -8,6 +8,6 @@ bin/
 .idea
 .classpath
 .settings/*
+simplearenamanager.iml
 .project
-simplearenamanager.impl
 **.apidocs/
