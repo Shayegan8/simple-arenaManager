@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -23,6 +24,7 @@ import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -226,7 +228,7 @@ public class EventMaker implements Listener {
 
 	}
 
-	public static void registerJoin() {
+	public static void registerAJoin() {
 		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
 		EventExecutor executor = new EventExecutor() {
 
@@ -413,11 +415,27 @@ public class EventMaker implements Listener {
 				innerInstance);
 	}
 
+	public static void registerJoin() {
+		Plugin innerInstance = Bukkit.getPluginManager().getPlugin(pluginName);
+		EventExecutor executor = (listener, event) -> {
+			if(event instanceof PlayerJoinEvent) {
+				PlayerJoinEvent pEvent = (PlayerJoinEvent) event;
+				Player player = pEvent.getPlayer();
+				String coords[] = PropertiesAPI.getProperty("lobbyspawn", "", ArenaManager.DIR + "messages.dcnf").split(",");
+				player.teleport(new Location(Bukkit.getWorld(ArenaManager.getArenaWorld(ArenaManager.getPlayersArena(player.getName()))),
+						Double.parseDouble(coords[0]),Double.parseDouble(coords[1]),Double.parseDouble(coords[2])));
+			}
+		};
+		Bukkit.getPluginManager().registerEvent(PlayerJoinEvent.class, instance, EventPriority.NORMAL, executor, innerInstance);
+	}
+
+
 	public static void register(String pluginName) {
 		registerArena();
 		registerBEnd();
 		registerBreak();
 		registerEnd();
+		registerAJoin();
 		registerJoin();
 		registerLeft();
 		registerPlaced();

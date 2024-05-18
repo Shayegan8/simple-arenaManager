@@ -383,7 +383,7 @@ public class ArenaManager {
 			Location npc, Location waitingSpawn) {
 		return new ArenaTeam(arena, minNumber, maxNumber, team, blockLocation, npc, waitingSpawn);
 	}
-	
+
 	public static Location getNPCLocation(String arenaName, TEAMS team) {
 
 		String lsk[] = PropertiesAPI.getProperty(arenaName + "." + team.name() != null ? team.name() : null, null,
@@ -1704,7 +1704,7 @@ public class ArenaManager {
 	 */
 	public static void setLobbySpawn(Location location) {
 		try {
-			PropertiesAPI.setProperty("lobbySpawn", String.valueOf(location.getBlockX()) + ","
+			PropertiesAPI.setProperty("lobbyspawn", String.valueOf(location.getBlockX()) + ","
 							+ String.valueOf(location.getBlockY()) + "," + String.valueOf(location.getBlockZ()),
 					DIR + "messages.dcnf");
 		} catch (IOException e) {
