@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_8_R3.entity.CraftPlayer;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -31,7 +30,6 @@ import com.google.common.collect.MultimapBuilder.ListMultimapBuilder;
 
 import inventory.EMaterial;
 import inventory.InventoryAPI;
-import net.minecraft.server.v1_8_R3.EntityPlayer;
 import npc.NPC;
 
 /**
@@ -385,26 +383,7 @@ public class ArenaManager {
 			Location npc, Location waitingSpawn) {
 		return new ArenaTeam(arena, minNumber, maxNumber, team, blockLocation, npc, waitingSpawn);
 	}
-
-	/**
-	 * 
-	 * @return the entityPlayer if there is no entityPlayer there
-	 */
-	public static EntityPlayer getEntityPlayer(Location location, Entity entity, String arenaName) {
-		for (Entity e : Bukkit
-				.getWorld(PropertiesAPI.getProperty("world", null, DIR + arenaName + "/" + arenaName + ".dcnf"))
-				.getEntities()) {
-			if (e instanceof Player) {
-				Player player = (Player) e;
-				if (player.getLocation().equals(location)) {
-					CraftPlayer crafted = (CraftPlayer) player;
-					return crafted.getHandle();
-				}
-			}
-		}
-		return null;
-	}
-
+	
 	public static Location getNPCLocation(String arenaName, TEAMS team) {
 
 		String lsk[] = PropertiesAPI.getProperty(arenaName + "." + team.name() != null ? team.name() : null, null,
